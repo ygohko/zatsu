@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 fn process_file(path: &PathBuf) -> io::Result<()> {
     let metadata = fs::metadata(path)?;
-    if (metadata.is_file()) {
+    if metadata.is_file() {
 	println!("This is file.");
 
 	let values = fs::read(path)?;
@@ -35,7 +35,7 @@ fn main() -> io::Result<()> {
     for entry in result.into_iter() {
 	let path = entry?.path();
 	println!("{}", path.display());
-	process_file(&path);
+	let _ = process_file(&path);
     }
 
     Ok(())
