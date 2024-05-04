@@ -57,6 +57,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hex-string"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "848ec2dd093df965a34b434580d94852197fc83feac5b2c1962399bbf2cb4f0b"
+
+[[package]]
 name = "libc"
 version = "0.2.154"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -89,5 +95,6 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 name = "zatsu"
 version = "0.1.0"
 dependencies = [
+ "hex-string",
  "sha1",
 ]

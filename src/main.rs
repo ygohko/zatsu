@@ -1,8 +1,9 @@
+use hex_string::HexString;
+use sha1::Digest;
+use sha1::Sha1;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
-use sha1::Digest;
-use sha1::Sha1;
 
 fn process_file(path: &PathBuf) -> io::Result<()> {
     let metadata = fs::metadata(path)?;
@@ -16,7 +17,9 @@ fn process_file(path: &PathBuf) -> io::Result<()> {
 	let hash = sha1.finalize();
 	let hash_values = hash.to_vec();
 	println!("{} bytes of hash generated.", hash_values.len());
-	
+	// println!("{}", hash_values);
+	let hex = HexString::from_bytes(&hash_values);
+	println!("{}", hex.as_string());
 
     } else {
 	println!("This is not file.");
