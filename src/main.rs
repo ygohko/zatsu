@@ -24,15 +24,20 @@ use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
 use std::fs;
-use std::io;
 use std::path::PathBuf;
 
-fn process_file(path: &PathBuf) -> io::Result<()> {
-    let metadata = fs::metadata(path)?;
+fn process_file(path: &PathBuf) -> Result<(), ()> {
+    let metadata = match fs::metadata(path) {
+	Ok(metadata) => metadata,
+	Err(_) => return Err(()),
+    };
     if metadata.is_file() {
 	println!("This is file.");
 
-	let values = fs::read(path)?;
+	let values = match fs::read(path) {
+	    Ok(values) => values,
+	    Err(_) => return Err(()),
+	};
 	println!("{} bytes read.", values.len());
 	let mut sha1 = Sha1::new();
 	sha1.update(values);
@@ -50,12 +55,19 @@ fn process_file(path: &PathBuf) -> io::Result<()> {
     Ok(())
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), ()> {
     println!("Hello, world!");
 
-    let result = fs::read_dir(".")?;
-    for entry in result.into_iter() {
-	let path = entry?.path();
+    let read_dir = match fs::read_dir(".") {
+	Ok(read_dir) => read_dir,
+	Err(_) => return Err(()),
+    };
+    for result in read_dir.into_iter() {
+	let entry = match result {
+	    Ok(entry) => entry,
+	    Err(_) => return Err(()),
+	};
+	let path = entry.path();
 	println!("{}", path.display());
 	let _ = process_file(&path);
     }
