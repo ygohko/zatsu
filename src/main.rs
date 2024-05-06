@@ -21,15 +21,43 @@
  */
 
 use hex_string::HexString;
-use serde::Deserialize;
-use serde::Serialize;
+// use serde::Deserialize;
+// use serde::Serialize;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use sha1::Digest;
 use sha1::Sha1;
-use std::collections::HashMap;
+// use std::collections::HashMap;
+use std::error::Error;
+use std::fmt;
 use std::fs;
 use std::path::PathBuf;
+
+#[derive(Debug)]
+struct GeneralError {
+}
+
+impl fmt::Display for GeneralError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	write!(f, "General error.")
+    }
+}
+
+impl Error for GeneralError {
+}
+
+#[derive(Debug)]
+struct TestError {
+}
+
+impl fmt::Display for TestError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	write!(f, "Test error.")
+    }
+}
+
+impl Error for TestError {
+}
 
 #[derive(Serialize, Deserialize)]
 struct File {
@@ -37,10 +65,10 @@ struct File {
     hash: String,
 }
 
-fn process_file(path: &PathBuf) -> Result<String, ()> {
+fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
     let metadata = match fs::metadata(path) {
 	Ok(metadata) => metadata,
-	Err(_) => return Err(()),
+	Err(_) => return Err(Box::new(GeneralError {})),
     };
     let mut hex_string = String::new();
     if metadata.is_file() {
@@ -48,7 +76,7 @@ fn process_file(path: &PathBuf) -> Result<String, ()> {
 
 	let values = match fs::read(path) {
 	    Ok(values) => values,
-	    Err(_) => return Err(()),
+	    Err(_) => return Err(Box::new(GeneralError {})),
 	};
 	println!("{} bytes read.", values.len());
 	let mut sha1 = Sha1::new();
@@ -64,7 +92,7 @@ fn process_file(path: &PathBuf) -> Result<String, ()> {
 	let path = format!(".zatsu/{}", hex_string);
 	match std::fs::write(path, values) {
 	    Ok(()) => (),
-	    Err(_) => return Err(()),
+	    Err(_) => return Err(Box::new(GeneralError {})),
 	};
 
     } else {
@@ -74,25 +102,25 @@ fn process_file(path: &PathBuf) -> Result<String, ()> {
     Ok(hex_string)
 }
 
-fn main() -> Result<(), ()> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
 
     let read_dir = match fs::read_dir(".") {
 	Ok(read_dir) => read_dir,
-	Err(_) => return Err(()),
+	Err(_) => return Err(Box::new(TestError {})),
     };
 
     let mut files: Vec<File> = Vec::new();
     for result in read_dir.into_iter() {
 	let entry = match result {
 	    Ok(entry) => entry,
-	    Err(_) => return Err(()),
+	    Err(_) => return Err(Box::new(GeneralError {})),
 	};
 	let path = entry.path();
 	println!("{}", path.display());
 	let hash = match process_file(&path) {
 	    Ok(hash) => hash,
-	    Err(_) => return Err(()),
+	    Err(_) => return Err(Box::new(GeneralError {})),
 	};
 	let file = File{
 	    path: path.to_string_lossy().to_string(),
@@ -103,7 +131,7 @@ fn main() -> Result<(), ()> {
 
     let serialized = match serde_json::to_string(&files) {
 	Ok(serialized) => serialized,
-	Err(_) => return Err(()),
+	Err(_) => return Err(Box::new(GeneralError {})),
     };
 
     /*
@@ -119,7 +147,7 @@ fn main() -> Result<(), ()> {
     println!("serialized: {}", serialized);
     let _ = match std::fs::write(".zatsu/commit.json", serialized) {
 	Ok(result) => result,
-	Err(_) => return Err(()),
+	Err(_) => return Err(Box::new(GeneralError {})),
     };
 
     Ok(())
