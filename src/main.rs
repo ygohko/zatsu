@@ -60,9 +60,15 @@ impl Error for TestError {
 }
 
 #[derive(Serialize, Deserialize)]
+// TODO: Rename to Entry?
 struct File {
     path: String,
     hash: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Commit {
+    files: Vec<File>,
 }
 
 fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
