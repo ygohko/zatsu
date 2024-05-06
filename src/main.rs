@@ -21,44 +21,106 @@
  */
 
 use hex_string::HexString;
+use serde::Deserialize;
+use serde::Serialize;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use sha1::Digest;
 use sha1::Sha1;
+use std::collections::HashMap;
 use std::fs;
-use std::io;
 use std::path::PathBuf;
 
-fn process_file(path: &PathBuf) -> io::Result<()> {
-    let metadata = fs::metadata(path)?;
+#[derive(Serialize, Deserialize)]
+struct File {
+    path: String,
+    hash: String,
+}
+
+fn process_file(path: &PathBuf) -> Result<String, ()> {
+    let metadata = match fs::metadata(path) {
+	Ok(metadata) => metadata,
+	Err(_) => return Err(()),
+    };
+    let mut hex_string = String::new();
     if metadata.is_file() {
 	println!("This is file.");
 
-	let values = fs::read(path)?;
+	let values = match fs::read(path) {
+	    Ok(values) => values,
+	    Err(_) => return Err(()),
+	};
 	println!("{} bytes read.", values.len());
 	let mut sha1 = Sha1::new();
-	sha1.update(values);
+	sha1.update(values.clone());
 	let hash = sha1.finalize();
 	let hash_values = hash.to_vec();
 	println!("{} bytes of hash generated.", hash_values.len());
 	// println!("{}", hash_values);
 	let hex = HexString::from_bytes(&hash_values);
-	println!("{}", hex.as_string());
+	hex_string = hex.as_string();
+	println!("{}", hex_string);
+
+	let path = format!(".zatsu/{}", hex_string);
+	match std::fs::write(path, values) {
+	    Ok(()) => (),
+	    Err(_) => return Err(()),
+	};
 
     } else {
 	println!("This is not file.");
     }
 
-    Ok(())
+    Ok(hex_string)
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), ()> {
     println!("Hello, world!");
 
-    let result = fs::read_dir(".")?;
-    for entry in result.into_iter() {
-	let path = entry?.path();
+    let read_dir = match fs::read_dir(".") {
+	Ok(read_dir) => read_dir,
+	Err(_) => return Err(()),
+    };
+
+    let mut files: Vec<File> = Vec::new();
+    for result in read_dir.into_iter() {
+	let entry = match result {
+	    Ok(entry) => entry,
+	    Err(_) => return Err(()),
+	};
+	let path = entry.path();
 	println!("{}", path.display());
-	let _ = process_file(&path);
+	let hash = match process_file(&path) {
+	    Ok(hash) => hash,
+	    Err(_) => return Err(()),
+	};
+	let file = File{
+	    path: path.to_string_lossy().to_string(),
+	    hash: hash,
+	};
+	files.push(file);
     }
+
+    let serialized = match serde_json::to_string(&files) {
+	Ok(serialized) => serialized,
+	Err(_) => return Err(()),
+    };
+
+    /*
+    let serializable = HashMap::from([
+	("path", "abc"),
+	("hash", "def"),
+    ]);
+    let serialized = match serde_json::to_string(&serializable) {
+	Ok(serialized) => serialized,
+        Err(_) => return Err(()),
+    };
+    */
+    println!("serialized: {}", serialized);
+    let _ = match std::fs::write(".zatsu/commit.json", serialized) {
+	Ok(result) => result,
+	Err(_) => return Err(()),
+    };
 
     Ok(())
 }
