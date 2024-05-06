@@ -60,15 +60,42 @@ impl Error for TestError {
 }
 
 #[derive(Serialize, Deserialize)]
-// TODO: Rename to Entry?
-struct File {
+struct Entry {
     path: String,
     hash: String,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Commit {
-    files: Vec<File>,
+struct Revision {
+    entries: Vec<Entry>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Repository {
+    revisions: Vec<i32>,
+}
+
+impl Repository {
+    fn load(path: &PathBuf) -> Self {
+	// TODO: Imprement this.
+	return Repository{
+	    revisions: Vec::new(),
+	};
+    }
+
+    fn save(&self, path: &PathBuf) -> Result<(), Box<dyn Error>> {
+	let serialized = match serde_json::to_string(self) {
+	    Ok(serialized) => serialized,
+	    Err(_) => return Err(Box::new(GeneralError {})),
+	};
+	println!("serialized: {}", serialized);
+	let _ = match std::fs::write(path, serialized) {
+	    Ok(result) => result,
+	    Err(_) => return Err(Box::new(GeneralError {})),
+	};
+
+	Ok(())
+    }
 }
 
 fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
@@ -116,7 +143,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 	Err(_) => return Err(Box::new(TestError {})),
     };
 
-    let mut files: Vec<File> = Vec::new();
+    let mut entries: Vec<Entry> = Vec::new();
     for result in read_dir.into_iter() {
 	let entry = match result {
 	    Ok(entry) => entry,
@@ -128,30 +155,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 	    Ok(hash) => hash,
 	    Err(_) => return Err(Box::new(GeneralError {})),
 	};
-	let file = File{
+	let entry = Entry{
 	    path: path.to_string_lossy().to_string(),
 	    hash: hash,
 	};
-	files.push(file);
+	entries.push(entry);
     }
 
-    let serialized = match serde_json::to_string(&files) {
+    let serialized = match serde_json::to_string(&entries) {
 	Ok(serialized) => serialized,
 	Err(_) => return Err(Box::new(GeneralError {})),
     };
 
-    /*
-    let serializable = HashMap::from([
-	("path", "abc"),
-	("hash", "def"),
-    ]);
-    let serialized = match serde_json::to_string(&serializable) {
-	Ok(serialized) => serialized,
-        Err(_) => return Err(()),
-    };
-    */
     println!("serialized: {}", serialized);
-    let _ = match std::fs::write(".zatsu/commit.json", serialized) {
+    let _ = match std::fs::write(".zatsu/revision.json", serialized) {
 	Ok(result) => result,
 	Err(_) => return Err(Box::new(GeneralError {})),
     };
