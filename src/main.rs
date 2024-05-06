@@ -117,6 +117,10 @@ fn main() -> Result<(), ()> {
     };
     */
     println!("serialized: {}", serialized);
-    
+    let _ = match std::fs::write(".zatsu/commit.json", serialized) {
+	Ok(result) => result,
+	Err(_) => return Err(()),
+    };
+
     Ok(())
 }
