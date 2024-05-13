@@ -76,25 +76,37 @@ struct Repository {
 }
 
 impl Repository {
-    fn load(path: &PathBuf) -> Self {
-	// TODO: Imprement this.
-	return Repository{
-	    revisions: Vec::new(),
-	};
-    }
-
     fn save(&self, path: &PathBuf) -> Result<(), Box<dyn Error>> {
 	let serialized = match serde_json::to_string(self) {
 	    Ok(serialized) => serialized,
 	    Err(_) => return Err(Box::new(GeneralError {})),
 	};
 	println!("serialized: {}", serialized);
-	let _ = match std::fs::write(path, serialized) {
+	let _ = match fs::write(path, serialized) {
 	    Ok(result) => result,
 	    Err(_) => return Err(Box::new(GeneralError {})),
 	};
 
 	Ok(())
+    }
+
+    fn load(path: &PathBuf) -> Result<Self, Box<dyn Error>> {
+	let serialized = match fs::read_to_string(path) {
+	    Ok(serialized) => serialized,
+	    Err(_) => return Err(Box::new(GeneralError {})),
+	};
+	let repository: Repository = match serde_json::from_str(&serialized) {
+	    Ok(repository) => repository,
+	    Err(_) => return  Err(Box::new(GeneralError {})),
+	};
+
+	Ok(repository)
+	/*
+	// TODO: Imprement this.
+	return Repository{
+	    revisions: Vec::new(),
+    };
+	*/
     }
 }
 
