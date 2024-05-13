@@ -101,12 +101,6 @@ impl Repository {
 	};
 
 	Ok(repository)
-	/*
-	// TODO: Imprement this.
-	return Repository{
-	    revisions: Vec::new(),
-    };
-	*/
     }
 }
 
@@ -150,6 +144,13 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
 
+    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(repository) => repository,
+	Err(_) => Repository {
+	    revisions: Vec::new(),
+	},
+    };
+    
     let read_dir = match fs::read_dir(".") {
 	Ok(read_dir) => read_dir,
 	Err(_) => return Err(Box::new(TestError {})),
