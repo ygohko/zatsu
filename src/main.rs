@@ -185,6 +185,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 	Ok(result) => result,
 	Err(_) => return Err(Box::new(GeneralError {})),
     };
+    match repository.save(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(_) => (),
+	Err(_) => return Err(Box::new(GeneralError {})),
+    };
 
     Ok(())
 }
