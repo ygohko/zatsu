@@ -28,6 +28,7 @@ mod repository;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
+use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
@@ -76,6 +77,18 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
+
+    let arguments: Vec<_> = env::args().collect();
+    let count = arguments.len();
+    println!("count: {}", count);
+    if count > 0 {
+	println!("arguments[0]: {}", arguments[0]);
+
+    }
+    if count > 1 {
+	println!("arguments[1]: {}", arguments[1]);
+
+    }
 
     let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(repository) => repository,
