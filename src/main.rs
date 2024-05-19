@@ -76,29 +76,6 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
 }
 
 fn process_commit() -> Result<(), Box<dyn Error>> {
-    Ok(())
-}
-
-fn main() -> Result<(), Box<dyn Error>> {
-    println!("Hello, world!");
-
-    let arguments: Vec<_> = env::args().collect();
-    let count = arguments.len();
-    println!("count: {}", count);
-    if count > 0 {
-	println!("arguments[0]: {}", arguments[0]);
-
-    }
-    if count > 1 {
-	println!("arguments[1]: {}", arguments[1]);
-    }
-
-    // TODO: Get subcommand from arguments.
-    let mut subcommand = "commit".to_string();
-    if count > 1 {
-	subcommand = arguments[1].clone();
-    }
-
     let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(repository) => repository,
 	Err(_) => Repository {
@@ -149,6 +126,35 @@ fn main() -> Result<(), Box<dyn Error>> {
 	Ok(_) => (),
 	Err(_) => return Err(Box::new(ZatsuError {})),
     };
+
+    Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    println!("Hello, world!");
+
+    let arguments: Vec<_> = env::args().collect();
+    let count = arguments.len();
+    println!("count: {}", count);
+    if count > 0 {
+	println!("arguments[0]: {}", arguments[0]);
+
+    }
+    if count > 1 {
+	println!("arguments[1]: {}", arguments[1]);
+    }
+
+    let mut subcommand = "commit".to_string();
+    if count > 1 {
+	subcommand = arguments[1].clone();
+    }
+
+    if subcommand == "commit" {
+	match process_commit() {
+	    Ok(()) => (),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+    }
 
     Ok(())
 }
