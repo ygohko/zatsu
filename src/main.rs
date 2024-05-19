@@ -25,84 +25,15 @@ mod revision;
 mod repository;
 
 use hex_string::HexString;
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
 use sha1::Digest;
 use sha1::Sha1;
-// use std::collections::HashMap;
 use std::error::Error;
-use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 
 use crate::entry::Entry;
-use crate::revision::Revision;
 use crate::repository::GeneralError;
 use crate::repository::Repository;
-
-/*
-#[derive(Debug)]
-struct GeneralError {
-}
-
-impl fmt::Display for GeneralError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-	write!(f, "General error.")
-    }
-}
-*/
-
-impl Error for GeneralError {
-}
-
-#[derive(Debug)]
-struct TestError {
-}
-
-impl fmt::Display for TestError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-	write!(f, "Test error.")
-    }
-}
-
-impl Error for TestError {
-}
-
-/*
-#[derive(Serialize, Deserialize)]
-struct Repository {
-    revisions: Vec<i32>,
-}
-
-impl Repository {
-    fn save(&self, path: &PathBuf) -> Result<(), Box<dyn Error>> {
-	let serialized = match serde_json::to_string(self) {
-	    Ok(serialized) => serialized,
-	    Err(_) => return Err(Box::new(GeneralError {})),
-	};
-	println!("serialized: {}", serialized);
-	let _ = match fs::write(path, serialized) {
-	    Ok(result) => result,
-	    Err(_) => return Err(Box::new(GeneralError {})),
-	};
-
-	Ok(())
-    }
-
-    fn load(path: &PathBuf) -> Result<Self, Box<dyn Error>> {
-	let serialized = match fs::read_to_string(path) {
-	    Ok(serialized) => serialized,
-	    Err(_) => return Err(Box::new(GeneralError {})),
-	};
-	let repository: Repository = match serde_json::from_str(&serialized) {
-	    Ok(repository) => repository,
-	    Err(_) => return  Err(Box::new(GeneralError {})),
-	};
-
-	Ok(repository)
-    }
-}
-*/
 
 fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
     let metadata = match fs::metadata(path) {
@@ -153,7 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     let read_dir = match fs::read_dir(".") {
 	Ok(read_dir) => read_dir,
-	Err(_) => return Err(Box::new(TestError {})),
+	Err(_) => return Err(Box::new(GeneralError {})),
     };
 
     let mut entries: Vec<Entry> = Vec::new();

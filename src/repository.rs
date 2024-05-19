@@ -15,6 +15,9 @@ impl fmt::Display for GeneralError {
     }
 }
 
+impl Error for GeneralError {
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Repository {
     pub revisions: Vec<i32>,
