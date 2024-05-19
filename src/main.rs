@@ -32,13 +32,14 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::entry::Entry;
-use crate::repository::GeneralError;
+use crate::revision::Revision;
+use crate::repository::ZatsuError;
 use crate::repository::Repository;
 
 fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
     let metadata = match fs::metadata(path) {
 	Ok(metadata) => metadata,
-	Err(_) => return Err(Box::new(GeneralError {})),
+	Err(_) => return Err(Box::new(ZatsuError {})),
     };
     let mut hex_string = String::new();
     if metadata.is_file() {
@@ -46,7 +47,7 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
 
 	let values = match fs::read(path) {
 	    Ok(values) => values,
-	    Err(_) => return Err(Box::new(GeneralError {})),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
 	};
 	println!("{} bytes read.", values.len());
 	let mut sha1 = Sha1::new();
@@ -62,7 +63,7 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
 	let path = format!(".zatsu/{}", hex_string);
 	match std::fs::write(path, values) {
 	    Ok(()) => (),
-	    Err(_) => return Err(Box::new(GeneralError {})),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
 	};
 
     } else {
@@ -75,50 +76,55 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
 
-    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+    let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(repository) => repository,
 	Err(_) => Repository {
 	    revisions: Vec::new(),
 	},
     };
+    let latest_revision = repository.latest_revision();
+    let revision_number = latest_revision + 1;
     
     let read_dir = match fs::read_dir(".") {
 	Ok(read_dir) => read_dir,
-	Err(_) => return Err(Box::new(GeneralError {})),
+	Err(_) => return Err(Box::new(ZatsuError {})),
     };
 
-    let mut entries: Vec<Entry> = Vec::new();
+    let mut revision = Revision {
+	entries: Vec::new(),
+    };
     for result in read_dir.into_iter() {
 	let entry = match result {
 	    Ok(entry) => entry,
-	    Err(_) => return Err(Box::new(GeneralError {})),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
 	};
 	let path = entry.path();
 	println!("{}", path.display());
 	let hash = match process_file(&path) {
 	    Ok(hash) => hash,
-	    Err(_) => return Err(Box::new(GeneralError {})),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
 	};
 	let entry = Entry{
 	    path: path.to_string_lossy().to_string(),
 	    hash: hash,
 	};
-	entries.push(entry);
+	revision.entries.push(entry);
     }
 
-    let serialized = match serde_json::to_string(&entries) {
+    let serialized = match serde_json::to_string(&revision) {
 	Ok(serialized) => serialized,
-	Err(_) => return Err(Box::new(GeneralError {})),
+	Err(_) => return Err(Box::new(ZatsuError {})),
     };
 
     println!("serialized: {}", serialized);
-    let _ = match std::fs::write(".zatsu/revision.json", serialized) {
+    let _ = match std::fs::write(format!(".zatsu/{}.json", revision_number), serialized) {
 	Ok(result) => result,
-	Err(_) => return Err(Box::new(GeneralError {})),
+	Err(_) => return Err(Box::new(ZatsuError {})),
     };
+    repository.revisions.push(revision_number);
     match repository.save(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(_) => (),
-	Err(_) => return Err(Box::new(GeneralError {})),
+	Err(_) => return Err(Box::new(ZatsuError {})),
     };
 
     Ok(())
