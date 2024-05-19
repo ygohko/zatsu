@@ -20,9 +20,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+mod entry;
+mod revision;
+mod repository;
+
 use hex_string::HexString;
-// use serde::Deserialize;
-// use serde::Serialize;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use sha1::Digest;
@@ -33,6 +35,12 @@ use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::entry::Entry;
+use crate::revision::Revision;
+use crate::repository::GeneralError;
+use crate::repository::Repository;
+
+/*
 #[derive(Debug)]
 struct GeneralError {
 }
@@ -42,6 +50,7 @@ impl fmt::Display for GeneralError {
 	write!(f, "General error.")
     }
 }
+*/
 
 impl Error for GeneralError {
 }
@@ -59,17 +68,7 @@ impl fmt::Display for TestError {
 impl Error for TestError {
 }
 
-#[derive(Serialize, Deserialize)]
-struct Entry {
-    path: String,
-    hash: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Revision {
-    entries: Vec<Entry>,
-}
-
+/*
 #[derive(Serialize, Deserialize)]
 struct Repository {
     revisions: Vec<i32>,
@@ -103,6 +102,7 @@ impl Repository {
 	Ok(repository)
     }
 }
+*/
 
 fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
     let metadata = match fs::metadata(path) {
