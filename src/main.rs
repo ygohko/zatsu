@@ -21,6 +21,7 @@
  */
 
 mod entry;
+mod error;
 mod revision;
 mod repository;
 
@@ -32,8 +33,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::entry::Entry;
+use crate::error::ZatsuError;
 use crate::revision::Revision;
-use crate::repository::ZatsuError;
 use crate::repository::Repository;
 
 fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {

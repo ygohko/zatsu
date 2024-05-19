@@ -20,12 +20,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use std::error::Error;
+use std::fmt;
 
-use crate::entry::Entry;
+#[derive(Debug)]
+pub struct ZatsuError {
+}
 
-#[derive(Serialize, Deserialize)]
-pub struct Revision {
-    pub entries: Vec<Entry>,
+impl fmt::Display for ZatsuError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	write!(f, "Zatsu error.")
+    }
+}
+
+impl Error for ZatsuError {
 }
