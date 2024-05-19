@@ -75,6 +75,10 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
     Ok(hex_string)
 }
 
+fn process_commit() -> Result<(), Box<dyn Error>> {
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
 
@@ -87,7 +91,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     if count > 1 {
 	println!("arguments[1]: {}", arguments[1]);
+    }
 
+    // TODO: Get subcommand from arguments.
+    let mut subcommand = "commit".to_string();
+    if count > 1 {
+	subcommand = arguments[1].clone();
     }
 
     let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
