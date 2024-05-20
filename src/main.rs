@@ -141,6 +141,11 @@ fn process_log() -> Result<(), Box<dyn Error>> {
     let count = repository.revisions.len();
     for i in 0..count {
 	// TODO: Print revision information.
+	let revision_number = repository.revisions[i];
+	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+	    Ok(revision) => revision,
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
     }
 
     Ok(())
