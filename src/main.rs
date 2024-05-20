@@ -130,6 +130,22 @@ fn process_commit() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn process_log() -> Result<(), Box<dyn Error>> {
+    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(repository) => repository,
+	Err(_) => Repository {
+	    revisions: Vec::new(),
+	},
+    };
+
+    let count = repository.revisions.len();
+    for i in 0..count {
+	// TODO: Print revision information.
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
 
