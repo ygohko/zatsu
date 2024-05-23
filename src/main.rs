@@ -146,6 +146,11 @@ fn process_log() -> Result<(), Box<dyn Error>> {
 	    Ok(revision) => revision,
 	    Err(_) => return Err(Box::new(ZatsuError {})),
 	};
+	println!("Revision {}", revision_number);
+	for entry in revision.entries {
+	    println!("{}", entry.path);
+	}
+	println!("");
     }
 
     Ok(())
@@ -172,6 +177,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if subcommand == "commit" {
 	match process_commit() {
+	    Ok(()) => (),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+    }
+    if subcommand == "log" {
+	match process_log() {
 	    Ok(()) => (),
 	    Err(_) => return Err(Box::new(ZatsuError {})),
 	};
