@@ -187,6 +187,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 	    Err(_) => return Err(Box::new(ZatsuError {})),
 	};
     }
+    if subcommand == "get" {
+	if count > 4 {
+	    let revision_number :i32 = arguments[2].parse().unwrap();
+	    let path = arguments[3].clone();
+	    // TODO: Call get process.
+	}
+    }
 
     Ok(())
 }
