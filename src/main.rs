@@ -156,6 +156,18 @@ fn process_log() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn process_get(revision_number: i32, path: &String) -> Result<(), Box<dyn Error>> {
+    // TODO: Implement this.
+    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(repository) => repository,
+	Err(_) => Repository {
+	    revisions: Vec::new(),
+	},
+    };
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
 
@@ -191,7 +203,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 	if count > 4 {
 	    let revision_number :i32 = arguments[2].parse().unwrap();
 	    let path = arguments[3].clone();
-	    // TODO: Call get process.
+	    match process_get(revision_number, &path) {
+		Ok(()) => (),
+		Err(_) => return Err(Box::new(ZatsuError {})),
+	    };
 	}
     }
 
