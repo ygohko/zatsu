@@ -193,7 +193,16 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), Box<dyn Error>
 	Ok(values) => values,
 	Err(_) => return Err(Box::new(ZatsuError {})),
     };
-    match fs::write(&PathBuf::from("out.dat"), values) {
+    let split: Vec<_> = path.split("/").collect();
+    let mut file_name = "out.dat".to_string();
+    if split.len() >= 1 {
+	let original_file_name = split[split.len() - 1].to_string();
+	let split: Vec<_> = original_file_name.split(".").collect();
+	if split.len() > 1 {
+	    file_name = format!("{}-r{}.{}", split[0], revision_number, split[1]);
+	}
+    }
+    match fs::write(&PathBuf::from(file_name), values) {
 	Ok(()) => (),
 	Err(_) => return Err(Box::new(ZatsuError {})),
     };
