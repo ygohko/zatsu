@@ -157,12 +157,45 @@ fn process_log() -> Result<(), Box<dyn Error>> {
 }
 
 fn process_get(revision_number: i32, path: &String) -> Result<(), Box<dyn Error>> {
-    // TODO: Implement this.
     let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(repository) => repository,
 	Err(_) => Repository {
 	    revisions: Vec::new(),
 	},
+    };
+    let mut found = false;
+    for a_revision_number in repository.revisions {
+	if a_revision_number == revision_number {
+	    found = true;
+	} 
+    }
+    if !found {
+	return Err(Box::new(ZatsuError {}));
+    }
+
+    let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+	Ok(revision) => revision,
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+    let mut hash = "".to_string();
+    let mut found = false;
+    for entry in revision.entries {
+	if entry.path == *path {
+	    found = true;
+	    hash = entry.hash;
+	}
+    }
+    if !found {
+	return Err(Box::new(ZatsuError {}));
+    }
+
+    let values = match fs::read(&PathBuf::from(format!(".zatsu/{}", hash))) {
+	Ok(values) => values,
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+    match fs::write(&PathBuf::from("out.dat"), values) {
+	Ok(()) => (),
+	Err(_) => return Err(Box::new(ZatsuError {})),
     };
 
     Ok(())
@@ -200,7 +233,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 	};
     }
     if subcommand == "get" {
-	if count > 4 {
+	if count > 3 {
 	    let revision_number :i32 = arguments[2].parse().unwrap();
 	    let path = arguments[3].clone();
 	    match process_get(revision_number, &path) {
