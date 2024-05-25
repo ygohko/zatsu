@@ -28,6 +28,7 @@ mod repository;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
+use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
@@ -74,9 +75,7 @@ fn process_file(path: &PathBuf) -> Result<String, Box<dyn Error>> {
     Ok(hex_string)
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    println!("Hello, world!");
-
+fn process_commit() -> Result<(), Box<dyn Error>> {
     let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(repository) => repository,
 	Err(_) => Repository {
@@ -127,6 +126,161 @@ fn main() -> Result<(), Box<dyn Error>> {
 	Ok(_) => (),
 	Err(_) => return Err(Box::new(ZatsuError {})),
     };
+
+    Ok(())
+}
+
+fn process_log() -> Result<(), Box<dyn Error>> {
+    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(repository) => repository,
+	Err(_) => Repository {
+	    revisions: Vec::new(),
+	},
+    };
+
+    let count = repository.revisions.len();
+    for i in 0..count {
+	// TODO: Print revision information.
+	let revision_number = repository.revisions[i];
+	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+	    Ok(revision) => revision,
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+	println!("Revision {}", revision_number);
+	for entry in revision.entries {
+	    println!("{}", entry.path);
+	}
+	println!("");
+    }
+
+    Ok(())
+}
+
+fn process_get(revision_number: i32, path: &String) -> Result<(), Box<dyn Error>> {
+    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(repository) => repository,
+	Err(_) => Repository {
+	    revisions: Vec::new(),
+	},
+    };
+    let mut found = false;
+    for a_revision_number in repository.revisions {
+	if a_revision_number == revision_number {
+	    found = true;
+	} 
+    }
+    if !found {
+	return Err(Box::new(ZatsuError {}));
+    }
+
+    let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+	Ok(revision) => revision,
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+    let mut hash = "".to_string();
+    let mut found = false;
+    for entry in revision.entries {
+	if entry.path == *path {
+	    found = true;
+	    hash = entry.hash;
+	}
+    }
+    if !found {
+	return Err(Box::new(ZatsuError {}));
+    }
+
+    let values = match fs::read(&PathBuf::from(format!(".zatsu/{}", hash))) {
+	Ok(values) => values,
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+    let split: Vec<_> = path.split("/").collect();
+    let mut file_name = "out.dat".to_string();
+    if split.len() >= 1 {
+	let original_file_name = split[split.len() - 1].to_string();
+	let split: Vec<_> = original_file_name.split(".").collect();
+	if split.len() > 1 {
+	    file_name = format!("{}-r{}.{}", split[0], revision_number, split[1]);
+	}
+    }
+    match fs::write(&PathBuf::from(file_name), values) {
+	Ok(()) => (),
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+
+    Ok(())
+}
+
+fn process_init() -> Result<(), Box<dyn Error>> {
+    let read_dir = match fs::read_dir(".") {
+	Ok(read_dir) => read_dir,
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+    for result in read_dir.into_iter() {
+	let entry = match result {
+	    Ok(entry) => entry,
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+	let path = entry.path();
+	if path.ends_with(".zatsu") {
+	    return Err(Box::new(ZatsuError {}));
+	}
+    }
+
+    match fs::create_dir(".zatsu") {
+	Ok(()) => (),
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+
+    Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    println!("Hello, world!");
+
+    let arguments: Vec<_> = env::args().collect();
+    let count = arguments.len();
+    println!("count: {}", count);
+    if count > 0 {
+	println!("arguments[0]: {}", arguments[0]);
+
+    }
+    if count > 1 {
+	println!("arguments[1]: {}", arguments[1]);
+    }
+
+    let mut subcommand = "commit".to_string();
+    if count > 1 {
+	subcommand = arguments[1].clone();
+    }
+
+    if subcommand == "commit" {
+	match process_commit() {
+	    Ok(()) => (),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+    }
+    if subcommand == "log" {
+	match process_log() {
+	    Ok(()) => (),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+    }
+    if subcommand == "get" {
+	if count > 3 {
+	    let revision_number :i32 = arguments[2].parse().unwrap();
+	    let path = arguments[3].clone();
+	    match process_get(revision_number, &path) {
+		Ok(()) => (),
+		Err(_) => return Err(Box::new(ZatsuError {})),
+	    };
+	}
+    }
+    if subcommand == "init" {
+	match process_init() {
+	    Ok(()) => (),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+    }
 
     Ok(())
 }

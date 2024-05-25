@@ -22,10 +22,29 @@
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use std::error::Error;
+use std::fs;
+use std::path::PathBuf;
 
 use crate::entry::Entry;
+use crate::error::ZatsuError;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
     pub entries: Vec<Entry>,
+}
+
+impl Revision {
+    pub fn load(path :&PathBuf) -> Result<Revision, Box<dyn Error>> {
+	let serialized = match fs::read_to_string(path) {
+	    Ok(serialized) => serialized,
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+	let revision = match serde_json::from_str(&serialized) {
+	    Ok(revision) => revision,
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+	
+	Ok(revision)
+    }
 }
