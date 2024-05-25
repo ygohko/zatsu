@@ -25,13 +25,26 @@ use std::fmt;
 
 #[derive(Debug)]
 pub struct ZatsuError {
+    pub domain: String,
+    pub code: i32,
+    pub details: String,
 }
 
 impl fmt::Display for ZatsuError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-	write!(f, "Zatsu error.")
+	write!(f, "Zatsu error. domain: {}, code: {}, details: {}", self.domain, self.code, self.details)
     }
 }
 
 impl Error for ZatsuError {
+}
+
+impl ZatsuError {
+    pub fn new(domain: String, code: i32, details: String) -> ZatsuError {
+	return ZatsuError {
+	    domain: domain,
+	    code: code,
+	    details: details,
+	};
+    }
 }
