@@ -210,6 +210,30 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), Box<dyn Error>
     Ok(())
 }
 
+fn process_init() -> Result<(), Box<dyn Error>> {
+    let read_dir = match fs::read_dir(".") {
+	Ok(read_dir) => read_dir,
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+    for result in read_dir.into_iter() {
+	let entry = match result {
+	    Ok(entry) => entry,
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
+	let path = entry.path();
+	if path.ends_with(".zatsu") {
+	    return Err(Box::new(ZatsuError {}));
+	}
+    }
+
+    match fs::create_dir(".zatsu") {
+	Ok(()) => (),
+	Err(_) => return Err(Box::new(ZatsuError {})),
+    };
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
 
@@ -250,6 +274,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 		Err(_) => return Err(Box::new(ZatsuError {})),
 	    };
 	}
+    }
+    if subcommand == "init" {
+	match process_init() {
+	    Ok(()) => (),
+	    Err(_) => return Err(Box::new(ZatsuError {})),
+	};
     }
 
     Ok(())
