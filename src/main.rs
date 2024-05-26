@@ -221,6 +221,26 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
     Ok(())
 }
 
+fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
+    let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(repository) => repository,
+	// TODO: Ensure repository is created when zatsu init.
+	Err(_) => Repository {
+	    revisions: Vec::new(),
+	},
+    };
+    let current_count: i32 = repository.revisions.len().try_into().unwrap();
+    let removed_count = current_count - revision_count;
+    if removed_count <= 0 {
+	return Ok(());
+    }
+    let index: usize = removed_count as usize;
+    repository.revisions = repository.revisions.drain(index..).collect();
+    repository.save(&PathBuf::from(".zatsu/repository.json"))?;
+    
+    Ok(())
+}
+
 fn process_init() -> Result<(), ZatsuError> {
     let read_dir = match fs::read_dir(".") {
 	Ok(read_dir) => read_dir,
