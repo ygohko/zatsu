@@ -38,6 +38,13 @@ use crate::revision::Revision;
 use crate::repository::Repository;
 
 const ERROR_GENERAL: i32 = 0;
+const ERROR_READING_DIRECTORY_FAILED: i32 = 1;
+const ERROR_CREATING_REPOSITORY_FAILED: i32 = 2;
+const ERROR_REVISION_NOT_FOUND: i32 = 3;
+const ERROR_LOADING_REVISION_FAILED: i32 = 4;
+const ERROR_FILE_NOT_FOUND: i32 = 5;
+const ERROR_LOADING_FILE_FAILED: i32 = 6;
+const ERROR_SAVING_FILE_FAILED: i32 = 7;
 
 fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(path) {
@@ -171,12 +178,12 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	} 
     }
     if !found {
-	return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string()));
+	return Err(ZatsuError::new("main".to_string(), ERROR_REVISION_NOT_FOUND, "".to_string()));
     }
 
     let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
 	Ok(revision) => revision,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REVISION_FAILED, "".to_string())),
     };
     let mut hash = "".to_string();
     let mut found = false;
@@ -187,12 +194,12 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	}
     }
     if !found {
-	return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string()));
+	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND, "".to_string()));
     }
 
     let values = match fs::read(&PathBuf::from(format!(".zatsu/{}", hash))) {
 	Ok(values) => values,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED, "".to_string())),
     };
     let split: Vec<_> = path.split("/").collect();
     let mut file_name = "out.dat".to_string();
@@ -205,7 +212,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
     }
     match fs::write(&PathBuf::from(file_name), values) {
 	Ok(()) => (),
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
     };
 
     Ok(())
@@ -214,22 +221,22 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 fn process_init() -> Result<(), ZatsuError> {
     let read_dir = match fs::read_dir(".") {
 	Ok(read_dir) => read_dir,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
     };
     for result in read_dir.into_iter() {
-	let entry = match result {
-	    Ok(entry) => entry,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
-	};
-	let path = entry.path();
-	if path.ends_with(".zatsu") {
-	    return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string()));
+	if result.is_ok() {
+	    let entry = result.unwrap();
+	    let path = entry.path();
+	    // TODO: Improve existing checking.
+	    if path.ends_with(".zatsu") {
+		return Err(ZatsuError::new("main".to_string(), 123, "".to_string()));
+	    }
 	}
     }
 
     match fs::create_dir(".zatsu") {
 	Ok(()) => (),
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED, "".to_string())),
     };
 
     Ok(())
@@ -257,13 +264,13 @@ fn main() -> Result<(), ZatsuError> {
     if subcommand == "commit" {
 	match process_commit() {
 	    Ok(()) => (),
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(error) => return Err(error),
 	};
     }
     if subcommand == "log" {
 	match process_log() {
 	    Ok(()) => (),
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(error) => return Err(error),
 	};
     }
     if subcommand == "get" {
@@ -272,14 +279,14 @@ fn main() -> Result<(), ZatsuError> {
 	    let path = arguments[3].clone();
 	    match process_get(revision_number, &path) {
 		Ok(()) => (),
-		Err(_) => return Err(ZatsuError::new("main".to_string(), 0, "".to_string())),
+		Err(error) => return Err(error),
 	    };
 	}
     }
     if subcommand == "init" {
 	match process_init() {
 	    Ok(()) => (),
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), 0, "".to_string())),
+	    Err(error) => return Err(error),
 	};
     }
 

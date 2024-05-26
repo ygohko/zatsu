@@ -28,7 +28,10 @@ use std::path::PathBuf;
 use crate::entry::Entry;
 use crate::error::ZatsuError;
 
+#[allow(unused)]
 const ERROR_GENERAL: i32 = 0;
+const ERROR_LOADING_FAILED: i32 = 1;
+const ERROR_DESERIALIZATION_FAILED: i32 = 2;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
@@ -39,11 +42,11 @@ impl Revision {
     pub fn load(path :&PathBuf) -> Result<Revision, ZatsuError> {
 	let serialized = match fs::read_to_string(path) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_LOADING_FAILED, "".to_string())),
 	};
 	let revision = match serde_json::from_str(&serialized) {
 	    Ok(revision) => revision,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_DESERIALIZATION_FAILED, "".to_string())),
 	};
 	
 	Ok(revision)
