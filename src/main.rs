@@ -38,18 +38,20 @@ use crate::revision::Revision;
 use crate::repository::Repository;
 
 const ERROR_GENERAL: i32 = 0;
-const ERROR_READING_DIRECTORY_FAILED: i32 = 1;
-const ERROR_CREATING_REPOSITORY_FAILED: i32 = 2;
-const ERROR_REVISION_NOT_FOUND: i32 = 3;
-const ERROR_LOADING_REVISION_FAILED: i32 = 4;
-const ERROR_FILE_NOT_FOUND: i32 = 5;
-const ERROR_LOADING_FILE_FAILED: i32 = 6;
-const ERROR_SAVING_FILE_FAILED: i32 = 7;
+const ERROR_READING_META_DATA_FAILED: i32 = 1;
+const ERROR_READING_DIRECTORY_FAILED: i32 = 2;
+const ERROR_CREATING_REPOSITORY_FAILED: i32 = 3;
+const ERROR_REVISION_NOT_FOUND: i32 = 4;
+const ERROR_LOADING_REVISION_FAILED: i32 = 5;
+const ERROR_FILE_NOT_FOUND: i32 = 6;
+const ERROR_LOADING_FILE_FAILED: i32 = 7;
+const ERROR_SAVING_FILE_FAILED: i32 = 8;
+const ERROR_SERIALIZATION_FAILED: i32 = 9;
 
 fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(path) {
 	Ok(metadata) => metadata,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
     };
     let mut hex_string = String::new();
     if metadata.is_file() {
@@ -57,7 +59,7 @@ fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
 
 	let values = match fs::read(path) {
 	    Ok(values) => values,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED, "".to_string())),
 	};
 	println!("{} bytes read.", values.len());
 	let mut sha1 = Sha1::new();
@@ -73,7 +75,7 @@ fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
 	let path = format!(".zatsu/{}", hex_string);
 	match std::fs::write(path, values) {
 	    Ok(()) => (),
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
 	};
 
     } else {
@@ -95,13 +97,14 @@ fn process_commit() -> Result<(), ZatsuError> {
     
     let read_dir = match fs::read_dir(".") {
 	Ok(read_dir) => read_dir,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
     };
 
     let mut revision = Revision {
 	entries: Vec::new(),
     };
     for result in read_dir.into_iter() {
+	// TODO: Skip errors.
 	let entry = match result {
 	    Ok(entry) => entry,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
@@ -110,7 +113,7 @@ fn process_commit() -> Result<(), ZatsuError> {
 	println!("{}", path.display());
 	let hash = match process_file(&path) {
 	    Ok(hash) => hash,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(error) => return Err(error),
 	};
 	let entry = Entry{
 	    path: path.to_string_lossy().to_string(),
@@ -121,18 +124,18 @@ fn process_commit() -> Result<(), ZatsuError> {
 
     let serialized = match serde_json::to_string(&revision) {
 	Ok(serialized) => serialized,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SERIALIZATION_FAILED, "".to_string())),
     };
 
     println!("serialized: {}", serialized);
     let _ = match std::fs::write(format!(".zatsu/{}.json", revision_number), serialized) {
 	Ok(result) => result,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
     };
     repository.revisions.push(revision_number);
     match repository.save(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(_) => (),
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
     };
 
     Ok(())
@@ -152,7 +155,7 @@ fn process_log() -> Result<(), ZatsuError> {
 	let revision_number = repository.revisions[i];
 	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
 	    Ok(revision) => revision,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED, "".to_string())),
 	};
 	println!("Revision {}", revision_number);
 	for entry in revision.entries {
