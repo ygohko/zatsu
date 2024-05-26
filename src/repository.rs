@@ -22,11 +22,17 @@
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
 
 use crate::error::ZatsuError;
+
+#[allow(unused)]
+const ERROR_GENERAL: i32 = 0;
+const ERROR_LOADING_FAILED: i32 = 1;
+const ERROR_SAVING_FAILED: i32 = 2;
+const ERROR_DESERIALIZATION_FAILED: i32 = 3;
+const ERROR_SERIALIZATION_FAILED: i32 = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Repository {
@@ -34,15 +40,15 @@ pub struct Repository {
 }
 
 impl Repository {
-    pub fn save(&self, path: &PathBuf) -> Result<(), Box<dyn Error>> {
+    pub fn save(&self, path: &PathBuf) -> Result<(), ZatsuError> {
 	let serialized = match serde_json::to_string(self) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(Box::new(ZatsuError {})),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SERIALIZATION_FAILED, "".to_string())),
 	};
 	println!("serialized: {}", serialized);
 	let _ = match fs::write(path, serialized) {
 	    Ok(result) => result,
-	    Err(_) => return Err(Box::new(ZatsuError {})),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SAVING_FAILED, "".to_string())),
 	};
 
 	Ok(())
@@ -57,14 +63,14 @@ impl Repository {
 	return self.revisions[count - 1];
     }
 
-    pub fn load(path: &PathBuf) -> Result<Self, Box<dyn Error>> {
+    pub fn load(path: &PathBuf) -> Result<Self, ZatsuError> {
 	let serialized = match fs::read_to_string(path) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(Box::new(ZatsuError {})),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_LOADING_FAILED, "".to_string())),
 	};
 	let repository: Repository = match serde_json::from_str(&serialized) {
 	    Ok(repository) => repository,
-	    Err(_) => return  Err(Box::new(ZatsuError {})),
+	    Err(_) => return  Err(ZatsuError::new("Repository".to_string(), ERROR_DESERIALIZATION_FAILED, "".to_string())),
 	};
 
 	Ok(repository)
