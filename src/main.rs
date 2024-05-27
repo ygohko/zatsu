@@ -229,7 +229,7 @@ fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
 	    revisions: Vec::new(),
 	},
     };
-    let current_count: i32 = repository.revisions.len().try_into().unwrap();
+    let current_count = repository.revisions.len() as i32;
     let removed_count = current_count - revision_count;
     if removed_count <= 0 {
 	return Ok(());
