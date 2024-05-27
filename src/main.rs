@@ -242,24 +242,24 @@ fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
 }
 
 fn process_init() -> Result<(), ZatsuError> {
-    let read_dir = match fs::read_dir(".") {
-	Ok(read_dir) => read_dir,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
-    };
-    for result in read_dir.into_iter() {
-	if result.is_ok() {
-	    let entry = result.unwrap();
-	    let path = entry.path();
-	    // TODO: Improve existing checking.
-	    if path.ends_with(".zatsu") {
-		return Err(ZatsuError::new("main".to_string(), 123, "".to_string()));
-	    }
-	}
-    }
-
-    match fs::create_dir(".zatsu") {
+    match fs::create_dir_all(".zatsu") {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED, "".to_string())),
+    };
+    match fs::create_dir_all(".zatsu/revisions") {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED, "".to_string())),
+    };
+    match fs::create_dir_all(".zatsu/objects") {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED, "".to_string())),
+    };
+    let repository = Repository{
+	revisions: Vec::new(),
+    };
+    match repository.save(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
     };
 
     Ok(())
