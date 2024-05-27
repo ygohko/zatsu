@@ -298,9 +298,20 @@ fn main() -> Result<(), ZatsuError> {
     }
     if subcommand == "get" {
 	if count > 3 {
+	    // TODO: Do not panic is parse failed.
 	    let revision_number :i32 = arguments[2].parse().unwrap();
 	    let path = arguments[3].clone();
 	    match process_get(revision_number, &path) {
+		Ok(()) => (),
+		Err(error) => return Err(error),
+	    };
+	}
+    }
+    if subcommand == "forget" {
+	if count > 2 {
+	    // TODO: Do not panic is parse failed.
+	    let revision_count :i32 = arguments[2].parse().unwrap();
+	    match process_forget(revision_count) {
 		Ok(()) => (),
 		Err(error) => return Err(error),
 	    };
