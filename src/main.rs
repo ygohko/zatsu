@@ -49,6 +49,52 @@ const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_SERIALIZATION_FAILED: i32 = 10;
 
+struct FilePathProducer {
+    path: String,
+    file_paths: Vec<String>,
+    directory_paths: Vec<String>,
+}
+
+impl FilePathProducer {
+    fn new(path: String) -> FilePathProducer {
+	return FilePathProducer {
+	    path: path,
+	    file_paths: Vec::new(),
+	    directory_paths: Vec::new(),
+	};
+    }
+
+    fn next(&mut self) -> Result<String, ZatsuError> {
+	if self.file_paths.len() > 0 {
+	    let path = self.file_paths.pop().unwrap();
+
+	    return Ok(path);
+	}
+
+	if self.directory_paths.len() == 0 {
+	    return Err(ZatsuError::new("FilePathProducer".to_string(), 0, "".to_string()));
+	}
+	let directory_path = self.directory_paths.pop().unwrap();
+	let read_dir = match fs::read_dir(directory_path) {
+	    Ok(read_dir) => read_dir,
+	    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
+	};
+	for result in read_dir {
+	    if result.is_ok() {
+		let entry = result.unwrap();
+		self.file_paths.push(entry.path().to_string_lossy().to_string());
+	    }
+	}
+
+	if self.file_paths.len() == 0 {
+	    return Err(ZatsuError::new("FilePathProducer".to_string(), 0, "".to_string()));
+	}
+	let path = self.file_paths.pop().unwrap();
+
+	Ok(path)
+    }
+}
+
 fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(path) {
 	Ok(metadata) => metadata,
@@ -104,6 +150,7 @@ fn process_commit() -> Result<(), ZatsuError> {
     let mut revision = Revision {
 	entries: Vec::new(),
     };
+    // TODO: Use producer to iterate files.
     for result in read_dir.into_iter() {
 	// TODO: Skip errors.
 	let entry = match result {
