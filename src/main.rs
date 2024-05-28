@@ -305,7 +305,6 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 	}
     }
 
-    // TODO: Remove unneeded objects.
     let read_dir = match fs::read_dir(".zatsu/objects") {
 	Ok(read_dir) => read_dir,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
