@@ -40,6 +40,7 @@ impl Error for ZatsuError {
 }
 
 impl ZatsuError {
+    // TODO: Remove details argument.
     pub fn new(domain: String, code: i32, details: String) -> ZatsuError {
 	return ZatsuError {
 	    domain: domain,
@@ -47,4 +48,6 @@ impl ZatsuError {
 	    details: details,
 	};
     }
+
+    // TODO: Add new_with_details() function.
 }
