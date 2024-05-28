@@ -304,7 +304,42 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 	    }
 	}
     }
-    
+
+    // TODO: Remove unneeded objects.
+    let read_dir = match fs::read_dir(".zatsu/objects") {
+	Ok(read_dir) => read_dir,
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
+    };
+    for result in read_dir {
+	if result.is_ok() {
+	    let entry = result.unwrap();
+	    let path = entry.path();
+	    let option = path.file_name();
+	    if option.is_some() {
+		let hash = option.unwrap().to_string_lossy();
+		let mut found = false;
+		for revision_number in &repository.revisions {
+		    let result = Revision::load(&PathBuf::from(format!(".zatsu/revisions/{}.json", revision_number)));
+		    if result.is_ok() {
+			let revision = result.unwrap();
+			for entry in revision.entries {
+			    if entry.hash == hash {
+				found = true;
+			    }
+			}
+		    }
+		}
+
+		if !found {
+		    match fs::remove_file(path) {
+			Ok(()) => (),
+			Err(_) => (),
+		    };
+		}
+	    }
+	}
+    }
+
     Ok(())
 }
 
