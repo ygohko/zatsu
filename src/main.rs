@@ -72,7 +72,7 @@ fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
-	let path = format!(".zatsu/{}", hex_string);
+	let path = format!(".zatsu/objects/{}", hex_string);
 	match std::fs::write(path, values) {
 	    Ok(()) => (),
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
@@ -122,13 +122,14 @@ fn process_commit() -> Result<(), ZatsuError> {
 	revision.entries.push(entry);
     }
 
+    // TODO: Move to revision.rs.
     let serialized = match serde_json::to_string(&revision) {
 	Ok(serialized) => serialized,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SERIALIZATION_FAILED, "".to_string())),
     };
 
     println!("serialized: {}", serialized);
-    let _ = match std::fs::write(format!(".zatsu/{}.json", revision_number), serialized) {
+    let _ = match std::fs::write(format!(".zatsu/revisions/{}.json", revision_number), serialized) {
 	Ok(result) => result,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
     };
@@ -153,7 +154,7 @@ fn process_log() -> Result<(), ZatsuError> {
     for i in 0..count {
 	// TODO: Print revision information.
 	let revision_number = repository.revisions[i];
-	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/revisions/{}.json", revision_number))) {
 	    Ok(revision) => revision,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED, "".to_string())),
 	};
@@ -184,7 +185,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_REVISION_NOT_FOUND, "".to_string()));
     }
 
-    let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+    let revision = match Revision::load(&PathBuf::from(format!(".zatsu/revisions/{}.json", revision_number))) {
 	Ok(revision) => revision,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REVISION_FAILED, "".to_string())),
     };
@@ -200,7 +201,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND, "".to_string()));
     }
 
-    let values = match fs::read(&PathBuf::from(format!(".zatsu/{}", hash))) {
+    let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}", hash))) {
 	Ok(values) => values,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED, "".to_string())),
     };
