@@ -72,7 +72,7 @@ fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
-	let path = format!(".zatsu/{}", hex_string);
+	let path = format!(".zatsu/objects/{}", hex_string);
 	match std::fs::write(path, values) {
 	    Ok(()) => (),
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
@@ -122,13 +122,14 @@ fn process_commit() -> Result<(), ZatsuError> {
 	revision.entries.push(entry);
     }
 
+    // TODO: Move to revision.rs.
     let serialized = match serde_json::to_string(&revision) {
 	Ok(serialized) => serialized,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SERIALIZATION_FAILED, "".to_string())),
     };
 
     println!("serialized: {}", serialized);
-    let _ = match std::fs::write(format!(".zatsu/{}.json", revision_number), serialized) {
+    let _ = match std::fs::write(format!(".zatsu/revisions/{}.json", revision_number), serialized) {
 	Ok(result) => result,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
     };
@@ -153,7 +154,7 @@ fn process_log() -> Result<(), ZatsuError> {
     for i in 0..count {
 	// TODO: Print revision information.
 	let revision_number = repository.revisions[i];
-	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/revisions/{}.json", revision_number))) {
 	    Ok(revision) => revision,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED, "".to_string())),
 	};
@@ -184,7 +185,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_REVISION_NOT_FOUND, "".to_string()));
     }
 
-    let revision = match Revision::load(&PathBuf::from(format!(".zatsu/{}.json", revision_number))) {
+    let revision = match Revision::load(&PathBuf::from(format!(".zatsu/revisions/{}.json", revision_number))) {
 	Ok(revision) => revision,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REVISION_FAILED, "".to_string())),
     };
@@ -200,7 +201,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND, "".to_string()));
     }
 
-    let values = match fs::read(&PathBuf::from(format!(".zatsu/{}", hash))) {
+    let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}", hash))) {
 	Ok(values) => values,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED, "".to_string())),
     };
@@ -242,24 +243,24 @@ fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
 }
 
 fn process_init() -> Result<(), ZatsuError> {
-    let read_dir = match fs::read_dir(".") {
-	Ok(read_dir) => read_dir,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
-    };
-    for result in read_dir.into_iter() {
-	if result.is_ok() {
-	    let entry = result.unwrap();
-	    let path = entry.path();
-	    // TODO: Improve existing checking.
-	    if path.ends_with(".zatsu") {
-		return Err(ZatsuError::new("main".to_string(), 123, "".to_string()));
-	    }
-	}
-    }
-
-    match fs::create_dir(".zatsu") {
+    match fs::create_dir_all(".zatsu") {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED, "".to_string())),
+    };
+    match fs::create_dir_all(".zatsu/revisions") {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED, "".to_string())),
+    };
+    match fs::create_dir_all(".zatsu/objects") {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED, "".to_string())),
+    };
+    let repository = Repository{
+	revisions: Vec::new(),
+    };
+    match repository.save(&PathBuf::from(".zatsu/repository.json")) {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED, "".to_string())),
     };
 
     Ok(())
