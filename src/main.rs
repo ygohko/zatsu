@@ -65,10 +65,6 @@ impl FilePathProducer {
     }
 
     fn next(&mut self) -> Result<String, ZatsuError> {
-
-	
-
-
 	let mut done = false;
 	while !done {
 	    if self.file_paths.len() > 0 {
@@ -76,7 +72,6 @@ impl FilePathProducer {
 
 		return Ok(path);
 	    }
-
 	    
 	    if self.directory_paths.len() == 0 {
 		return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()));
@@ -85,7 +80,6 @@ impl FilePathProducer {
 
 	    println!("Reading directory: {}", directory_path);
 	    
-	    // TODO: Ignore VCS repositories.
 	    let mut scan = true;
 	    let option = Path::new(&directory_path).file_name();
 	    if option.is_some() {
@@ -126,18 +120,6 @@ impl FilePathProducer {
 	    }
 	}
 
-	/*
-	if self.file_paths.len() == 0 {
-	    // TODO: Do not return error. Process next directory.
-
-	    println!("file_paths.len(): {}, directory_paths.len(): {}", self.file_paths.len(), self.directory_paths.len());
-	    
-	    return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()));
-	}
-	let path = self.file_paths.pop().unwrap();
-
-	Ok(path)
-	*/
 	Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()))
     }
 }
