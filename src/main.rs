@@ -64,47 +64,56 @@ impl FilePathProducer {
     }
 
     fn next(&mut self) -> Result<String, ZatsuError> {
-	if self.file_paths.len() > 0 {
-	    let path = self.file_paths.pop().unwrap();
 
-	    return Ok(path);
-	}
+	
 
-	if self.directory_paths.len() == 0 {
-	    return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()));
-	}
-	let directory_path = self.directory_paths.pop().unwrap();
 
-	println!("Reading directory: {}", directory_path);
+	let mut done = false;
+	while !done {
+	    if self.file_paths.len() > 0 {
+		let path = self.file_paths.pop().unwrap();
 
-	let read_dir = match fs::read_dir(directory_path) {
-	    Ok(read_dir) => read_dir,
-	    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
-	};
-	for result in read_dir {
-	    if result.is_ok() {
-		let entry = result.unwrap();
+		return Ok(path);
+	    }
 
-		let metadata = match fs::metadata(entry.path()) {
-		    Ok(metadata) => metadata,
-		    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
-		};
-		let path = entry.path().to_string_lossy().to_string();
-		if metadata.is_file() {
+	    
+	    if self.directory_paths.len() == 0 {
+		return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()));
+	    }
+	    let directory_path = self.directory_paths.pop().unwrap();
 
-		    println!("Adding to file_paths: {}", path);
+	    println!("Reading directory: {}", directory_path);
 
-		    self.file_paths.push(path);
-		}
-		else {
+	    let read_dir = match fs::read_dir(directory_path) {
+		Ok(read_dir) => read_dir,
+		Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
+	    };
+	    for result in read_dir {
+		if result.is_ok() {
+		    let entry = result.unwrap();
 
-		    println!("Adding to directory_paths: {}", path);
+		    let metadata = match fs::metadata(entry.path()) {
+			Ok(metadata) => metadata,
+			Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
+		    };
+		    let path = entry.path().to_string_lossy().to_string();
+		    if metadata.is_file() {
 
-		    self.directory_paths.push(path);
+			println!("Adding to file_paths: {}", path);
+
+			self.file_paths.push(path);
+		    }
+		    else {
+
+			println!("Adding to directory_paths: {}", path);
+
+			self.directory_paths.push(path);
+		    }
 		}
 	    }
 	}
 
+	/*
 	if self.file_paths.len() == 0 {
 	    // TODO: Do not return error. Process next directory.
 
@@ -115,6 +124,8 @@ impl FilePathProducer {
 	let path = self.file_paths.pop().unwrap();
 
 	Ok(path)
+	*/
+	Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()))
     }
 }
 
