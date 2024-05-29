@@ -30,6 +30,7 @@ use sha1::Digest;
 use sha1::Sha1;
 use std::env;
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::entry::Entry;
@@ -48,6 +49,80 @@ const ERROR_FILE_NOT_FOUND: i32 = 7;
 const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_SERIALIZATION_FAILED: i32 = 10;
+const ERROR_PRODUCING_FINISHED: i32 = 11;
+
+struct FilePathProducer {
+    file_paths: Vec<String>,
+    directory_paths: Vec<String>,
+}
+
+impl FilePathProducer {
+    fn new(path: String) -> FilePathProducer {
+	return FilePathProducer {
+	    file_paths: Vec::new(),
+	    directory_paths: vec![path],
+	};
+    }
+
+    fn next(&mut self) -> Result<String, ZatsuError> {
+	let mut done = false;
+	while !done {
+	    if self.file_paths.len() > 0 {
+		let path = self.file_paths.pop().unwrap();
+
+		return Ok(path);
+	    }
+	    
+	    if self.directory_paths.len() == 0 {
+		return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()));
+	    }
+	    let directory_path = self.directory_paths.pop().unwrap();
+
+	    println!("Reading directory: {}", directory_path);
+	    
+	    let mut scan = true;
+	    let option = Path::new(&directory_path).file_name();
+	    if option.is_some() {
+		let file_name = option.unwrap().to_string_lossy().to_string();
+		if file_name == ".zatsu".to_string() || file_name == ".jj".to_string() || file_name == ".git".to_string() {
+		    scan = false;
+		}
+	    }
+
+	    if scan {
+		let read_dir = match fs::read_dir(directory_path) {
+		    Ok(read_dir) => read_dir,
+		    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
+		};
+		for result in read_dir {
+		    if result.is_ok() {
+			let entry = result.unwrap();
+
+			let metadata = match fs::metadata(entry.path()) {
+			    Ok(metadata) => metadata,
+			    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
+			};
+			let path = entry.path().to_string_lossy().to_string();
+			if metadata.is_file() {
+
+			    println!("Adding to file_paths: {}", path);
+
+			    self.file_paths.push(path);
+			}
+			else {
+
+			    println!("Adding to directory_paths: {}", path);
+
+			    self.directory_paths.push(path);
+			}
+		    }
+		}
+	    }
+	}
+
+	Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()))
+    }
+}
 
 fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(path) {
@@ -95,32 +170,36 @@ fn process_commit() -> Result<(), ZatsuError> {
     };
     let latest_revision = repository.latest_revision();
     let revision_number = latest_revision + 1;
-    
-    let read_dir = match fs::read_dir(".") {
-	Ok(read_dir) => read_dir,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
-    };
 
+    let mut producer = FilePathProducer::new(".".to_string());
     let mut revision = Revision {
 	entries: Vec::new(),
     };
-    for result in read_dir.into_iter() {
-	// TODO: Skip errors.
-	let entry = match result {
-	    Ok(entry) => entry,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
-	};
-	let path = entry.path();
-	println!("{}", path.display());
-	let hash = match process_file(&path) {
-	    Ok(hash) => hash,
-	    Err(error) => return Err(error),
-	};
-	let entry = Entry{
-	    path: path.to_string_lossy().to_string(),
-	    hash: hash,
-	};
-	revision.entries.push(entry);
+    let mut done = false;
+    while !done {
+	let result = producer.next();
+	if result.is_ok() {
+	    let path = result.unwrap();
+	    println!("{}", path);
+	    let hash = match process_file(&PathBuf::from(path.clone())) {
+		Ok(hash) => hash,
+		Err(error) => return Err(error),
+	    };
+	    let entry = Entry{
+		path: path,
+		hash: hash,
+	    };
+	    revision.entries.push(entry);
+	}
+	else {
+	    let error = result.unwrap_err();
+
+	    println!("error.code: {}", error.code);
+
+	    if error.code == ERROR_PRODUCING_FINISHED {
+		done = true;
+	    }
+	}
     }
 
     // TODO: Move to revision.rs.
