@@ -48,6 +48,7 @@ const ERROR_FILE_NOT_FOUND: i32 = 7;
 const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_SERIALIZATION_FAILED: i32 = 10;
+const ERROR_PRODUCING_FINISHED: i32 = 11;
 
 struct FilePathProducer {
     file_paths: Vec<String>,
@@ -70,9 +71,12 @@ impl FilePathProducer {
 	}
 
 	if self.directory_paths.len() == 0 {
-	    return Err(ZatsuError::new("FilePathProducer".to_string(), 0, "".to_string()));
+	    return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()));
 	}
 	let directory_path = self.directory_paths.pop().unwrap();
+
+	println!("Reading directory: {}", directory_path);
+
 	let read_dir = match fs::read_dir(directory_path) {
 	    Ok(read_dir) => read_dir,
 	    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
@@ -85,17 +89,28 @@ impl FilePathProducer {
 		    Ok(metadata) => metadata,
 		    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
 		};
+		let path = entry.path().to_string_lossy().to_string();
 		if metadata.is_file() {
-		    self.file_paths.push(entry.path().to_string_lossy().to_string());
+
+		    println!("Adding to file_paths: {}", path);
+
+		    self.file_paths.push(path);
 		}
 		else {
-		    self.directory_paths.push(entry.path().to_string_lossy().to_string());
+
+		    println!("Adding to directory_paths: {}", path);
+
+		    self.directory_paths.push(path);
 		}
 	    }
 	}
 
 	if self.file_paths.len() == 0 {
-	    return Err(ZatsuError::new("FilePathProducer".to_string(), 0, "".to_string()));
+	    // TODO: Do not return error. Process next directory.
+
+	    println!("file_paths.len(): {}, directory_paths.len(): {}", self.file_paths.len(), self.directory_paths.len());
+	    
+	    return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED, "".to_string()));
 	}
 	let path = self.file_paths.pop().unwrap();
 
@@ -171,7 +186,13 @@ fn process_commit() -> Result<(), ZatsuError> {
 	    revision.entries.push(entry);
 	}
 	else {
-	    done = true;
+	    let error = result.unwrap_err();
+
+	    println!("error.code: {}", error.code);
+
+	    if error.code == ERROR_PRODUCING_FINISHED {
+		done = true;
+	    }
 	}
     }
 
