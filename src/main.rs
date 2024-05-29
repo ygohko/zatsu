@@ -50,7 +50,6 @@ const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_SERIALIZATION_FAILED: i32 = 10;
 
 struct FilePathProducer {
-    path: String,
     file_paths: Vec<String>,
     directory_paths: Vec<String>,
 }
@@ -58,9 +57,8 @@ struct FilePathProducer {
 impl FilePathProducer {
     fn new(path: String) -> FilePathProducer {
 	return FilePathProducer {
-	    path: path,
 	    file_paths: Vec::new(),
-	    directory_paths: Vec::new(),
+	    directory_paths: vec![path],
 	};
     }
 
@@ -82,7 +80,17 @@ impl FilePathProducer {
 	for result in read_dir {
 	    if result.is_ok() {
 		let entry = result.unwrap();
-		self.file_paths.push(entry.path().to_string_lossy().to_string());
+
+		let metadata = match fs::metadata(entry.path()) {
+		    Ok(metadata) => metadata,
+		    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
+		};
+		if metadata.is_file() {
+		    self.file_paths.push(entry.path().to_string_lossy().to_string());
+		}
+		else {
+		    self.directory_paths.push(entry.path().to_string_lossy().to_string());
+		}
 	    }
 	}
 
@@ -141,33 +149,30 @@ fn process_commit() -> Result<(), ZatsuError> {
     };
     let latest_revision = repository.latest_revision();
     let revision_number = latest_revision + 1;
-    
-    let read_dir = match fs::read_dir(".") {
-	Ok(read_dir) => read_dir,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
-    };
 
+    let mut producer = FilePathProducer::new(".".to_string());
     let mut revision = Revision {
 	entries: Vec::new(),
     };
-    // TODO: Use producer to iterate files.
-    for result in read_dir.into_iter() {
-	// TODO: Skip errors.
-	let entry = match result {
-	    Ok(entry) => entry,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_GENERAL, "".to_string())),
-	};
-	let path = entry.path();
-	println!("{}", path.display());
-	let hash = match process_file(&path) {
-	    Ok(hash) => hash,
-	    Err(error) => return Err(error),
-	};
-	let entry = Entry{
-	    path: path.to_string_lossy().to_string(),
-	    hash: hash,
-	};
-	revision.entries.push(entry);
+    let mut done = false;
+    while !done {
+	let result = producer.next();
+	if result.is_ok() {
+	    let path = result.unwrap();
+	    println!("{}", path);
+	    let hash = match process_file(&PathBuf::from(path.clone())) {
+		Ok(hash) => hash,
+		Err(error) => return Err(error),
+	    };
+	    let entry = Entry{
+		path: path,
+		hash: hash,
+	    };
+	    revision.entries.push(entry);
+	}
+	else {
+	    done = true;
+	}
     }
 
     // TODO: Move to revision.rs.
