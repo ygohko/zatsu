@@ -30,6 +30,7 @@ use sha1::Digest;
 use sha1::Sha1;
 use std::env;
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::entry::Entry;
@@ -82,34 +83,44 @@ impl FilePathProducer {
 	    }
 	    let directory_path = self.directory_paths.pop().unwrap();
 
-	    // TODO: Ignore VCS repositories.
-	    
 	    println!("Reading directory: {}", directory_path);
+	    
+	    // TODO: Ignore VCS repositories.
+	    let mut scan = true;
+	    let option = Path::new(&directory_path).file_name();
+	    if option.is_some() {
+		let file_name = option.unwrap().to_string_lossy().to_string();
+		if file_name == ".zatsu".to_string() || file_name == ".jj".to_string() || file_name == ".git".to_string() {
+		    scan = false;
+		}
+	    }
 
-	    let read_dir = match fs::read_dir(directory_path) {
-		Ok(read_dir) => read_dir,
-		Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
-	    };
-	    for result in read_dir {
-		if result.is_ok() {
-		    let entry = result.unwrap();
+	    if scan {
+		let read_dir = match fs::read_dir(directory_path) {
+		    Ok(read_dir) => read_dir,
+		    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_DIRECTORY_FAILED, "".to_string())),
+		};
+		for result in read_dir {
+		    if result.is_ok() {
+			let entry = result.unwrap();
 
-		    let metadata = match fs::metadata(entry.path()) {
-			Ok(metadata) => metadata,
-			Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
-		    };
-		    let path = entry.path().to_string_lossy().to_string();
-		    if metadata.is_file() {
+			let metadata = match fs::metadata(entry.path()) {
+			    Ok(metadata) => metadata,
+			    Err(_) => return Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_READING_META_DATA_FAILED, "".to_string())),
+			};
+			let path = entry.path().to_string_lossy().to_string();
+			if metadata.is_file() {
 
-			println!("Adding to file_paths: {}", path);
+			    println!("Adding to file_paths: {}", path);
 
-			self.file_paths.push(path);
-		    }
-		    else {
+			    self.file_paths.push(path);
+			}
+			else {
 
-			println!("Adding to directory_paths: {}", path);
+			    println!("Adding to directory_paths: {}", path);
 
-			self.directory_paths.push(path);
+			    self.directory_paths.push(path);
+			}
 		    }
 		}
 	    }
