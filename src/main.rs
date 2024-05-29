@@ -82,6 +82,8 @@ impl FilePathProducer {
 	    }
 	    let directory_path = self.directory_paths.pop().unwrap();
 
+	    // TODO: Ignore VCS repositories.
+	    
 	    println!("Reading directory: {}", directory_path);
 
 	    let read_dir = match fs::read_dir(directory_path) {
