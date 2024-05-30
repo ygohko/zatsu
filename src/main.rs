@@ -232,7 +232,6 @@ fn process_log() -> Result<(), ZatsuError> {
 
     let count = repository.revisions.len();
     for i in (0..count).rev() {
-	// TODO: Print revision information.
 	let revision_number = repository.revisions[i];
 	let revision = match Revision::load(&PathBuf::from(format!(".zatsu/revisions/{}.json", revision_number))) {
 	    Ok(revision) => revision,
