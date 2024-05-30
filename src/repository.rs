@@ -43,12 +43,12 @@ impl Repository {
     pub fn save(&self, path: &PathBuf) -> Result<(), ZatsuError> {
 	let serialized = match serde_json::to_string(self) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SERIALIZATION_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SERIALIZATION_FAILED)),
 	};
 	println!("serialized: {}", serialized);
 	let _ = match fs::write(path, serialized) {
 	    Ok(result) => result,
-	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SAVING_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SAVING_FAILED)),
 	};
 
 	Ok(())
@@ -66,11 +66,11 @@ impl Repository {
     pub fn load(path: &PathBuf) -> Result<Self, ZatsuError> {
 	let serialized = match fs::read_to_string(path) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_LOADING_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_LOADING_FAILED)),
 	};
 	let repository: Repository = match serde_json::from_str(&serialized) {
 	    Ok(repository) => repository,
-	    Err(_) => return  Err(ZatsuError::new("Repository".to_string(), ERROR_DESERIALIZATION_FAILED, "".to_string())),
+	    Err(_) => return  Err(ZatsuError::new("Repository".to_string(), ERROR_DESERIALIZATION_FAILED)),
 	};
 
 	Ok(repository)

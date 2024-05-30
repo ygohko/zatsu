@@ -40,14 +40,19 @@ impl Error for ZatsuError {
 }
 
 impl ZatsuError {
-    // TODO: Remove details argument.
-    pub fn new(domain: String, code: i32, details: String) -> ZatsuError {
+    pub fn new(domain: String, code: i32) -> ZatsuError {
+	return ZatsuError {
+	    domain: domain,
+	    code: code,
+	    details: "".to_string(),
+	};
+    }
+
+    pub fn new_with_details(domain: String, code: i32, details: String) -> ZatsuError {
 	return ZatsuError {
 	    domain: domain,
 	    code: code,
 	    details: details,
 	};
     }
-
-    // TODO: Add new_with_details() function.
 }
