@@ -22,6 +22,7 @@
 
 mod entry;
 mod error;
+mod file_path_producer;
 mod revision;
 mod repository;
 
