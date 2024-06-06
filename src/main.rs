@@ -94,7 +94,7 @@ fn process_commit() -> Result<(), ZatsuError> {
     let mut repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	Err(_) => Repository {
-	    revisions: Vec::new(),
+	    revision_numbers: Vec::new(),
 	},
     };
     let latest_revision = repository.latest_revision();
@@ -142,7 +142,7 @@ fn process_commit() -> Result<(), ZatsuError> {
 	Ok(result) => result,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
     };
-    repository.revisions.push(revision_number);
+    repository.revision_numbers.push(revision_number);
     match repository.save(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(_) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
@@ -155,13 +155,13 @@ fn process_log() -> Result<(), ZatsuError> {
     let repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	Err(_) => Repository {
-	    revisions: Vec::new(),
+	    revision_numbers: Vec::new(),
 	},
     };
 
-    let count = repository.revisions.len();
+    let count = repository.revision_numbers.len();
     for i in (0..count).rev() {
-	let revision_number = repository.revisions[i];
+	let revision_number = repository.revision_numbers[i];
 	let revision = match Revision::load(format!(".zatsu/revisions/{}.json", revision_number)) {
 	    Ok(revision) => revision,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
@@ -180,11 +180,11 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
     let repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	Err(_) => Repository {
-	    revisions: Vec::new(),
+	    revision_numbers: Vec::new(),
 	},
     };
     let mut found = false;
-    for a_revision_number in repository.revisions {
+    for a_revision_number in repository.revision_numbers {
 	if a_revision_number == revision_number {
 	    found = true;
 	} 
@@ -235,16 +235,16 @@ fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
 	Ok(repository) => repository,
 	// TODO: Ensure repository is created when zatsu init.
 	Err(_) => Repository {
-	    revisions: Vec::new(),
+	    revision_numbers: Vec::new(),
 	},
     };
-    let current_count = repository.revisions.len() as i32;
+    let current_count = repository.revision_numbers.len() as i32;
     let removed_count = current_count - revision_count;
     if removed_count <= 0 {
 	return Ok(());
     }
     let index: usize = removed_count as usize;
-    repository.revisions = repository.revisions.drain(index..).collect();
+    repository.revision_numbers = repository.revision_numbers.drain(index..).collect();
     repository.save(".zatsu/repository.json")?;
     process_garbage_collection()?;
     
@@ -265,7 +265,7 @@ fn process_init() -> Result<(), ZatsuError> {
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
     };
     let repository = Repository{
-	revisions: Vec::new(),
+	revision_numbers: Vec::new(),
     };
     match repository.save(&PathBuf::from(".zatsu/repository.json")) {
 	Ok(()) => (),
@@ -296,7 +296,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 		let result = file_stem.parse();
 		if result.is_ok() {
 		    let revision_number: i32 = result.unwrap();
-		    let option = repository.revisions.iter().find(|&value| *value == revision_number);
+		    let option = repository.revision_numbers.iter().find(|&value| *value == revision_number);
 		    if option.is_some() {
 			found = true;
 		    }
@@ -324,7 +324,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 	    if option.is_some() {
 		let hash = option.unwrap().to_string_lossy();
 		let mut found = false;
-		for revision_number in &repository.revisions {
+		for revision_number in &repository.revision_numbers {
 		    let result = Revision::load(format!(".zatsu/revisions/{}.json", revision_number));
 		    if result.is_ok() {
 			let revision = result.unwrap();

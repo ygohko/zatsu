@@ -37,7 +37,7 @@ const ERROR_SERIALIZATION_FAILED: i32 = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Repository {
-    pub revisions: Vec<i32>,
+    pub revision_numbers: Vec<i32>,
 }
 
 impl Repository {
@@ -56,12 +56,12 @@ impl Repository {
     }
 
     pub fn latest_revision(&self) -> i32 {
-	let count = self.revisions.len();
+	let count = self.revision_numbers.len();
 	if count == 0 {
 	    return 0;
 	}
 
-	return self.revisions[count - 1];
+	return self.revision_numbers[count - 1];
     }
 
     pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
