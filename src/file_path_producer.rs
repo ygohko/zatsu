@@ -38,20 +38,20 @@ const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_SERIALIZATION_FAILED: i32 = 10;
 const ERROR_PRODUCING_FINISHED: i32 = 11;
 
-struct FilePathProducer {
+pub struct FilePathProducer {
     file_paths: Vec<String>,
     directory_paths: Vec<String>,
 }
 
 impl FilePathProducer {
-    fn new(path: String) -> FilePathProducer {
+    pub fn new(path: String) -> FilePathProducer {
 	return FilePathProducer {
 	    file_paths: Vec::new(),
 	    directory_paths: vec![path],
 	};
     }
 
-    fn next(&mut self) -> Result<String, ZatsuError> {
+    pub fn next(&mut self) -> Result<String, ZatsuError> {
 	let mut done = false;
 	while !done {
 	    if self.file_paths.len() > 0 {

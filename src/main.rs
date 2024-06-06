@@ -36,6 +36,7 @@ use std::path::PathBuf;
 
 use crate::entry::Entry;
 use crate::error::ZatsuError;
+use crate::file_path_producer::FilePathProducer;
 use crate::revision::Revision;
 use crate::repository::Repository;
 
@@ -52,6 +53,7 @@ const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_SERIALIZATION_FAILED: i32 = 10;
 const ERROR_PRODUCING_FINISHED: i32 = 11;
 
+/*
 struct FilePathProducer {
     file_paths: Vec<String>,
     directory_paths: Vec<String>,
@@ -124,6 +126,7 @@ impl FilePathProducer {
 	Err(ZatsuError::new("FilePathProducer".to_string(), ERROR_PRODUCING_FINISHED))
     }
 }
+*/
 
 fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(path) {
