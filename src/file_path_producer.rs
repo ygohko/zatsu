@@ -25,18 +25,11 @@ use std::path::Path;
 
 use crate::error::ZatsuError;
 
+#[allow(dead_code)]
 const ERROR_GENERAL: i32 = 0;
 const ERROR_READING_META_DATA_FAILED: i32 = 1;
 const ERROR_READING_DIRECTORY_FAILED: i32 = 2;
-const ERROR_CREATING_REPOSITORY_FAILED: i32 = 3;
-const ERROR_LOADING_REPOSITORY_FAILED: i32 = 4;
-const ERROR_REVISION_NOT_FOUND: i32 = 5;
-const ERROR_LOADING_REVISION_FAILED: i32 = 6;
-const ERROR_FILE_NOT_FOUND: i32 = 7;
-const ERROR_LOADING_FILE_FAILED: i32 = 8;
-const ERROR_SAVING_FILE_FAILED: i32 = 9;
-const ERROR_SERIALIZATION_FAILED: i32 = 10;
-const ERROR_PRODUCING_FINISHED: i32 = 11;
+const ERROR_PRODUCING_FINISHED: i32 = 3;
 
 pub struct FilePathProducer {
     file_paths: Vec<String>,
@@ -52,7 +45,7 @@ impl FilePathProducer {
     }
 
     pub fn next(&mut self) -> Result<String, ZatsuError> {
-	let mut done = false;
+	let done = false;
 	while !done {
 	    if self.file_paths.len() > 0 {
 		let path = self.file_paths.pop().unwrap();

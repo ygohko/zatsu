@@ -48,6 +48,7 @@ impl ZatsuError {
 	};
     }
 
+    #[allow(dead_code)]
     pub fn new_with_details(domain: String, code: i32, details: String) -> ZatsuError {
 	return ZatsuError {
 	    domain: domain,

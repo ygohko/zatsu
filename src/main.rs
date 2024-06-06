@@ -31,7 +31,6 @@ use sha1::Digest;
 use sha1::Sha1;
 use std::env;
 use std::fs;
-use std::path::Path;
 use std::path::PathBuf;
 
 use crate::entry::Entry;
@@ -40,6 +39,7 @@ use crate::file_path_producer::FilePathProducer;
 use crate::revision::Revision;
 use crate::repository::Repository;
 
+#[allow(dead_code)]
 const ERROR_GENERAL: i32 = 0;
 const ERROR_READING_META_DATA_FAILED: i32 = 1;
 const ERROR_READING_DIRECTORY_FAILED: i32 = 2;
