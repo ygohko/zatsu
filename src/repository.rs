@@ -23,6 +23,7 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error::ZatsuError;
@@ -40,7 +41,7 @@ pub struct Repository {
 }
 
 impl Repository {
-    pub fn save(&self, path: &PathBuf) -> Result<(), ZatsuError> {
+    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
 	let serialized = match serde_json::to_string(self) {
 	    Ok(serialized) => serialized,
 	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SERIALIZATION_FAILED)),
@@ -63,7 +64,7 @@ impl Repository {
 	return self.revisions[count - 1];
     }
 
-    pub fn load(path: &PathBuf) -> Result<Self, ZatsuError> {
+    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
 	let serialized = match fs::read_to_string(path) {
 	    Ok(serialized) => serialized,
 	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_LOADING_FAILED)),

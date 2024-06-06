@@ -91,7 +91,7 @@ fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
 }
 
 fn process_commit() -> Result<(), ZatsuError> {
-    let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+    let mut repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	Err(_) => Repository {
 	    revisions: Vec::new(),
@@ -152,7 +152,7 @@ fn process_commit() -> Result<(), ZatsuError> {
 }
 
 fn process_log() -> Result<(), ZatsuError> {
-    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+    let repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	Err(_) => Repository {
 	    revisions: Vec::new(),
@@ -177,7 +177,7 @@ fn process_log() -> Result<(), ZatsuError> {
 }
 
 fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
-    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+    let repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	Err(_) => Repository {
 	    revisions: Vec::new(),
@@ -231,7 +231,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 }
 
 fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
-    let mut repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+    let mut repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	// TODO: Ensure repository is created when zatsu init.
 	Err(_) => Repository {
@@ -245,7 +245,7 @@ fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
     }
     let index: usize = removed_count as usize;
     repository.revisions = repository.revisions.drain(index..).collect();
-    repository.save(&PathBuf::from(".zatsu/repository.json"))?;
+    repository.save(".zatsu/repository.json")?;
     process_garbage_collection()?;
     
     Ok(())
@@ -276,7 +276,7 @@ fn process_init() -> Result<(), ZatsuError> {
 }
 
 fn process_garbage_collection() -> Result<(), ZatsuError> {
-    let repository = match Repository::load(&PathBuf::from(".zatsu/repository.json")) {
+    let repository = match Repository::load(".zatsu/repository.json") {
 	Ok(repository) => repository,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REPOSITORY_FAILED)),
     };
