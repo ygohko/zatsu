@@ -139,6 +139,7 @@ fn process_commit() -> Result<(), ZatsuError> {
 		Ok(hash) => hash,
 		Err(error) => return Err(error),
 	    };
+	    // TODO: Remove leading path separators.
 	    let entry = Entry{
 		path: path,
 		hash: hash,
@@ -227,6 +228,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND));
     }
 
+    // TODO: Read objects from subdirectories.
     let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}", hash))) {
 	Ok(values) => values,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
@@ -390,7 +392,23 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
-	let path = format!(".zatsu/objects/{}", hex_string);
+	// TODO: Write objects into subdirectries.
+	let directory_name = String::from(hex_string[0..2]);
+	let path = format!(".zatsu/objects/{}", directory_name);
+	let a_path = Path::new(path);
+	let exists = match a_path.try_exists() {
+	    Ok(exists) => exists,
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	};
+	if !exists {
+	    match fs::create_dir(path) {
+		Ok(()) => (),
+		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	    };
+	}
+	
+	let path = format!("{}/{}", path, hex_string);
+	// TODO: Remove std.
 	match std::fs::write(path, values) {
 	    Ok(()) => (),
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
