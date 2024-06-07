@@ -23,7 +23,7 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::error::ZatsuError;
 
@@ -36,41 +36,41 @@ const ERROR_SERIALIZATION_FAILED: i32 = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Repository {
-    pub revisions: Vec<i32>,
+    pub revision_numbers: Vec<i32>,
 }
 
 impl Repository {
-    pub fn save(&self, path: &PathBuf) -> Result<(), ZatsuError> {
+    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
 	let serialized = match serde_json::to_string(self) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SERIALIZATION_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SERIALIZATION_FAILED)),
 	};
 	println!("serialized: {}", serialized);
 	let _ = match fs::write(path, serialized) {
 	    Ok(result) => result,
-	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SAVING_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_SAVING_FAILED)),
 	};
 
 	Ok(())
     }
 
     pub fn latest_revision(&self) -> i32 {
-	let count = self.revisions.len();
+	let count = self.revision_numbers.len();
 	if count == 0 {
 	    return 0;
 	}
 
-	return self.revisions[count - 1];
+	return self.revision_numbers[count - 1];
     }
 
-    pub fn load(path: &PathBuf) -> Result<Self, ZatsuError> {
+    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
 	let serialized = match fs::read_to_string(path) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_LOADING_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Repository".to_string(), ERROR_LOADING_FAILED)),
 	};
 	let repository: Repository = match serde_json::from_str(&serialized) {
 	    Ok(repository) => repository,
-	    Err(_) => return  Err(ZatsuError::new("Repository".to_string(), ERROR_DESERIALIZATION_FAILED, "".to_string())),
+	    Err(_) => return  Err(ZatsuError::new("Repository".to_string(), ERROR_DESERIALIZATION_FAILED)),
 	};
 
 	Ok(repository)

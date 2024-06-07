@@ -23,7 +23,7 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::entry::Entry;
 use crate::error::ZatsuError;
@@ -39,14 +39,14 @@ pub struct Revision {
 }
 
 impl Revision {
-    pub fn load(path :&PathBuf) -> Result<Revision, ZatsuError> {
+    pub fn load(path: impl AsRef<Path>) -> Result<Revision, ZatsuError> {
 	let serialized = match fs::read_to_string(path) {
 	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_LOADING_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_LOADING_FAILED)),
 	};
 	let revision = match serde_json::from_str(&serialized) {
 	    Ok(revision) => revision,
-	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_DESERIALIZATION_FAILED, "".to_string())),
+	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_DESERIALIZATION_FAILED)),
 	};
 	
 	Ok(revision)
