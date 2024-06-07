@@ -50,8 +50,7 @@ const ERROR_LOADING_REVISION_FAILED: i32 = 6;
 const ERROR_FILE_NOT_FOUND: i32 = 7;
 const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
-const ERROR_SERIALIZATION_FAILED: i32 = 10;
-const ERROR_PRODUCING_FINISHED: i32 = 11;
+const ERROR_PRODUCING_FINISHED: i32 = 10;
 
 fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(path) {
@@ -131,15 +130,8 @@ fn process_commit() -> Result<(), ZatsuError> {
 	}
     }
 
-    // TODO: Move to revision.rs.
-    let serialized = match serde_json::to_string(&revision) {
-	Ok(serialized) => serialized,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SERIALIZATION_FAILED)),
-    };
-
-    println!("serialized: {}", serialized);
-    let _ = match std::fs::write(format!(".zatsu/revisions/{}.json", revision_number), serialized) {
-	Ok(result) => result,
+    match revision.save(format!(".zatsu/revisions/{}.json", revision_number)) {
+	Ok(_) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
     };
     repository.revision_numbers.push(revision_number);
