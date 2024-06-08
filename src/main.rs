@@ -392,22 +392,21 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
-	// TODO: Write objects into subdirectries.
-	let directory_name = String::from(hex_string[0..2]);
-	let path = format!(".zatsu/objects/{}", directory_name);
-	let a_path = Path::new(path);
+	let directory_name = hex_string[0..2].to_string();
+	let path = format!(".zatsu/objects/{}", directory_name).to_string();
+	let a_path = Path::new(&path);
 	let exists = match a_path.try_exists() {
 	    Ok(exists) => exists,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	};
 	if !exists {
-	    match fs::create_dir(path) {
+	    match fs::create_dir(&path) {
 		Ok(()) => (),
 		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	    };
 	}
 	
-	let path = format!("{}/{}", path, hex_string);
+	let path = format!("{}/{}", &path, hex_string);
 	// TODO: Remove std.
 	match std::fs::write(path, values) {
 	    Ok(()) => (),
