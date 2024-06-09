@@ -31,6 +31,7 @@ use sha1::Digest;
 use sha1::Sha1;
 use std::env;
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::entry::Entry;
@@ -50,44 +51,68 @@ const ERROR_LOADING_REVISION_FAILED: i32 = 6;
 const ERROR_FILE_NOT_FOUND: i32 = 7;
 const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
-const ERROR_SERIALIZATION_FAILED: i32 = 10;
-const ERROR_PRODUCING_FINISHED: i32 = 11;
+const ERROR_PRODUCING_FINISHED: i32 = 10;
 
-fn process_file(path: &PathBuf) -> Result<String, ZatsuError> {
-    let metadata = match fs::metadata(path) {
-	Ok(metadata) => metadata,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_META_DATA_FAILED)),
-    };
-    let mut hex_string = String::new();
-    if metadata.is_file() {
-	println!("This is file.");
+fn main() -> Result<(), ZatsuError> {
+    println!("Hello, world!");
 
-	let values = match fs::read(path) {
-	    Ok(values) => values,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
-	};
-	println!("{} bytes read.", values.len());
-	let mut sha1 = Sha1::new();
-	sha1.update(values.clone());
-	let hash = sha1.finalize();
-	let hash_values = hash.to_vec();
-	println!("{} bytes of hash generated.", hash_values.len());
-	// println!("{}", hash_values);
-	let hex = HexString::from_bytes(&hash_values);
-	hex_string = hex.as_string();
-	println!("{}", hex_string);
+    let arguments: Vec<_> = env::args().collect();
+    let count = arguments.len();
+    println!("count: {}", count);
+    if count > 0 {
+	println!("arguments[0]: {}", arguments[0]);
 
-	let path = format!(".zatsu/objects/{}", hex_string);
-	match std::fs::write(path, values) {
-	    Ok(()) => (),
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
-	};
-
-    } else {
-	println!("This is not file.");
+    }
+    if count > 1 {
+	println!("arguments[1]: {}", arguments[1]);
     }
 
-    Ok(hex_string)
+    let mut subcommand = "commit".to_string();
+    if count > 1 {
+	subcommand = arguments[1].clone();
+    }
+
+    if subcommand == "commit" {
+	match process_commit() {
+	    Ok(()) => (),
+	    Err(error) => return Err(error),
+	};
+    }
+    if subcommand == "log" {
+	match process_log() {
+	    Ok(()) => (),
+	    Err(error) => return Err(error),
+	};
+    }
+    if subcommand == "get" {
+	if count > 3 {
+	    // TODO: Do not panic is parse failed.
+	    let revision_number :i32 = arguments[2].parse().unwrap();
+	    let path = arguments[3].clone();
+	    match process_get(revision_number, &path) {
+		Ok(()) => (),
+		Err(error) => return Err(error),
+	    };
+	}
+    }
+    if subcommand == "forget" {
+	if count > 2 {
+	    // TODO: Do not panic is parse failed.
+	    let revision_count :i32 = arguments[2].parse().unwrap();
+	    match process_forget(revision_count) {
+		Ok(()) => (),
+		Err(error) => return Err(error),
+	    };
+	}
+    }
+    if subcommand == "init" {
+	match process_init() {
+	    Ok(()) => (),
+	    Err(error) => return Err(error),
+	};
+    }
+
+    Ok(())
 }
 
 fn process_commit() -> Result<(), ZatsuError> {
@@ -114,6 +139,7 @@ fn process_commit() -> Result<(), ZatsuError> {
 		Ok(hash) => hash,
 		Err(error) => return Err(error),
 	    };
+	    // TODO: Remove leading path separators.
 	    let entry = Entry{
 		path: path,
 		hash: hash,
@@ -131,15 +157,8 @@ fn process_commit() -> Result<(), ZatsuError> {
 	}
     }
 
-    // TODO: Move to revision.rs.
-    let serialized = match serde_json::to_string(&revision) {
-	Ok(serialized) => serialized,
-	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SERIALIZATION_FAILED)),
-    };
-
-    println!("serialized: {}", serialized);
-    let _ = match std::fs::write(format!(".zatsu/revisions/{}.json", revision_number), serialized) {
-	Ok(result) => result,
+    match revision.save(format!(".zatsu/revisions/{}.json", revision_number)) {
+	Ok(_) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
     };
     repository.revision_numbers.push(revision_number);
@@ -209,7 +228,9 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND));
     }
 
-    let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}", hash))) {
+    // TODO: Read objects from subdirectories.
+    let directory_name = hash[0..2].to_string();
+    let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
 	Ok(values) => values,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
     };
@@ -349,64 +370,52 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     Ok(())
 }
 
-fn main() -> Result<(), ZatsuError> {
-    println!("Hello, world!");
-
-    let arguments: Vec<_> = env::args().collect();
-    let count = arguments.len();
-    println!("count: {}", count);
-    if count > 0 {
-	println!("arguments[0]: {}", arguments[0]);
-
-    }
-    if count > 1 {
-	println!("arguments[1]: {}", arguments[1]);
-    }
-
-    let mut subcommand = "commit".to_string();
-    if count > 1 {
-	subcommand = arguments[1].clone();
-    }
-
-    if subcommand == "commit" {
-	match process_commit() {
-	    Ok(()) => (),
-	    Err(error) => return Err(error),
+fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
+    let metadata = match fs::metadata(&path) {
+	Ok(metadata) => metadata,
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_META_DATA_FAILED)),
+    };
+    let mut hex_string = String::new();
+    if metadata.is_file() {
+	println!("This is file.");
+	let values = match fs::read(path) {
+	    Ok(values) => values,
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
 	};
-    }
-    if subcommand == "log" {
-	match process_log() {
-	    Ok(()) => (),
-	    Err(error) => return Err(error),
+	println!("{} bytes read.", values.len());
+	let mut sha1 = Sha1::new();
+	sha1.update(values.clone());
+	let hash = sha1.finalize();
+	let hash_values = hash.to_vec();
+	println!("{} bytes of hash generated.", hash_values.len());
+	// println!("{}", hash_values);
+	let hex = HexString::from_bytes(&hash_values);
+	hex_string = hex.as_string();
+	println!("{}", hex_string);
+
+	let directory_name = hex_string[0..2].to_string();
+	let path = format!(".zatsu/objects/{}", directory_name).to_string();
+	let a_path = Path::new(&path);
+	let exists = match a_path.try_exists() {
+	    Ok(exists) => exists,
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	};
-    }
-    if subcommand == "get" {
-	if count > 3 {
-	    // TODO: Do not panic is parse failed.
-	    let revision_number :i32 = arguments[2].parse().unwrap();
-	    let path = arguments[3].clone();
-	    match process_get(revision_number, &path) {
+	if !exists {
+	    match fs::create_dir(&path) {
 		Ok(()) => (),
-		Err(error) => return Err(error),
+		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	    };
 	}
-    }
-    if subcommand == "forget" {
-	if count > 2 {
-	    // TODO: Do not panic is parse failed.
-	    let revision_count :i32 = arguments[2].parse().unwrap();
-	    match process_forget(revision_count) {
-		Ok(()) => (),
-		Err(error) => return Err(error),
-	    };
-	}
-    }
-    if subcommand == "init" {
-	match process_init() {
+	
+	let path = format!("{}/{}", &path, hex_string);
+	// TODO: Do not write if the file already exists.
+	match fs::write(path, values) {
 	    Ok(()) => (),
-	    Err(error) => return Err(error),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	};
+    } else {
+	println!("This is not file.");
     }
 
-    Ok(())
+    Ok(hex_string)
 }

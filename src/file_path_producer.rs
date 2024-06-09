@@ -25,11 +25,12 @@ use std::path::Path;
 
 use crate::error::ZatsuError;
 
+// TODO: Publish error codes.
 #[allow(dead_code)]
 const ERROR_GENERAL: i32 = 0;
 const ERROR_READING_META_DATA_FAILED: i32 = 1;
 const ERROR_READING_DIRECTORY_FAILED: i32 = 2;
-const ERROR_PRODUCING_FINISHED: i32 = 3;
+const ERROR_PRODUCING_FINISHED: i32 = 10;
 
 pub struct FilePathProducer {
     file_paths: Vec<String>,
