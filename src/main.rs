@@ -229,7 +229,8 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
     }
 
     // TODO: Read objects from subdirectories.
-    let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}", hash))) {
+    let directory_name = hash[0..2].to_string();
+    let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
 	Ok(values) => values,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
     };
@@ -407,12 +408,11 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	}
 	
 	let path = format!("{}/{}", &path, hex_string);
-	// TODO: Remove std.
-	match std::fs::write(path, values) {
+	// TODO: Do not write if the file already exists.
+	match fs::write(path, values) {
 	    Ok(()) => (),
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	};
-
     } else {
 	println!("This is not file.");
     }
