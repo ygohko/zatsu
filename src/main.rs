@@ -193,7 +193,7 @@ fn process_log() -> Result<(), ZatsuError> {
     let count = repository.revision_numbers.len();
     for i in (0..count).rev() {
 	let revision_number = repository.revision_numbers[i];
-	let revision = match Revision::load(format!(".zatsu/revisions/{}.json", revision_number)) {
+	let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number)) {
 	    Ok(revision) => revision,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
 	};
@@ -224,7 +224,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_REVISION_NOT_FOUND));
     }
 
-    let revision = match Revision::load(format!(".zatsu/revisions/{}.json", revision_number)) {
+    let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number)) {
 	Ok(revision) => revision,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REVISION_FAILED)),
     };
@@ -358,8 +358,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 		let hash = option.unwrap().to_string_lossy();
 		let mut found = false;
 		for revision_number in &repository.revision_numbers {
-		    // TODO: kokokara-------
-		    let result = Revision::load(format!(".zatsu/revisions/{}.json", revision_number));
+		    let result = Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number));
 		    if result.is_ok() {
 			let revision = result.unwrap();
 			for entry in revision.entries {
