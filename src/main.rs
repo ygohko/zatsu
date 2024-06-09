@@ -358,6 +358,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 		let hash = option.unwrap().to_string_lossy();
 		let mut found = false;
 		for revision_number in &repository.revision_numbers {
+		    // TODO: kokokara-------
 		    let result = Revision::load(format!(".zatsu/revisions/{}.json", revision_number));
 		    if result.is_ok() {
 			let revision = result.unwrap();
