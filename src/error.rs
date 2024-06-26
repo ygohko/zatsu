@@ -20,6 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use std::backtrace::Backtrace;
 use std::error::Error;
 use std::fmt;
 
@@ -27,12 +28,14 @@ use std::fmt;
 pub struct ZatsuError {
     pub domain: String,
     pub code: i32,
+    pub backtrace: String,
     pub details: String,
 }
+ 
 
 impl fmt::Display for ZatsuError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-	write!(f, "Zatsu error. domain: {}, code: {}, details: {}", self.domain, self.code, self.details)
+        write!(f, "Zatsu error. domain: {}, code: {}, backtrace: {}, details: {}", self.domain, self.code, self.backtrace, self.details)
     }
 }
 
@@ -41,19 +44,25 @@ impl Error for ZatsuError {
 
 impl ZatsuError {
     pub fn new(domain: String, code: i32) -> ZatsuError {
-	return ZatsuError {
-	    domain: domain,
-	    code: code,
-	    details: "".to_string(),
-	};
+        let backtrace = Backtrace::capture();
+        let string = format!("{}", backtrace);
+        return ZatsuError {
+            domain: domain,
+            code: code,
+            backtrace: string,
+            details: "".to_string(),
+        };
     }
 
     #[allow(dead_code)]
     pub fn new_with_details(domain: String, code: i32, details: String) -> ZatsuError {
-	return ZatsuError {
-	    domain: domain,
-	    code: code,
-	    details: details,
-	};
+        let backtrace = Backtrace::capture();
+        let string = format!("{}", backtrace);
+        return ZatsuError {
+            domain: domain,
+            code: code,
+            backtrace: string,
+            details: details,
+        };
     }
 }
