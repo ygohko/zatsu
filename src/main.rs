@@ -239,7 +239,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND));
     }
 
-    // TODO: Read objects from subdirectories.
+    // TODO Decompress values read from the file.    
     let directory_name = hash[0..2].to_string();
     let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
 	Ok(values) => values,
@@ -389,6 +389,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     let mut hex_string = String::new();
     if metadata.is_file() {
 	println!("This is file.");
+	// TODO: Compress read values.
 	let values = match fs::read(path) {
 	    Ok(values) => values,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
