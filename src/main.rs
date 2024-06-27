@@ -53,6 +53,8 @@ const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_PRODUCING_FINISHED: i32 = 10;
 
+// TODO: Compress objects.
+
 fn main() -> Result<(), ZatsuError> {
     println!("Hello, world!");
 
@@ -288,6 +290,10 @@ fn process_init() -> Result<(), ZatsuError> {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
     };
+    match fs::write(".zatsu/version.txt", "1") {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
+    };
     match fs::create_dir_all(".zatsu/revisions") {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
@@ -296,7 +302,7 @@ fn process_init() -> Result<(), ZatsuError> {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
     };
-    let repository = Repository{
+    let repository = Repository {
 	revision_numbers: Vec::new(),
     };
     match repository.save(&PathBuf::from(".zatsu/repository.json")) {
