@@ -139,7 +139,6 @@ fn process_commit() -> Result<(), ZatsuError> {
 		Ok(hash) => hash,
 		Err(error) => return Err(error),
 	    };
-	    // TODO: Remove leading path separators.
 	    let entry = Entry{
 		path: path,
 		hash: hash,
