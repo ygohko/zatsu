@@ -26,6 +26,8 @@ mod file_path_producer;
 mod revision;
 mod repository;
 
+use chrono::DateTime;
+use chrono::Utc;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
@@ -54,6 +56,7 @@ const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_PRODUCING_FINISHED: i32 = 10;
 
 // TODO: Compress objects.
+// TODO: Add commited date time to revisions.
 
 fn main() -> Result<(), ZatsuError> {
     println!("Hello, world!");
@@ -128,7 +131,9 @@ fn process_commit() -> Result<(), ZatsuError> {
     let revision_number = latest_revision + 1;
 
     let mut producer = FilePathProducer::new(".".to_string());
+    let now = Utc::now();
     let mut revision = Revision {
+	commited: now.timestamp_millis(),
 	entries: Vec::new(),
     };
     let mut done = false;
@@ -198,7 +203,12 @@ fn process_log() -> Result<(), ZatsuError> {
 	    Ok(revision) => revision,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
 	};
-	println!("Revision {}", revision_number);
+	// TODO: Apply time zone.
+	let commited = match DateTime::from_timestamp_millis(revision.commited) {
+	    Some(commited) => commited,
+	    None => Utc::now(),
+	};
+	println!("Revision {}, commited at {}", revision_number, commited.format("%Y/%m/%d %H:%M"));
 	for entry in revision.entries {
 	    println!("{}", entry.path);
 	}

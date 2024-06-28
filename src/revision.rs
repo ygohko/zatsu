@@ -37,6 +37,7 @@ const ERROR_DESERIALIZATION_FAILED: i32 = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
+    pub commited: i64,
     pub entries: Vec<Entry>,
 }
 
