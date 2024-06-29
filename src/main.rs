@@ -28,11 +28,14 @@ mod repository;
 
 use chrono::DateTime;
 use chrono::Utc;
+use flate2::Compression;
+use flate2::write::ZlibEncoder;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
 use std::env;
 use std::fs;
+use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -421,6 +424,15 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
+	let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+	match encoder.write_all(&values) {
+	    Ok(()) => (),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	}
+	let compressed = match encoder.finish() {
+	    Ok(compressed) => compressed,
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	};
 	let directory_name = hex_string[0..2].to_string();
 	let path = format!(".zatsu/objects/{}", directory_name).to_string();
 	let a_path = Path::new(&path);
@@ -437,7 +449,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	
 	let path = format!("{}/{}", &path, hex_string);
 	// TODO: Do not write if the file already exists.
-	match fs::write(path, values) {
+	match fs::write(path, compressed) {
 	    Ok(()) => (),
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	};
