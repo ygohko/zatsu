@@ -35,13 +35,16 @@ const ERROR_PRODUCING_FINISHED: i32 = 10;
 pub struct FilePathProducer {
     file_paths: Vec<String>,
     directory_paths: Vec<String>,
+    prefix_length: usize,
 }
 
 impl FilePathProducer {
     pub fn new(path: String) -> FilePathProducer {
+	let prefix_length = path.len() + 1;
 	return FilePathProducer {
 	    file_paths: Vec::new(),
 	    directory_paths: vec![path],
+	    prefix_length: prefix_length,
 	};
     }
 
@@ -86,6 +89,8 @@ impl FilePathProducer {
 			let path = entry.path().to_string_lossy().to_string();
 			if metadata.is_file() {
 
+			    let path = path[self.prefix_length..].to_string();
+			    
 			    println!("Adding to file_paths: {}", path);
 
 			    self.file_paths.push(path);

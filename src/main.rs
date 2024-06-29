@@ -26,11 +26,17 @@ mod file_path_producer;
 mod revision;
 mod repository;
 
+use chrono::DateTime;
+use chrono::Utc;
+use flate2::Compression;
+use flate2::write::ZlibDecoder;
+use flate2::write::ZlibEncoder;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
 use std::env;
 use std::fs;
+use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -52,6 +58,9 @@ const ERROR_FILE_NOT_FOUND: i32 = 7;
 const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_PRODUCING_FINISHED: i32 = 10;
+
+// TODO: Compress objects.
+// TODO: Add commited date time to revisions.
 
 fn main() -> Result<(), ZatsuError> {
     println!("Hello, world!");
@@ -126,7 +135,9 @@ fn process_commit() -> Result<(), ZatsuError> {
     let revision_number = latest_revision + 1;
 
     let mut producer = FilePathProducer::new(".".to_string());
+    let now = Utc::now();
     let mut revision = Revision {
+	commited: now.timestamp_millis(),
 	entries: Vec::new(),
     };
     let mut done = false;
@@ -139,7 +150,6 @@ fn process_commit() -> Result<(), ZatsuError> {
 		Ok(hash) => hash,
 		Err(error) => return Err(error),
 	    };
-	    // TODO: Remove leading path separators.
 	    let entry = Entry{
 		path: path,
 		hash: hash,
@@ -197,7 +207,12 @@ fn process_log() -> Result<(), ZatsuError> {
 	    Ok(revision) => revision,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
 	};
-	println!("Revision {}", revision_number);
+	// TODO: Apply time zone.
+	let commited = match DateTime::from_timestamp_millis(revision.commited) {
+	    Some(commited) => commited,
+	    None => Utc::now(),
+	};
+	println!("Revision {}, commited at {}", revision_number, commited.format("%Y/%m/%d %H:%M"));
 	for entry in revision.entries {
 	    println!("{}", entry.path);
 	}
@@ -240,11 +255,19 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND));
     }
 
-    // TODO: Read objects from subdirectories.
     let directory_name = hash[0..2].to_string();
     let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
 	Ok(values) => values,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+    };
+    let mut decoder = ZlibDecoder::new(Vec::new());
+    match decoder.write_all(&values) {
+	Ok(()) => (),
+	Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+    };
+    let decoded = match decoder.finish() {
+	Ok(decoded) => decoded,
+	Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
     };
     let split: Vec<_> = path.split("/").collect();
     let mut file_name = "out.dat".to_string();
@@ -255,7 +278,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	    file_name = format!("{}-r{}.{}", split[0], revision_number, split[1]);
 	}
     }
-    match fs::write(&PathBuf::from(file_name), values) {
+    match fs::write(&PathBuf::from(file_name), decoded) {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
     };
@@ -289,6 +312,10 @@ fn process_init() -> Result<(), ZatsuError> {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
     };
+    match fs::write(".zatsu/version.txt", "1") {
+	Ok(()) => (),
+	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
+    };
     match fs::create_dir_all(".zatsu/revisions") {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
@@ -297,7 +324,7 @@ fn process_init() -> Result<(), ZatsuError> {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
     };
-    let repository = Repository{
+    let repository = Repository {
 	revision_numbers: Vec::new(),
     };
     match repository.save(&PathBuf::from(".zatsu/repository.json")) {
@@ -405,6 +432,15 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
+	let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+	match encoder.write_all(&values) {
+	    Ok(()) => (),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	}
+	let compressed = match encoder.finish() {
+	    Ok(compressed) => compressed,
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	};
 	let directory_name = hex_string[0..2].to_string();
 	let path = format!(".zatsu/objects/{}", directory_name).to_string();
 	let a_path = Path::new(&path);
@@ -421,7 +457,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	
 	let path = format!("{}/{}", &path, hex_string);
 	// TODO: Do not write if the file already exists.
-	match fs::write(path, values) {
+	match fs::write(path, compressed) {
 	    Ok(()) => (),
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	};
