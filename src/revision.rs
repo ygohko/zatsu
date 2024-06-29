@@ -39,6 +39,8 @@ const ERROR_DESERIALIZATION_FAILED: i32 = 4;
 pub struct Revision {
     pub commited: i64,
     pub entries: Vec<Entry>,
+    // TOOD: Use this reserved field.
+    pub description: String,
 }
 
 impl Revision {

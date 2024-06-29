@@ -27,4 +27,6 @@ use serde_derive::Serialize;
 pub struct Entry {
     pub path: String,
     pub hash: String,
+    // TODO: Use this reserved field.
+    pub permission: i32,
 }
