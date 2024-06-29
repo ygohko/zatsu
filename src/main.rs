@@ -139,6 +139,7 @@ fn process_commit() -> Result<(), ZatsuError> {
     let mut revision = Revision {
 	commited: now.timestamp_millis(),
 	entries: Vec::new(),
+	description: "".to_string(),
     };
     let mut done = false;
     while !done {
