@@ -29,6 +29,7 @@ mod repository;
 use chrono::DateTime;
 use chrono::Utc;
 use flate2::Compression;
+use flate2::write::ZlibDecoder;
 use flate2::write::ZlibEncoder;
 use hex_string::HexString;
 use sha1::Digest;
@@ -254,11 +255,19 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND));
     }
 
-    // TODO Decompress values read from the file.    
     let directory_name = hash[0..2].to_string();
     let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
 	Ok(values) => values,
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+    };
+    let mut decoder = ZlibDecoder::new(Vec::new());
+    match decoder.write_all(&values) {
+	Ok(()) => (),
+	Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+    };
+    let decoded = match decoder.finish() {
+	Ok(decoded) => decoded,
+	Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
     };
     let split: Vec<_> = path.split("/").collect();
     let mut file_name = "out.dat".to_string();
@@ -269,7 +278,7 @@ fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
 	    file_name = format!("{}-r{}.{}", split[0], revision_number, split[1]);
 	}
     }
-    match fs::write(&PathBuf::from(file_name), values) {
+    match fs::write(&PathBuf::from(file_name), decoded) {
 	Ok(()) => (),
 	Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
     };
@@ -408,7 +417,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     let mut hex_string = String::new();
     if metadata.is_file() {
 	println!("This is file.");
-	// TODO: Compress read values.
 	let values = match fs::read(path) {
 	    Ok(values) => values,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
