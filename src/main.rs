@@ -153,6 +153,7 @@ fn process_commit() -> Result<(), ZatsuError> {
 	    let entry = Entry{
 		path: path,
 		hash: hash,
+		permission: 0o644,
 	    };
 	    revision.entries.push(entry);
 	}
