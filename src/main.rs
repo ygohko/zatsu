@@ -59,9 +59,6 @@ const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_PRODUCING_FINISHED: i32 = 10;
 
-// TODO: Compress objects.
-// TODO: Add commited date time to revisions.
-
 fn main() -> Result<(), ZatsuError> {
     println!("Hello, world!");
 
@@ -434,15 +431,11 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
-	let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-	match encoder.write_all(&values) {
-	    Ok(()) => (),
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
-	}
-	let compressed = match encoder.finish() {
-	    Ok(compressed) => compressed,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
-	};
+	
+
+	
+
+
 	let directory_name = hex_string[0..2].to_string();
 	let path = format!(".zatsu/objects/{}", directory_name).to_string();
 	let a_path = Path::new(&path);
@@ -458,11 +451,30 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	}
 	
 	let path = format!("{}/{}", &path, hex_string);
-	// TODO: Do not write if the file already exists.
-	match fs::write(path, compressed) {
-	    Ok(()) => (),
+
+	let a_path = Path::new(&path);
+	let exists = match a_path.try_exists() {
+	    Ok(exists) => exists,
 	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	};
+	if !exists {
+	    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+	    match encoder.write_all(&values) {
+		Ok(()) => (),
+		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	    }
+	    let compressed = match encoder.finish() {
+		Ok(compressed) => compressed,
+		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	    };
+
+	    match fs::write(path, compressed) {
+		Ok(()) => (),
+		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	    };
+
+	}
+
     } else {
 	println!("This is not file.");
     }
