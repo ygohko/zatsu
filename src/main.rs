@@ -431,11 +431,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	hex_string = hex.as_string();
 	println!("{}", hex_string);
 
-	
-
-	
-
-
 	let directory_name = hex_string[0..2].to_string();
 	let path = format!(".zatsu/objects/{}", directory_name).to_string();
 	let a_path = Path::new(&path);
@@ -451,7 +446,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 	}
 	
 	let path = format!("{}/{}", &path, hex_string);
-
 	let a_path = Path::new(&path);
 	let exists = match a_path.try_exists() {
 	    Ok(exists) => exists,
@@ -472,9 +466,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 		Ok(()) => (),
 		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
 	    };
-
 	}
-
     } else {
 	println!("This is not file.");
     }
