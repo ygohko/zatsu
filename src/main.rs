@@ -339,33 +339,49 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         Ok(repository) => repository,
         Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REPOSITORY_FAILED)),
     };
+
     let read_dir = match fs::read_dir(".zatsu/revisions") {
         Ok(read_dir) => read_dir,
         Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
     };
+    let mut revision_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
         if result.is_ok() {
             let entry = result.unwrap();
-            let path = entry.path();
-            let mut found = false;
-            let option = path.file_stem();
-            if option.is_some() {
-                let file_stem = option.unwrap().to_string_lossy();
-                println!("file_stem: {}", file_stem);
-                let result = file_stem.parse();
-                if result.is_ok() {
-                    let revision_number: i32 = result.unwrap();
-                    let option = repository.revision_numbers.iter().find(|&value| *value == revision_number);
-                    if option.is_some() {
-                        found = true;
+            revision_paths.push(entry.path());
+        }
+    }
+
+    for path in revision_paths {
+        let read_dir = match fs::read_dir(path) {
+            Ok(read_dir) => read_dir,
+            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
+        };
+        for result in read_dir {
+            if result.is_ok() {
+                let entry = result.unwrap();
+                let path = entry.path();
+                let mut found = false;
+
+                let option = path.file_stem();
+                if option.is_some() {
+                    let file_stem = option.unwrap().to_string_lossy();
+                    println!("file_stem: {}", file_stem);
+                    let result = file_stem.parse();
+                    if result.is_ok() {
+                        let revision_number: i32 = result.unwrap();
+                        let option = repository.revision_numbers.iter().find(|&value| *value == revision_number);
+                        if option.is_some() {
+                            found = true;
+                        }
                     }
                 }
-            }
 
-            if !found {
-                match fs::remove_file(path) {
-                    Ok(()) => (),
-                    Err(_) => (),
+                if !found {
+                    match fs::remove_file(path) {
+                        Ok(()) => (),
+                        Err(_) => (),
+                    }
                 }
             }
         }
