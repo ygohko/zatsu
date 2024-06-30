@@ -390,32 +390,47 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     let read_dir = match fs::read_dir(".zatsu/objects") {
         Ok(read_dir) => read_dir,
         Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
-    };
+    }; 
+    let mut object_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
         if result.is_ok() {
             let entry = result.unwrap();
-            let path = entry.path();
-            let option = path.file_name();
-            if option.is_some() {
-                let hash = option.unwrap().to_string_lossy();
-                let mut found = false;
-                for revision_number in &repository.revision_numbers {
-                    let result = Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number));
-                    if result.is_ok() {
-                        let revision = result.unwrap();
-                        for entry in revision.entries {
-                            if entry.hash == hash {
-                                found = true;
+            object_paths.push(entry.path());
+        }
+    }
+
+    for path in object_paths {
+        let read_dir = match fs::read_dir(path) {
+            Ok(read_dir) => read_dir,
+            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
+        };
+
+        for result in read_dir {
+            if result.is_ok() {
+                let entry = result.unwrap();
+                let path = entry.path();
+                let option = path.file_name();
+                if option.is_some() {
+                    let hash = option.unwrap().to_string_lossy();
+                    let mut found = false;
+                    for revision_number in &repository.revision_numbers {
+                        let result = Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number));
+                        if result.is_ok() {
+                            let revision = result.unwrap();
+                            for entry in revision.entries {
+                                if entry.hash == hash {
+                                    found = true;
+                                }
                             }
                         }
                     }
-                }
 
-                if !found {
-                    match fs::remove_file(path) {
-                        Ok(()) => (),
-                        Err(_) => (),
-                    };
+                    if !found {
+                        match fs::remove_file(path) {
+                            Ok(()) => (),
+                            Err(_) => (),
+                        };
+                    }
                 }
             }
         }
