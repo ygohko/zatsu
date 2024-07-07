@@ -226,7 +226,20 @@ fn process_log() -> Result<(), ZatsuError> {
 
         let mut changes: Vec<String> = Vec::new();
         for entry in entries {
-            if !find(&previous_entries, &entry.path) {
+            let mut found = false;
+            let previous_hash = match find_hash(&previous_entries, &entry.path) {
+                Some(hash) => {
+                    found = true;
+                    hash
+                },
+                None => String::new(),
+            };
+            if found {
+                if previous_hash != entry.hash {
+                    changes.push(format!("M {}", entry.path));
+                }
+            }
+            else {
                 changes.push(format!("A {}", entry.path));
             }
         }
@@ -524,12 +537,12 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     Ok(hex_string)
 }
 
-fn find(entries:&Vec<Entry>, path: &String) -> bool {
+fn find_hash(entries:&Vec<Entry>, path: &String) -> Option<String> {
     for entry in entries {
         if entry.path == *path {
-            return true;
+            return Some(entry.hash.clone());
         }
     }
 
-    false
+    None
 }
