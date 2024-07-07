@@ -225,7 +225,7 @@ fn process_log() -> Result<(), ZatsuError> {
         println!("Revision {}, commited at {}", revision_number, commited.format("%Y/%m/%d %H:%M"));
 
         let mut changes: Vec<String> = Vec::new();
-        for entry in entries {
+        for entry in &entries {
             let mut found = false;
             let previous_hash = match find_hash(&previous_entries, &entry.path) {
                 Some(hash) => {
@@ -241,6 +241,19 @@ fn process_log() -> Result<(), ZatsuError> {
             }
             else {
                 changes.push(format!("A {}", entry.path));
+            }
+        }
+        for entry in previous_entries {
+            let mut found = false;
+            match find_hash(&entries, &entry.path) {
+                Some(_) => {
+                    found = true;
+                    ()
+                },
+                None => (),
+            }
+            if !found {
+                changes.push(format!("D {}", entry.path));
             }
         }
 
