@@ -206,14 +206,33 @@ fn process_log() -> Result<(), ZatsuError> {
             Ok(revision) => revision,
             Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
         };
+        let entries = revision.entries;
+        let mut previous_entries: Vec<Entry> = Vec::new();
+        if i > 0 {
+            let previous_revision_number = repository.revision_numbers[i - 1];
+            let previous_revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", previous_revision_number & 0xFF, previous_revision_number)) {
+                Ok(revision) => revision,
+                Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+            };
+            previous_entries = previous_revision.entries;
+        }
+
         // TODO: Apply time zone.
         let commited = match DateTime::from_timestamp_millis(revision.commited) {
             Some(commited) => commited,
             None => Utc::now(),
         };
         println!("Revision {}, commited at {}", revision_number, commited.format("%Y/%m/%d %H:%M"));
-        for entry in revision.entries {
-            println!("{}", entry.path);
+
+        let mut changes: Vec<String> = Vec::new();
+        for entry in entries {
+            if !find(&previous_entries, &entry.path) {
+                changes.push(format!("A {}", entry.path));
+            }
+        }
+
+        for change in changes {
+            println!("{}", change);
         }
         println!("");
     }
@@ -503,4 +522,14 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     }
 
     Ok(hex_string)
+}
+
+fn find(entries:&Vec<Entry>, path: &String) -> bool {
+    for entry in entries {
+        if entry.path == *path {
+            return true;
+        }
+    }
+
+    false
 }
