@@ -60,14 +60,14 @@ const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_PRODUCING_FINISHED: i32 = 10;
 
 trait Command {
-    fn execute() -> Result<(), ZatsuError>;
+    fn execute(&self) -> Result<(), ZatsuError>;
 }
 
 struct CommitCommand {
 }
 
 impl Command for CommitCommand {
-    fn execute() -> Result<(), ZatsuError> {
+    fn execute(&self) -> Result<(), ZatsuError> {
 	let mut repository = match Repository::load(".zatsu/repository.json") {
             Ok(repository) => repository,
             Err(_) => Repository {
@@ -164,7 +164,8 @@ fn main() -> Result<(), ZatsuError> {
     }
 
     if subcommand == "commit" {
-        match process_commit() {
+	let command = CommitCommand::new();
+	match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
