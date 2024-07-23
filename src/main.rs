@@ -158,25 +158,25 @@ fn main() -> Result<(), ZatsuError> {
         println!("arguments[1]: {}", arguments[1]);
     }
 
-    let mut subcommand = "commit".to_string();
+    let mut command = "commit".to_string();
     if count > 1 {
-        subcommand = arguments[1].clone();
+        command = arguments[1].clone();
     }
 
-    if subcommand == "commit" {
+    if command == "commit" {
 	let command = CommitCommand::new();
 	match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if subcommand == "log" {
+    if command == "log" {
         match process_log() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if subcommand == "get" {
+    if command == "get" {
         if count > 3 {
             // TODO: Do not panic is parse failed.
             let revision_number :i32 = arguments[2].parse().unwrap();
@@ -187,7 +187,7 @@ fn main() -> Result<(), ZatsuError> {
             };
         }
     }
-    if subcommand == "forget" {
+    if command == "forget" {
         if count > 2 {
             // TODO: Do not panic is parse failed.
             let revision_count :i32 = arguments[2].parse().unwrap();
@@ -197,7 +197,7 @@ fn main() -> Result<(), ZatsuError> {
             };
         }
     }
-    if subcommand == "init" {
+    if command == "init" {
         match process_init() {
             Ok(()) => (),
             Err(error) => return Err(error),
