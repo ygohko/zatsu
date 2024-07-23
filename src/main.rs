@@ -21,6 +21,7 @@
  */
 
 mod command;
+mod commit_command;
 mod entry;
 mod error;
 mod file_path_producer;
@@ -42,6 +43,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::command::Command;
+use crate::commit_command::CommitCommand;
 use crate::entry::Entry;
 use crate::error::ZatsuError;
 use crate::file_path_producer::FilePathProducer;
@@ -61,6 +63,7 @@ const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_PRODUCING_FINISHED: i32 = 10;
 
+/*
 struct CommitCommand {
 }
 
@@ -141,6 +144,7 @@ impl CommitCommand {
 	Self{}
     }
 }
+*/
 
 fn main() -> Result<(), ZatsuError> {
     println!("Hello, world!");
