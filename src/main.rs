@@ -20,6 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+mod command;
 mod entry;
 mod error;
 mod file_path_producer;
@@ -40,6 +41,7 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::command::Command;
 use crate::entry::Entry;
 use crate::error::ZatsuError;
 use crate::file_path_producer::FilePathProducer;
@@ -58,10 +60,6 @@ const ERROR_FILE_NOT_FOUND: i32 = 7;
 const ERROR_LOADING_FILE_FAILED: i32 = 8;
 const ERROR_SAVING_FILE_FAILED: i32 = 9;
 const ERROR_PRODUCING_FINISHED: i32 = 10;
-
-trait Command {
-    fn execute(&self) -> Result<(), ZatsuError>;
-}
 
 struct CommitCommand {
 }
