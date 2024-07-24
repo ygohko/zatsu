@@ -25,6 +25,7 @@ mod commit_command;
 mod entry;
 mod error;
 mod file_path_producer;
+mod log_command;
 mod revision;
 mod repository;
 
@@ -494,3 +495,4 @@ fn find_hash(entries:&Vec<Entry>, path: &String) -> Option<String> {
 
     None
 }
+
