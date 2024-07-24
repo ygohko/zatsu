@@ -48,6 +48,7 @@ use crate::commit_command::CommitCommand;
 use crate::entry::Entry;
 use crate::error::ZatsuError;
 use crate::file_path_producer::FilePathProducer;
+use crate::log_command::LogCommand;
 use crate::revision::Revision;
 use crate::repository::Repository;
 
@@ -91,7 +92,8 @@ fn main() -> Result<(), ZatsuError> {
         };
     }
     if command == "log" {
-        match process_log() {
+	let command = LogCommand::new();
+        match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };

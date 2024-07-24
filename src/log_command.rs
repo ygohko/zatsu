@@ -97,3 +97,9 @@ fn find_hash(entries:&Vec<Entry>, path: &String) -> Option<String> {
 
     None
 }
+
+impl LogCommand {
+    pub fn new() -> Self {
+	Self {}
+    }
+}
