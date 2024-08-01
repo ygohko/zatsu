@@ -30,10 +30,8 @@ mod log_command;
 mod revision;
 mod repository;
 
-use flate2::write::ZlibDecoder;
 use std::env;
 use std::fs;
-use std::io::Write;
 use std::path::PathBuf;
 
 use crate::command::Command;
@@ -41,6 +39,7 @@ use crate::commit_command::CommitCommand;
 use crate::entry::Entry;
 use crate::error::ZatsuError;
 use crate::file_path_producer::FilePathProducer;
+use crate::get_command::GetCommand;
 use crate::log_command::LogCommand;
 use crate::revision::Revision;
 use crate::repository::Repository;
@@ -96,7 +95,8 @@ fn main() -> Result<(), ZatsuError> {
             // TODO: Do not panic is parse failed.
             let revision_number :i32 = arguments[2].parse().unwrap();
             let path = arguments[3].clone();
-            match process_get(revision_number, &path) {
+	    let command = GetCommand::new(revision_number, &path);
+            match command.execute() {
                 Ok(()) => (),
                 Err(error) => return Err(error),
             };
@@ -118,70 +118,6 @@ fn main() -> Result<(), ZatsuError> {
             Err(error) => return Err(error),
         };
     }
-
-    Ok(())
-}
-
-fn process_get(revision_number: i32, path: &String) -> Result<(), ZatsuError> {
-    let repository = match Repository::load(".zatsu/repository.json") {
-        Ok(repository) => repository,
-        Err(_) => Repository {
-            revision_numbers: Vec::new(),
-        },
-    };
-    let mut found = false;
-    for a_revision_number in repository.revision_numbers {
-        if a_revision_number == revision_number {
-            found = true;
-        } 
-    }
-    if !found {
-        return Err(ZatsuError::new("main".to_string(), ERROR_REVISION_NOT_FOUND));
-    }
-
-    let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number)) {
-        Ok(revision) => revision,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REVISION_FAILED)),
-    };
-    let mut hash = "".to_string();
-    let mut found = false;
-    for entry in revision.entries {
-        if entry.path == *path {
-            found = true;
-            hash = entry.hash;
-        }
-    }
-    if !found {
-        return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND));
-    }
-
-    let directory_name = hash[0..2].to_string();
-    let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
-        Ok(values) => values,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
-    };
-    let mut decoder = ZlibDecoder::new(Vec::new());
-    match decoder.write_all(&values) {
-        Ok(()) => (),
-        Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
-    };
-    let decoded = match decoder.finish() {
-        Ok(decoded) => decoded,
-        Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
-    };
-    let split: Vec<_> = path.split("/").collect();
-    let mut file_name = "out.dat".to_string();
-    if split.len() >= 1 {
-        let original_file_name = split[split.len() - 1].to_string();
-        let split: Vec<_> = original_file_name.split(".").collect();
-        if split.len() > 1 {
-            file_name = format!("{}-r{}.{}", split[0], revision_number, split[1]);
-        }
-    }
-    match fs::write(&PathBuf::from(file_name), decoded) {
-        Ok(()) => (),
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
-    };
 
     Ok(())
 }
