@@ -40,6 +40,7 @@ use crate::commit_command::CommitCommand;
 use crate::entry::Entry;
 use crate::error::ZatsuError;
 use crate::file_path_producer::FilePathProducer;
+use crate::forget_command::ForgetCommand;
 use crate::get_command::GetCommand;
 use crate::log_command::LogCommand;
 use crate::revision::Revision;
@@ -107,7 +108,8 @@ fn main() -> Result<(), ZatsuError> {
         if count > 2 {
             // TODO: Do not panic is parse failed.
             let revision_count :i32 = arguments[2].parse().unwrap();
-            match process_forget(revision_count) {
+	    let command = ForgetCommand::new(revision_count);
+            match command.execute() {
                 Ok(()) => (),
                 Err(error) => return Err(error),
             };
@@ -123,6 +125,7 @@ fn main() -> Result<(), ZatsuError> {
     Ok(())
 }
 
+/*
 fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
     let mut repository = match Repository::load(".zatsu/repository.json") {
         Ok(repository) => repository,
@@ -143,6 +146,7 @@ fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
 
     Ok(())
 }
+*/
 
 fn process_init() -> Result<(), ZatsuError> {
     match fs::create_dir_all(".zatsu") {
