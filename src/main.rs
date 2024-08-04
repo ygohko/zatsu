@@ -25,6 +25,7 @@ mod commit_command;
 mod entry;
 mod error;
 mod file_path_producer;
+mod forget_command;
 mod get_command;
 mod log_command;
 mod revision;
