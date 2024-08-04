@@ -125,29 +125,6 @@ fn main() -> Result<(), ZatsuError> {
     Ok(())
 }
 
-/*
-fn process_forget(revision_count: i32) -> Result<(), ZatsuError> {
-    let mut repository = match Repository::load(".zatsu/repository.json") {
-        Ok(repository) => repository,
-        // TODO: Ensure repository is created when zatsu init.
-        Err(_) => Repository {
-            revision_numbers: Vec::new(),
-        },
-    };
-    let current_count = repository.revision_numbers.len() as i32;
-    let removed_count = current_count - revision_count;
-    if removed_count <= 0 {
-        return Ok(());
-    }
-    let index: usize = removed_count as usize;
-    repository.revision_numbers = repository.revision_numbers.drain(index..).collect();
-    repository.save(".zatsu/repository.json")?;
-    process_garbage_collection()?;
-
-    Ok(())
-}
-*/
-
 fn process_init() -> Result<(), ZatsuError> {
     match fs::create_dir_all(".zatsu") {
         Ok(()) => (),
