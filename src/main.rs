@@ -33,8 +33,6 @@ mod revision;
 mod repository;
 
 use std::env;
-use std::fs;
-use std::path::PathBuf;
 
 use crate::command::Command;
 use crate::commit_command::CommitCommand;
@@ -43,6 +41,7 @@ use crate::error::ZatsuError;
 use crate::file_path_producer::FilePathProducer;
 use crate::forget_command::ForgetCommand;
 use crate::get_command::GetCommand;
+use crate::init_command::InitCommand;
 use crate::log_command::LogCommand;
 use crate::revision::Revision;
 use crate::repository::Repository;
@@ -117,39 +116,12 @@ fn main() -> Result<(), ZatsuError> {
         }
     }
     if command == "init" {
-        match process_init() {
+	let command = InitCommand::new();
+        match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-
-    Ok(())
-}
-
-fn process_init() -> Result<(), ZatsuError> {
-    match fs::create_dir_all(".zatsu") {
-        Ok(()) => (),
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
-    };
-    match fs::write(".zatsu/version.txt", "1") {
-        Ok(()) => (),
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
-    };
-    match fs::create_dir_all(".zatsu/revisions") {
-        Ok(()) => (),
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
-    };
-    match fs::create_dir_all(".zatsu/objects") {
-        Ok(()) => (),
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_CREATING_REPOSITORY_FAILED)),
-    };
-    let repository = Repository {
-        revision_numbers: Vec::new(),
-    };
-    match repository.save(&PathBuf::from(".zatsu/repository.json")) {
-        Ok(()) => (),
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
-    };
 
     Ok(())
 }
