@@ -21,8 +21,8 @@
  */
 
 use crate::Command;
-use crate::ERROR_CREATING_REPOSITORY_FAILED;
-use crate::ERROR_SAVING_FILE_FAILED;
+use crate::error::ERROR_CREATING_REPOSITORY_FAILED;
+use crate::error::ERROR_SAVING_FILE_FAILED;
 use crate::Repository;
 use crate::ZatsuError;
 

@@ -25,7 +25,7 @@ use chrono::Utc;
 
 use crate::Command;
 use crate::Entry;
-use crate::ERROR_LOADING_FILE_FAILED;
+use crate::error::ERROR_LOADING_FILE_FAILED;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;

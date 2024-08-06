@@ -24,8 +24,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::Command;
-use crate::ERROR_LOADING_REPOSITORY_FAILED;
-use crate::ERROR_READING_DIRECTORY_FAILED;
+use crate::error::ERROR_LOADING_REPOSITORY_FAILED;
+use crate::error::ERROR_READING_DIRECTORY_FAILED;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;

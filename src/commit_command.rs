@@ -33,10 +33,10 @@ use std::path::PathBuf;
 
 use crate::Command;
 use crate::Entry;
-use crate::ERROR_LOADING_FILE_FAILED;
-use crate::ERROR_READING_META_DATA_FAILED;
-use crate::ERROR_PRODUCING_FINISHED;
-use crate::ERROR_SAVING_FILE_FAILED;
+use crate::error::ERROR_LOADING_FILE_FAILED;
+use crate::error::ERROR_READING_META_DATA_FAILED;
+use crate::error::ERROR_PRODUCING_FINISHED;
+use crate::error::ERROR_SAVING_FILE_FAILED;
 use crate::FilePathProducer;
 use crate::Repository;
 use crate::Revision;

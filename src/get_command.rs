@@ -26,11 +26,11 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use crate::Command;
-use crate::ERROR_FILE_NOT_FOUND;
-use crate::ERROR_LOADING_FILE_FAILED;
-use crate::ERROR_LOADING_REVISION_FAILED;
-use crate::ERROR_REVISION_NOT_FOUND;
-use crate::ERROR_SAVING_FILE_FAILED;
+use crate::error::ERROR_FILE_NOT_FOUND;
+use crate::error::ERROR_LOADING_FILE_FAILED;
+use crate::error::ERROR_LOADING_REVISION_FAILED;
+use crate::error::ERROR_REVISION_NOT_FOUND;
+use crate::error::ERROR_SAVING_FILE_FAILED;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
