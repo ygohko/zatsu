@@ -25,17 +25,17 @@ use std::error::Error;
 use std::fmt;
 
 #[allow(dead_code)]
-pub const ERROR_GENERAL: i32 = 0;
-pub const ERROR_READING_META_DATA_FAILED: i32 = 1;
-pub const ERROR_READING_DIRECTORY_FAILED: i32 = 2;
-pub const ERROR_CREATING_REPOSITORY_FAILED: i32 = 3;
-pub const ERROR_LOADING_REPOSITORY_FAILED: i32 = 4;
-pub const ERROR_REVISION_NOT_FOUND: i32 = 5;
-pub const ERROR_LOADING_REVISION_FAILED: i32 = 6;
-pub const ERROR_FILE_NOT_FOUND: i32 = 7;
-pub const ERROR_LOADING_FILE_FAILED: i32 = 8;
-pub const ERROR_SAVING_FILE_FAILED: i32 = 9;
-pub const ERROR_PRODUCING_FINISHED: i32 = 10;
+pub const CODE_GENERAL: i32 = 0;
+pub const CODE_READING_META_DATA_FAILED: i32 = 1;
+pub const CODE_READING_DIRECTORY_FAILED: i32 = 2;
+pub const CODE_CREATING_REPOSITORY_FAILED: i32 = 3;
+pub const CODE_LOADING_REPOSITORY_FAILED: i32 = 4;
+pub const CODE_REVISION_NOT_FOUND: i32 = 5;
+pub const CODE_LOADING_REVISION_FAILED: i32 = 6;
+pub const CODE_FILE_NOT_FOUND: i32 = 7;
+pub const CODE_LOADING_FILE_FAILED: i32 = 8;
+pub const CODE_SAVING_FILE_FAILED: i32 = 9;
+pub const CODE_PRODUCING_FINISHED: i32 = 10;
 
 #[derive(Debug)]
 pub struct ZatsuError {

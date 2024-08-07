@@ -24,8 +24,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::Command;
-use crate::error::ERROR_LOADING_REPOSITORY_FAILED;
-use crate::error::ERROR_READING_DIRECTORY_FAILED;
+use crate::error;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
@@ -68,12 +67,12 @@ impl ForgetCommand {
 fn process_garbage_collection() -> Result<(), ZatsuError> {
     let repository = match Repository::load(".zatsu/repository.json") {
         Ok(repository) => repository,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REPOSITORY_FAILED)),
+        Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_REPOSITORY_FAILED)),
     };
 
     let read_dir = match fs::read_dir(".zatsu/revisions") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
+        Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
     };
     let mut revision_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -86,7 +85,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
         };
         for result in read_dir {
             if result.is_ok() {
@@ -120,7 +119,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 
     let read_dir = match fs::read_dir(".zatsu/objects") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
+        Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
     }; 
     let mut object_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -133,7 +132,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
         };
 
         for result in read_dir {
