@@ -25,7 +25,7 @@ use chrono::Utc;
 
 use crate::Command;
 use crate::Entry;
-use crate::ERROR_LOADING_FILE_FAILED;
+use crate::error;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
@@ -47,7 +47,7 @@ impl Command for LogCommand {
             let revision_number = repository.revision_numbers[i];
             let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number)) {
 		Ok(revision) => revision,
-		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+		Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
             };
             let entries = revision.entries;
             let mut previous_entries: Vec<Entry> = Vec::new();
@@ -55,7 +55,7 @@ impl Command for LogCommand {
 		let previous_revision_number = repository.revision_numbers[i - 1];
 		let previous_revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", previous_revision_number & 0xFF, previous_revision_number)) {
                     Ok(revision) => revision,
-                    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
 		};
 		previous_entries = previous_revision.entries;
             }

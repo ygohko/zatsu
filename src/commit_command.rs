@@ -33,10 +33,7 @@ use std::path::PathBuf;
 
 use crate::Command;
 use crate::Entry;
-use crate::ERROR_LOADING_FILE_FAILED;
-use crate::ERROR_READING_META_DATA_FAILED;
-use crate::ERROR_PRODUCING_FINISHED;
-use crate::ERROR_SAVING_FILE_FAILED;
+use crate::error;
 use crate::FilePathProducer;
 use crate::Repository;
 use crate::Revision;
@@ -85,7 +82,7 @@ impl Command for CommitCommand {
 
 		println!("error.code: {}", error.code);
 
-		if error.code == ERROR_PRODUCING_FINISHED {
+		if error.code == error::CODE_PRODUCING_FINISHED {
                     done = true;
 		}
             }
@@ -95,22 +92,22 @@ impl Command for CommitCommand {
 	let a_path = Path::new(&path);
 	let exists = match a_path.try_exists() {
             Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
 	};
 	if !exists {
             match fs::create_dir(&path) {
 		Ok(()) => (),
-		Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+		Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
             };
 	}
 	match revision.save(format!("{}/{}.json", &path, revision_number)) {
             Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
 	};
 	repository.revision_numbers.push(revision_number);
 	match repository.save(&PathBuf::from(".zatsu/repository.json")) {
             Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
 	};
 
 	Ok(())	
@@ -126,14 +123,14 @@ impl CommitCommand {
 fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(&path) {
         Ok(metadata) => metadata,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_READING_META_DATA_FAILED)),
+        Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_META_DATA_FAILED)),
     };
     let mut hex_string = String::new();
     if metadata.is_file() {
         println!("This is file.");
         let values = match fs::read(path) {
             Ok(values) => values,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
         };
         println!("{} bytes read.", values.len());
         let mut sha1 = Sha1::new();
@@ -151,12 +148,12 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
             Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
         };
         if !exists {
             match fs::create_dir(&path) {
                 Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
             };
         }
 
@@ -164,22 +161,22 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
             Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
         };
         if !exists {
             let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
             match encoder.write_all(&values) {
                 Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
             }
             let compressed = match encoder.finish() {
                 Ok(compressed) => compressed,
-                Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
             };
 
             match fs::write(path, compressed) {
                 Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
             };
         }
     } else {

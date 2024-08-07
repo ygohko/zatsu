@@ -26,11 +26,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use crate::Command;
-use crate::ERROR_FILE_NOT_FOUND;
-use crate::ERROR_LOADING_FILE_FAILED;
-use crate::ERROR_LOADING_REVISION_FAILED;
-use crate::ERROR_REVISION_NOT_FOUND;
-use crate::ERROR_SAVING_FILE_FAILED;
+use crate::error;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
@@ -55,12 +51,12 @@ impl Command for GetCommand {
 	    } 
 	}
 	if !found {
-	    return Err(ZatsuError::new("main".to_string(), ERROR_REVISION_NOT_FOUND));
+	    return Err(ZatsuError::new("main".to_string(), error::CODE_REVISION_NOT_FOUND));
 	}
 
 	let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", self.revision_number & 0xFF, self.revision_number)) {
 	    Ok(revision) => revision,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_REVISION_FAILED)),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_REVISION_FAILED)),
 	};
 	let mut hash = "".to_string();
 	let mut found = false;
@@ -71,22 +67,22 @@ impl Command for GetCommand {
 	    }
 	}
 	if !found {
-	    return Err(ZatsuError::new("main".to_string(), ERROR_FILE_NOT_FOUND));
+	    return Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND));
 	}
 
 	let directory_name = hash[0..2].to_string();
 	let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
 	    Ok(values) => values,
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
 	};
 	let mut decoder = ZlibDecoder::new(Vec::new());
 	match decoder.write_all(&values) {
 	    Ok(()) => (),
-	    Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+	    Err(_) =>return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
 	};
 	let decoded = match decoder.finish() {
 	    Ok(decoded) => decoded,
-	    Err(_) =>return Err(ZatsuError::new("main".to_string(), ERROR_LOADING_FILE_FAILED)),
+	    Err(_) =>return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
 	};
 	let split: Vec<_> = self.path.split("/").collect();
 	let mut file_name = "out.dat".to_string();
@@ -99,7 +95,7 @@ impl Command for GetCommand {
 	}
 	match fs::write(&PathBuf::from(file_name), decoded) {
 	    Ok(()) => (),
-	    Err(_) => return Err(ZatsuError::new("main".to_string(), ERROR_SAVING_FILE_FAILED)),
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
 	};
 
 	Ok(())
