@@ -22,6 +22,7 @@
 
 use chrono::DateTime;
 use chrono::Utc;
+use std::collections::HashMap;
 
 use crate::Command;
 use crate::Entry;
@@ -60,6 +61,10 @@ impl Command for LogCommand {
 		previous_entries = previous_revision.entries;
             }
 
+	    // TODO: Make divided entries.
+	    let divided_entries = divided_entries(&entries);
+	    let previous_divided_entries = divided_entries(entries);
+	    
             // TODO: Apply time zone.
             let commited = match DateTime::from_timestamp_millis(revision.commited) {
 		Some(commited) => commited,
@@ -110,7 +115,13 @@ impl Command for LogCommand {
     } 
 }
 
-fn find_hash(entries:&Vec<Entry>, path: &String) -> Option<String> {
+impl LogCommand {
+    pub fn new() -> Self {
+	Self {}
+    }
+}
+
+fn find_hash(entries: &Vec<Entry>, path: &String) -> Option<String> {
     for entry in entries {
         if entry.path == *path {
             return Some(entry.hash.clone());
@@ -120,8 +131,23 @@ fn find_hash(entries:&Vec<Entry>, path: &String) -> Option<String> {
     None
 }
 
-impl LogCommand {
-    pub fn new() -> Self {
-	Self {}
+fn divided_entries(entries: &Vec<Entry>) -> HashMap<char, Vec<Entry>> {
+    let mut result: HashMap<char, Vec<Entry>> = HashMap::new();
+
+    for entry in entries {
+	let key: char;
+	if entry.path.len() > 0 {
+	    key = entry.path.chars().nth(0).unwrap();
+	}
+	else {
+	    key = char::from_u32(0).unwrap();
+	}
+
+	if !result.contains_key(&key) {
+	    result[&key] = Vec::new();
+	}
+	result[&key].push(entry.clone());
     }
+
+   result
 }
