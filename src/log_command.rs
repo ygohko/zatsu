@@ -62,8 +62,8 @@ impl Command for LogCommand {
             }
 
 	    // TODO: Make divided entries.
-	    let divided_entries = divided_entries(&entries);
-	    let previous_divided_entries = divided_entries(entries);
+	    let divided = divided_entries(&entries);
+	    let previous_divided = divided_entries(&entries);
 	    
             // TODO: Apply time zone.
             let commited = match DateTime::from_timestamp_millis(revision.commited) {
@@ -144,9 +144,10 @@ fn divided_entries(entries: &Vec<Entry>) -> HashMap<char, Vec<Entry>> {
 	}
 
 	if !result.contains_key(&key) {
-	    result[&key] = Vec::new();
+	    result.insert(key, Vec::new());
 	}
-	result[&key].push(entry.clone());
+	let entries = result.get_mut(&key).unwrap();
+	entries.push(entry.clone());
     }
 
    result
