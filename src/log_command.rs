@@ -61,7 +61,6 @@ impl Command for LogCommand {
 		previous_entries = previous_revision.entries;
             }
 
-	    // TODO: Make divided entries.
 	    let divided = divided_entries(&entries);
 	    let previous_divided = divided_entries(&entries);
 	    
@@ -73,7 +72,25 @@ impl Command for LogCommand {
             println!("Revision {}, commited at {}", revision_number, commited.format("%Y/%m/%d %H:%M"));
 
             let mut changes: Vec<String> = Vec::new();
-            for entry in &entries {
+
+	    let keys = divided.keys();
+	    for key in keys {
+		if !previous_divided.contains_key(key) {
+		    // TODO: All entries are appended.
+		}
+		else {
+		    // TODO: Compare entries and add chaned.
+		}
+	    }
+	    let keys = previous_divided.keys();
+	    for key in keys {
+		if !divided.contains_key(key) {
+		    // TODO: All entries are appended.
+		}
+	    }
+
+	    /*
+	    for entry in &entries {
 		let mut found = false;
 		let previous_hash = match find_hash(&previous_entries, &entry.path) {
                     Some(hash) => {
@@ -104,6 +121,7 @@ impl Command for LogCommand {
                     changes.push(format!("D {}", entry.path));
 		}
             }
+	    */
 
             for change in changes {
 		println!("{}", change);
