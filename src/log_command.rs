@@ -62,7 +62,7 @@ impl Command for LogCommand {
             }
 
 	    let divided = divided_entries(&entries);
-	    let previous_divided = divided_entries(&entries);
+	    let previous_divided = divided_entries(&previous_entries);
 	    
             // TODO: Apply time zone.
             let commited = match DateTime::from_timestamp_millis(revision.commited) {
@@ -76,16 +76,27 @@ impl Command for LogCommand {
 	    let keys = divided.keys();
 	    for key in keys {
 		if !previous_divided.contains_key(key) {
-		    // TODO: All entries are appended.
+		    // All entries are appended.
+                    let entries = &divided[&key];
+                    for entry in entries {
+                        changes.push(format!("A {}", entry.path));
+                    }
 		}
 		else {
-		    // TODO: Compare entries and add chaned.
+		    // Compare entries and add chaned.
+                    let entries = &divided[&key];
+                    let previous_entries = &previous_divided[&key];
+                    update_changes(&mut changes, &entries, &previous_entries);
 		}
 	    }
 	    let keys = previous_divided.keys();
 	    for key in keys {
 		if !divided.contains_key(key) {
-		    // TODO: All entries are appended.
+		    // All entries are deleted.
+                    let entries = &previous_divided[&key];
+                    for entry in entries {
+                        changes.push(format!("D {}", entry.path));
+                    }
 		}
 	    }
 
@@ -169,4 +180,38 @@ fn divided_entries(entries: &Vec<Entry>) -> HashMap<char, Vec<Entry>> {
     }
 
    result
+}
+
+fn update_changes(changes: &mut Vec<String>, entries: &Vec<Entry>, previous_entries: &Vec<Entry>) {
+    for entry in entries {
+	let mut found = false;
+	let previous_hash = match find_hash(&previous_entries, &entry.path) {
+            Some(hash) => {
+		found = true;
+		hash
+            },
+            None => String::new(),
+	};
+	if found {
+            if previous_hash != entry.hash {
+		changes.push(format!("M {}", entry.path));
+            }
+	}
+	else {
+            changes.push(format!("A {}", entry.path));
+	}
+    }
+    for entry in previous_entries {
+	let mut found = false;
+	match find_hash(&entries, &entry.path) {
+            Some(_) => {
+		found = true;
+		()
+            },
+            None => (),
+	}
+	if !found {
+            changes.push(format!("D {}", entry.path));
+	}
+    }
 }
