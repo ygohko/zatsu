@@ -23,7 +23,7 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Entry {
     pub path: String,
     pub hash: String,

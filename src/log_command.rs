@@ -22,6 +22,7 @@
 
 use chrono::DateTime;
 use chrono::Utc;
+use std::collections::HashMap;
 
 use crate::Command;
 use crate::Entry;
@@ -60,6 +61,9 @@ impl Command for LogCommand {
 		previous_entries = previous_revision.entries;
             }
 
+	    let divided = divided_entries(&entries);
+	    let previous_divided = divided_entries(&previous_entries);
+	    
             // TODO: Apply time zone.
             let commited = match DateTime::from_timestamp_millis(revision.commited) {
 		Some(commited) => commited,
@@ -68,37 +72,33 @@ impl Command for LogCommand {
             println!("Revision {}, commited at {}", revision_number, commited.format("%Y/%m/%d %H:%M"));
 
             let mut changes: Vec<String> = Vec::new();
-            for entry in &entries {
-		let mut found = false;
-		let previous_hash = match find_hash(&previous_entries, &entry.path) {
-                    Some(hash) => {
-			found = true;
-			hash
-                    },
-                    None => String::new(),
-		};
-		if found {
-                    if previous_hash != entry.hash {
-			changes.push(format!("M {}", entry.path));
+
+	    let keys = divided.keys();
+	    for key in keys {
+		if !previous_divided.contains_key(key) {
+		    // All entries are appended.
+                    let entries = &divided[&key];
+                    for entry in entries {
+                        changes.push(format!("A {}", entry.path));
                     }
 		}
 		else {
-                    changes.push(format!("A {}", entry.path));
+		    // Compare entries and add chaned.
+                    let entries = &divided[&key];
+                    let previous_entries = &previous_divided[&key];
+                    update_changes(&mut changes, &entries, &previous_entries);
 		}
-            }
-            for entry in previous_entries {
-		let mut found = false;
-		match find_hash(&entries, &entry.path) {
-                    Some(_) => {
-			found = true;
-			()
-                    },
-                    None => (),
+	    }
+	    let keys = previous_divided.keys();
+	    for key in keys {
+		if !divided.contains_key(key) {
+		    // All entries are deleted.
+                    let entries = &previous_divided[&key];
+                    for entry in entries {
+                        changes.push(format!("D {}", entry.path));
+                    }
 		}
-		if !found {
-                    changes.push(format!("D {}", entry.path));
-		}
-            }
+	    }
 
             for change in changes {
 		println!("{}", change);
@@ -110,7 +110,13 @@ impl Command for LogCommand {
     } 
 }
 
-fn find_hash(entries:&Vec<Entry>, path: &String) -> Option<String> {
+impl LogCommand {
+    pub fn new() -> Self {
+	Self {}
+    }
+}
+
+fn find_hash(entries: &Vec<Entry>, path: &String) -> Option<String> {
     for entry in entries {
         if entry.path == *path {
             return Some(entry.hash.clone());
@@ -120,8 +126,58 @@ fn find_hash(entries:&Vec<Entry>, path: &String) -> Option<String> {
     None
 }
 
-impl LogCommand {
-    pub fn new() -> Self {
-	Self {}
+fn divided_entries(entries: &Vec<Entry>) -> HashMap<char, Vec<Entry>> {
+    let mut result: HashMap<char, Vec<Entry>> = HashMap::new();
+
+    for entry in entries {
+	let key: char;
+	if entry.path.len() > 0 {
+	    key = entry.path.chars().nth(0).unwrap();
+	}
+	else {
+	    key = char::from_u32(0).unwrap();
+	}
+
+	if !result.contains_key(&key) {
+	    result.insert(key, Vec::new());
+	}
+	let entries = result.get_mut(&key).unwrap();
+	entries.push(entry.clone());
+    }
+
+   result
+}
+
+fn update_changes(changes: &mut Vec<String>, entries: &Vec<Entry>, previous_entries: &Vec<Entry>) {
+    for entry in entries {
+	let mut found = false;
+	let previous_hash = match find_hash(&previous_entries, &entry.path) {
+            Some(hash) => {
+		found = true;
+		hash
+            },
+            None => String::new(),
+	};
+	if found {
+            if previous_hash != entry.hash {
+		changes.push(format!("M {}", entry.path));
+            }
+	}
+	else {
+            changes.push(format!("A {}", entry.path));
+	}
+    }
+    for entry in previous_entries {
+	let mut found = false;
+	match find_hash(&entries, &entry.path) {
+            Some(_) => {
+		found = true;
+		()
+            },
+            None => (),
+	}
+	if !found {
+            changes.push(format!("D {}", entry.path));
+	}
     }
 }
