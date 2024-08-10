@@ -100,40 +100,6 @@ impl Command for LogCommand {
 		}
 	    }
 
-	    /*
-	    for entry in &entries {
-		let mut found = false;
-		let previous_hash = match find_hash(&previous_entries, &entry.path) {
-                    Some(hash) => {
-			found = true;
-			hash
-                    },
-                    None => String::new(),
-		};
-		if found {
-                    if previous_hash != entry.hash {
-			changes.push(format!("M {}", entry.path));
-                    }
-		}
-		else {
-                    changes.push(format!("A {}", entry.path));
-		}
-            }
-            for entry in previous_entries {
-		let mut found = false;
-		match find_hash(&entries, &entry.path) {
-                    Some(_) => {
-			found = true;
-			()
-                    },
-                    None => (),
-		}
-		if !found {
-                    changes.push(format!("D {}", entry.path));
-		}
-            }
-	    */
-
             for change in changes {
 		println!("{}", change);
             }
