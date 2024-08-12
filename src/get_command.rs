@@ -38,7 +38,46 @@ pub struct GetCommand {
 
 impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-	self.save_file()
+	// TODO: Dicide operation, for a file or a directory.
+
+	let repository = match Repository::load(".zatsu/repository.json") {
+	    Ok(repository) => repository,
+	    Err(_) => Repository {
+		revision_numbers: Vec::new(),
+	    },
+	};
+	let mut found = false;
+	for a_revision_number in repository.revision_numbers {
+	    if a_revision_number == self.revision_number {
+		found = true;
+	    } 
+	}
+	if !found {
+	    return Err(ZatsuError::new("main".to_string(), error::CODE_REVISION_NOT_FOUND));
+	}
+
+	let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", self.revision_number & 0xFF, self.revision_number)) {
+	    Ok(revision) => revision,
+	    Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_REVISION_FAILED)),
+	};
+	let mut hash = "".to_string();
+	let mut file_found = false;
+	let mut directory_found = false;
+	for entry in revision.entries {
+	    if entry.path == *self.path {
+		file_found = true;
+		hash = entry.hash;
+	    }
+	}
+	if !found {
+	    return Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND));
+	}
+
+	if file_found {
+	    return self.save_file();
+	}
+
+	Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND))
 
 	/*
 	let repository = match Repository::load(".zatsu/repository.json") {
