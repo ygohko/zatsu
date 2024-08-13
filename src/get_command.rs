@@ -68,13 +68,21 @@ impl Command for GetCommand {
 		file_found = true;
 		hash = entry.hash;
 	    }
-	}
-	if !found {
-	    return Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND));
+
+	    if entry.path.contains("/") {
+		if let Some(index) = entry.path.find(*self.path) {
+		    if index < entrypath.len() - 2 {
+			directory_found = true;
+		    }
+		}
+	    }
 	}
 
 	if file_found {
 	    return self.save_file();
+	}
+	if directory_found {
+	    return self.save_directory();
 	}
 
 	Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND))
