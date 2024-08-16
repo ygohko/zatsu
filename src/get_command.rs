@@ -84,7 +84,7 @@ impl Command for GetCommand {
         }
 
         Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND))
-    }   
+    }
 }
 
 impl GetCommand {
@@ -128,7 +128,7 @@ impl GetCommand {
     }
 
     fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
-	// Make root directory.
+        // Make root directory.
         let root_path: String;
         let split: Vec<_> = self.path.split("/").collect();
         let count = split.len();
@@ -143,7 +143,7 @@ impl GetCommand {
             Err(_) => return Err(ZatsuError::new("GetCommand".to_string(), error::CODE_CREATING_DIRECTORY_FAILED)),
         };
 
-	let mut hash = "".to_string();
+        let mut hash = "".to_string();
         for entry in &revision.entries {
             if let Some(index) = entry.path.find(&self.path) {
                 hash = entry.hash.clone();
@@ -169,7 +169,7 @@ impl GetCommand {
                     file_name = split[count - 1].to_string();
                 }
 
-		// Make sub directries.
+                // Make sub directries.
                 let mut path = root_path.clone();
                 if count >= 3 {
                     for i in 0..(count - 2) {
@@ -190,6 +190,6 @@ impl GetCommand {
             }
         }
 
-        Ok(())  
+        Ok(())
     }
 }
