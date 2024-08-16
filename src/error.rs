@@ -36,9 +36,11 @@ pub const CODE_FILE_NOT_FOUND: i32 = 7;
 pub const CODE_LOADING_FILE_FAILED: i32 = 8;
 pub const CODE_SAVING_FILE_FAILED: i32 = 9;
 pub const CODE_PRODUCING_FINISHED: i32 = 10;
+pub const CODE_CREATING_DIRECTORY_FAILED: i32 = 11;
 
 #[derive(Debug)]
 pub struct ZatsuError {
+    // TODO: Remove domain field.
     pub domain: String,
     pub code: i32,
     pub backtrace: String,
