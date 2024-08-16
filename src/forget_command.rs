@@ -23,8 +23,8 @@
 use std::fs;
 use std::path::PathBuf;
 
-use crate::Command;
 use crate::error;
+use crate::Command;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
@@ -35,44 +35,52 @@ pub struct ForgetCommand {
 
 impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-	let mut repository = match Repository::load(".zatsu/repository.json") {
+        let mut repository = match Repository::load(".zatsu/repository.json") {
             Ok(repository) => repository,
             // TODO: Ensure repository is created when zatsu init.
             Err(_) => Repository {
-		revision_numbers: Vec::new(),
+                revision_numbers: Vec::new(),
             },
-	};
-	let current_count = repository.revision_numbers.len() as i32;
-	let removed_count = current_count - self.revision_count;
-	if removed_count <= 0 {
+        };
+        let current_count = repository.revision_numbers.len() as i32;
+        let removed_count = current_count - self.revision_count;
+        if removed_count <= 0 {
             return Ok(());
-	}
-	let index: usize = removed_count as usize;
-	repository.revision_numbers = repository.revision_numbers.drain(index..).collect();
-	repository.save(".zatsu/repository.json")?;
-	process_garbage_collection()?;
+        }
+        let index: usize = removed_count as usize;
+        repository.revision_numbers = repository.revision_numbers.drain(index..).collect();
+        repository.save(".zatsu/repository.json")?;
+        process_garbage_collection()?;
 
-	Ok(())
+        Ok(())
     }
 }
 
 impl ForgetCommand {
     pub fn new(revision_count: i32) -> Self {
-	Self {
-	    revision_count,
-	}
+        Self { revision_count }
     }
 }
 
 fn process_garbage_collection() -> Result<(), ZatsuError> {
     let repository = match Repository::load(".zatsu/repository.json") {
         Ok(repository) => repository,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_REPOSITORY_FAILED)),
+        Err(_) => {
+            return Err(ZatsuError::new(
+                "main".to_string(),
+                error::CODE_LOADING_REPOSITORY_FAILED,
+            ))
+        }
     };
 
     let read_dir = match fs::read_dir(".zatsu/revisions") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
+        Err(_) => {
+            return Err(ZatsuError::new(
+                "main".to_string(),
+                error::CODE_READING_DIRECTORY_FAILED,
+            ))
+        }
     };
     let mut revision_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -85,7 +93,12 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "main".to_string(),
+                    error::CODE_READING_DIRECTORY_FAILED,
+                ))
+            }
         };
         for result in read_dir {
             if result.is_ok() {
@@ -100,7 +113,10 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                     let result = file_stem.parse();
                     if result.is_ok() {
                         let revision_number: i32 = result.unwrap();
-                        let option = repository.revision_numbers.iter().find(|&value| *value == revision_number);
+                        let option = repository
+                            .revision_numbers
+                            .iter()
+                            .find(|&value| *value == revision_number);
                         if option.is_some() {
                             found = true;
                         }
@@ -119,8 +135,13 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 
     let read_dir = match fs::read_dir(".zatsu/objects") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
-    }; 
+        Err(_) => {
+            return Err(ZatsuError::new(
+                "main".to_string(),
+                error::CODE_READING_DIRECTORY_FAILED,
+            ))
+        }
+    };
     let mut object_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
         if result.is_ok() {
@@ -132,7 +153,12 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_READING_DIRECTORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "main".to_string(),
+                    error::CODE_READING_DIRECTORY_FAILED,
+                ))
+            }
         };
 
         for result in read_dir {
@@ -144,7 +170,11 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                     let hash = option.unwrap().to_string_lossy();
                     let mut found = false;
                     for revision_number in &repository.revision_numbers {
-                        let result = Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", revision_number & 0xFF, revision_number));
+                        let result = Revision::load(format!(
+                            ".zatsu/revisions/{:02x}/{}.json",
+                            revision_number & 0xFF,
+                            revision_number
+                        ));
                         if result.is_ok() {
                             let revision = result.unwrap();
                             for entry in revision.entries {
