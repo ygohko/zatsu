@@ -185,9 +185,9 @@ impl GetCommand {
             }
         };
 
-        let mut hash = "".to_string();
+        let mut hash: String;
         for entry in &revision.entries {
-            if let Some(index) = entry.path.find(&self.path) {
+            if let Some(_) = entry.path.find(&self.path) {
                 hash = entry.hash.clone();
                 let directory_name = hash[0..2].to_string();
                 let values = match fs::read(&PathBuf::from(format!(
