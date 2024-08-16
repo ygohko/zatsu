@@ -38,8 +38,6 @@ pub struct GetCommand {
 
 impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        // TODO: Dicide operation, for a file or a directory.
-
         let repository = match Repository::load(".zatsu/repository.json") {
             Ok(repository) => repository,
             Err(_) => Repository {
@@ -63,10 +61,10 @@ impl Command for GetCommand {
         let mut hash = "".to_string();
         let mut file_found = false;
         let mut directory_found = false;
-        for entry in revision.entries {
+        for entry in &revision.entries {
             if entry.path == *self.path {
                 file_found = true;
-                hash = entry.hash;
+                hash = entry.hash.clone();
             }
 
             if entry.path.contains("/") {
@@ -79,12 +77,10 @@ impl Command for GetCommand {
         }
 
         if file_found {
-            // TODO: Give revision and hash here.
-            return self.save_file();
+            return self.save_file(&hash);
         }
         if directory_found {
-            // TODO: Give revision here.
-            return self.save_directory();
+            return self.save_directory(&revision);
         }
 
         Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND))
@@ -99,39 +95,7 @@ impl GetCommand {
         }
     }
 
-    fn save_file(&self) -> Result<(), ZatsuError> {
-        let repository = match Repository::load(".zatsu/repository.json") {
-            Ok(repository) => repository,
-            Err(_) => Repository {
-                revision_numbers: Vec::new(),
-            },
-        };
-        let mut found = false;
-        for a_revision_number in repository.revision_numbers {
-            if a_revision_number == self.revision_number {
-                found = true;
-            } 
-        }
-        if !found {
-            return Err(ZatsuError::new("main".to_string(), error::CODE_REVISION_NOT_FOUND));
-        }
-
-        let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", self.revision_number & 0xFF, self.revision_number)) {
-            Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_REVISION_FAILED)),
-        };
-        let mut hash = "".to_string();
-        let mut found = false;
-        for entry in revision.entries {
-            if entry.path == *self.path {
-                found = true;
-                hash = entry.hash;
-            }
-        }
-        if !found {
-            return Err(ZatsuError::new("main".to_string(), error::CODE_FILE_NOT_FOUND));
-        }
-
+    fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
         let directory_name = hash[0..2].to_string();
         let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
             Ok(values) => values,
@@ -163,28 +127,7 @@ impl GetCommand {
         Ok(())
     }
 
-    fn save_directory(&self) -> Result<(), ZatsuError> {
-        let repository = match Repository::load(".zatsu/repository.json") {
-            Ok(repository) => repository,
-            Err(_) => Repository {
-                revision_numbers: Vec::new(),
-            },
-        };
-        let mut found = false;
-        for a_revision_number in repository.revision_numbers {
-            if a_revision_number == self.revision_number {
-                found = true;
-            } 
-        }
-        if !found {
-            return Err(ZatsuError::new("main".to_string(), error::CODE_REVISION_NOT_FOUND));
-        }
-
-        let revision = match Revision::load(format!(".zatsu/revisions/{:02x}/{}.json", self.revision_number & 0xFF, self.revision_number)) {
-            Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_REVISION_FAILED)),
-        };
-
+    fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
 	// Make root directory.
         let root_path: String;
         let split: Vec<_> = self.path.split("/").collect();
@@ -201,11 +144,9 @@ impl GetCommand {
         };
 
 	let mut hash = "".to_string();
-        for entry in revision.entries {
-            // TODO: Write this entry if it is in this directory.
-
+        for entry in &revision.entries {
             if let Some(index) = entry.path.find(&self.path) {
-                hash = entry.hash;
+                hash = entry.hash.clone();
                 let directory_name = hash[0..2].to_string();
                 let values = match fs::read(&PathBuf::from(format!(".zatsu/objects/{}/{}", directory_name, hash))) {
                     Ok(values) => values,
