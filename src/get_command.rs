@@ -232,7 +232,7 @@ impl GetCommand {
                 let mut path = root_path.clone();
                 if count >= 3 {
                     for i in 0..(count - 2) {
-                        path += &("/".to_string() + &split[i + i]);
+                        path += &("/".to_string() + &split[i + 1]);
                     }
                 }
                 println!("path: {}", path);
