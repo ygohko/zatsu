@@ -79,9 +79,11 @@ impl Command for GetCommand {
         }
 
         if file_found {
+            // TODO: Give revision and hash here.
             return self.save_file();
         }
         if directory_found {
+            // TODO: Give revision here.
             return self.save_directory();
         }
 
@@ -183,7 +185,20 @@ impl GetCommand {
             Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_REVISION_FAILED)),
         };
 
-	// TODO Make root directory.
+	// Make root directory.
+        let root_path: String;
+        let split: Vec<_> = self.path.split("/").collect();
+        let count = split.len();
+        if count >= 1 {
+            root_path = format!("{}-r{}", split[count - 1], self.revision_number);
+        }
+        else {
+            root_path = format!("{}-r{}", self.path, self.revision_number);
+        }
+        match fs::create_dir(root_path) {
+            Ok(_) => (),
+            Err(_) => return Err(ZatsuError::new("GetCommand".to_string(), error::CODE_CREATING_DIRECTORY_FAILED)),
+        };
 
 	let mut hash = "".to_string();
         for entry in revision.entries {
