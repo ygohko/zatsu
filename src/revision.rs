@@ -45,30 +45,45 @@ pub struct Revision {
 
 impl Revision {
     pub fn load(path: impl AsRef<Path>) -> Result<Revision, ZatsuError> {
-	let serialized = match fs::read_to_string(path) {
-	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_LOADING_FAILED)),
-	};
-	let revision = match serde_json::from_str(&serialized) {
-	    Ok(revision) => revision,
-	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_DESERIALIZATION_FAILED)),
-	};
-	
-	Ok(revision)
+        let serialized = match fs::read_to_string(path) {
+            Ok(serialized) => serialized,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "Revision".to_string(),
+                    ERROR_LOADING_FAILED,
+                ))
+            }
+        };
+        let revision = match serde_json::from_str(&serialized) {
+            Ok(revision) => revision,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "Revision".to_string(),
+                    ERROR_DESERIALIZATION_FAILED,
+                ))
+            }
+        };
+
+        Ok(revision)
     }
 
     pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
-	let serialized = match serde_json::to_string(self) {
-	    Ok(serialized) => serialized,
-	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_SERIALIZATION_FAILED)),
-	};
+        let serialized = match serde_json::to_string(self) {
+            Ok(serialized) => serialized,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "Revision".to_string(),
+                    ERROR_SERIALIZATION_FAILED,
+                ))
+            }
+        };
 
-	// println!("serialized: {}", serialized);
-	let _ = match std::fs::write(path, serialized) {
-	    Ok(result) => result,
-	    Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_SAVING_FAILED)),
-	};
+        // println!("serialized: {}", serialized);
+        let _ = match std::fs::write(path, serialized) {
+            Ok(result) => result,
+            Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_SAVING_FAILED)),
+        };
 
-	Ok(())
+        Ok(())
     }
 }

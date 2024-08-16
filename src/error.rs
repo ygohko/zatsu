@@ -49,12 +49,15 @@ pub struct ZatsuError {
 
 impl fmt::Display for ZatsuError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Zatsu error. domain: {}, code: {}, backtrace: {}, details: {}", self.domain, self.code, self.backtrace, self.details)
+        write!(
+            f,
+            "Zatsu error. domain: {}, code: {}, backtrace: {}, details: {}",
+            self.domain, self.code, self.backtrace, self.details
+        )
     }
 }
 
-impl Error for ZatsuError {
-}
+impl Error for ZatsuError {}
 
 impl ZatsuError {
     pub fn new(domain: String, code: i32) -> ZatsuError {

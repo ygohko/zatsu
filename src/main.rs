@@ -29,8 +29,8 @@ mod forget_command;
 mod get_command;
 mod init_command;
 mod log_command;
-mod revision;
 mod repository;
+mod revision;
 
 use std::env;
 
@@ -43,8 +43,8 @@ use crate::forget_command::ForgetCommand;
 use crate::get_command::GetCommand;
 use crate::init_command::InitCommand;
 use crate::log_command::LogCommand;
-use crate::revision::Revision;
 use crate::repository::Repository;
+use crate::revision::Revision;
 
 fn main() -> Result<(), ZatsuError> {
     println!("Hello, world!");
@@ -54,7 +54,6 @@ fn main() -> Result<(), ZatsuError> {
     println!("count: {}", count);
     if count > 0 {
         println!("arguments[0]: {}", arguments[0]);
-
     }
     if count > 1 {
         println!("arguments[1]: {}", arguments[1]);
@@ -66,14 +65,14 @@ fn main() -> Result<(), ZatsuError> {
     }
 
     if command == "commit" {
-	let command = CommitCommand::new();
-	match command.execute() {
+        let command = CommitCommand::new();
+        match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
     if command == "log" {
-	let command = LogCommand::new();
+        let command = LogCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
@@ -82,9 +81,9 @@ fn main() -> Result<(), ZatsuError> {
     if command == "get" {
         if count > 3 {
             // TODO: Do not panic is parse failed.
-            let revision_number :i32 = arguments[2].parse().unwrap();
+            let revision_number: i32 = arguments[2].parse().unwrap();
             let path = arguments[3].clone();
-	    let command = GetCommand::new(revision_number, &path);
+            let command = GetCommand::new(revision_number, &path);
             match command.execute() {
                 Ok(()) => (),
                 Err(error) => return Err(error),
@@ -94,8 +93,8 @@ fn main() -> Result<(), ZatsuError> {
     if command == "forget" {
         if count > 2 {
             // TODO: Do not panic is parse failed.
-            let revision_count :i32 = arguments[2].parse().unwrap();
-	    let command = ForgetCommand::new(revision_count);
+            let revision_count: i32 = arguments[2].parse().unwrap();
+            let command = ForgetCommand::new(revision_count);
             match command.execute() {
                 Ok(()) => (),
                 Err(error) => return Err(error),
@@ -103,7 +102,7 @@ fn main() -> Result<(), ZatsuError> {
         }
     }
     if command == "init" {
-	let command = InitCommand::new();
+        let command = InitCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),

@@ -20,42 +20,65 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-use crate::Command;
 use crate::error;
+use crate::Command;
 use crate::Repository;
 use crate::ZatsuError;
 
 use std::fs;
 use std::path::PathBuf;
 
-pub struct InitCommand {
-}
+pub struct InitCommand {}
 
 impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-
         match fs::create_dir_all(".zatsu") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "main".to_string(),
+                    error::CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         match fs::write(".zatsu/version.txt", "1") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "main".to_string(),
+                    error::CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         match fs::create_dir_all(".zatsu/revisions") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "main".to_string(),
+                    error::CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         match fs::create_dir_all(".zatsu/objects") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "main".to_string(),
+                    error::CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         let repository = Repository {
             revision_numbers: Vec::new(),
         };
         match repository.save(&PathBuf::from(".zatsu/repository.json")) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    "main".to_string(),
+                    error::CODE_SAVING_FILE_FAILED,
+                ))
+            }
         };
 
         Ok(())
@@ -64,7 +87,6 @@ impl Command for InitCommand {
 
 impl InitCommand {
     pub fn new() -> Self {
-        Self {
-        }
+        Self {}
     }
 }
