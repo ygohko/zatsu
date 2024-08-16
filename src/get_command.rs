@@ -195,7 +195,7 @@ impl GetCommand {
         else {
             root_path = format!("{}-r{}", self.path, self.revision_number);
         }
-        match fs::create_dir(root_path) {
+        match fs::create_dir(&root_path) {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new("GetCommand".to_string(), error::CODE_CREATING_DIRECTORY_FAILED)),
         };
@@ -218,27 +218,34 @@ impl GetCommand {
                 };
                 let decoded = match decoder.finish() {
                     Ok(decoded) => decoded,
-                    Err(_) =>return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_LOADING_FILE_FAILED)),
                 };
 
                 let split: Vec<_> = entry.path.split("/").collect();
                 let mut file_name = "out.dat".to_string();
-                if split.len() >= 1 {
-                    let original_file_name = split[split.len() - 1].to_string();
-                    let split: Vec<_> = original_file_name.split(".").collect();
-                    if split.len() > 1 {
-                        file_name = format!("{}-r{}.{}", split[0], self.revision_number, split[1]);
-                    }
+                let count = split.len();
+                if count >= 1 {
+                    file_name = split[count - 1].to_string();
                 }
 
-		// TODO: Make sub directries.
-		
-                match fs::write(&PathBuf::from(file_name), decoded) {
+		// Make sub directries.
+                let mut path = root_path.clone();
+                if count >= 3 {
+                    for i in 0..(count - 2) {
+                        path += &("/".to_string() + &split[i + i]);
+                    }
+                }
+                println!("path: {}", path);
+                match fs::create_dir_all(&path) {
+                    Ok(_) => (),
+                    Err(_) => return Err(ZatsuError::new("GetCommand".to_string(), error::CODE_CREATING_DIRECTORY_FAILED)),
+                };
+
+                path += &("/".to_string() + &file_name);
+                match fs::write(path, decoded) {
                     Ok(()) => (),
                     Err(_) => return Err(ZatsuError::new("main".to_string(), error::CODE_SAVING_FILE_FAILED)),
                 };
-
-                
             }
         }
 
