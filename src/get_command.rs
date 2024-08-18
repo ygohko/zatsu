@@ -52,7 +52,6 @@ impl Command for GetCommand {
         }
         if !found {
             return Err(ZatsuError::new(
-                "main".to_string(),
                 error::CODE_REVISION_NOT_FOUND,
             ));
         }
@@ -65,7 +64,6 @@ impl Command for GetCommand {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_LOADING_REVISION_FAILED,
                 ))
             }
@@ -96,7 +94,6 @@ impl Command for GetCommand {
         }
 
         Err(ZatsuError::new(
-            "main".to_string(),
             error::CODE_FILE_NOT_FOUND,
         ))
     }
@@ -119,7 +116,6 @@ impl GetCommand {
             Ok(values) => values,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_LOADING_FILE_FAILED,
                 ))
             }
@@ -129,7 +125,6 @@ impl GetCommand {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_LOADING_FILE_FAILED,
                 ))
             }
@@ -138,7 +133,6 @@ impl GetCommand {
             Ok(decoded) => decoded,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_LOADING_FILE_FAILED,
                 ))
             }
@@ -156,7 +150,6 @@ impl GetCommand {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_SAVING_FILE_FAILED,
                 ))
             }
@@ -179,7 +172,6 @@ impl GetCommand {
             Ok(_) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "GetCommand".to_string(),
                     error::CODE_CREATING_DIRECTORY_FAILED,
                 ))
             }
@@ -197,7 +189,6 @@ impl GetCommand {
                     Ok(values) => values,
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "main".to_string(),
                             error::CODE_LOADING_FILE_FAILED,
                         ))
                     }
@@ -207,7 +198,6 @@ impl GetCommand {
                     Ok(()) => (),
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "main".to_string(),
                             error::CODE_LOADING_FILE_FAILED,
                         ))
                     }
@@ -216,7 +206,6 @@ impl GetCommand {
                     Ok(decoded) => decoded,
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "main".to_string(),
                             error::CODE_LOADING_FILE_FAILED,
                         ))
                     }
@@ -241,7 +230,6 @@ impl GetCommand {
                     Ok(_) => (),
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "GetCommand".to_string(),
                             error::CODE_CREATING_DIRECTORY_FAILED,
                         ))
                     }
@@ -252,7 +240,6 @@ impl GetCommand {
                     Ok(()) => (),
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "main".to_string(),
                             error::CODE_SAVING_FILE_FAILED,
                         ))
                     }

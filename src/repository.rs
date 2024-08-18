@@ -25,14 +25,8 @@ use serde_derive::Serialize;
 use std::fs;
 use std::path::Path;
 
+use crate::error;
 use crate::error::ZatsuError;
-
-#[allow(unused)]
-const ERROR_GENERAL: i32 = 0;
-const ERROR_LOADING_FAILED: i32 = 1;
-const ERROR_SAVING_FAILED: i32 = 2;
-const ERROR_DESERIALIZATION_FAILED: i32 = 3;
-const ERROR_SERIALIZATION_FAILED: i32 = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Repository {
@@ -45,8 +39,7 @@ impl Repository {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
-                    ERROR_SERIALIZATION_FAILED,
+                    error::CODE_SERIALIZATION_FAILED,
                 ))
             }
         };
@@ -55,8 +48,7 @@ impl Repository {
             Ok(result) => result,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
-                    ERROR_SAVING_FAILED,
+                    error::CODE_SAVING_FILE_FAILED,
                 ))
             }
         };
@@ -78,8 +70,7 @@ impl Repository {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
-                    ERROR_LOADING_FAILED,
+                    error::CODE_LOADING_FILE_FAILED,
                 ))
             }
         };
@@ -87,8 +78,7 @@ impl Repository {
             Ok(repository) => repository,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
-                    ERROR_DESERIALIZATION_FAILED,
+                    error::CODE_DESERIALIZATION_FAILED,
                 ))
             }
         };

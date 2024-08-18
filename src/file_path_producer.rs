@@ -23,14 +23,8 @@
 use std::fs;
 use std::path::Path;
 
+use crate::error;
 use crate::error::ZatsuError;
-
-// TODO: Publish error codes.
-#[allow(dead_code)]
-const ERROR_GENERAL: i32 = 0;
-const ERROR_READING_META_DATA_FAILED: i32 = 1;
-const ERROR_READING_DIRECTORY_FAILED: i32 = 2;
-const ERROR_PRODUCING_FINISHED: i32 = 10;
 
 pub struct FilePathProducer {
     file_paths: Vec<String>,
@@ -59,8 +53,7 @@ impl FilePathProducer {
 
             if self.directory_paths.len() == 0 {
                 return Err(ZatsuError::new(
-                    "FilePathProducer".to_string(),
-                    ERROR_PRODUCING_FINISHED,
+                    error::CODE_PRODUCING_FINISHED,
                 ));
             }
             let directory_path = self.directory_paths.pop().unwrap();
@@ -84,8 +77,7 @@ impl FilePathProducer {
                     Ok(read_dir) => read_dir,
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "FilePathProducer".to_string(),
-                            ERROR_READING_DIRECTORY_FAILED,
+                            error::CODE_READING_DIRECTORY_FAILED,
                         ))
                     }
                 };
@@ -97,8 +89,7 @@ impl FilePathProducer {
                             Ok(metadata) => metadata,
                             Err(_) => {
                                 return Err(ZatsuError::new(
-                                    "FilePathProducer".to_string(),
-                                    ERROR_READING_META_DATA_FAILED,
+                                    error::CODE_READING_META_DATA_FAILED,
                                 ))
                             }
                         };
@@ -120,8 +111,7 @@ impl FilePathProducer {
         }
 
         Err(ZatsuError::new(
-            "FilePathProducer".to_string(),
-            ERROR_PRODUCING_FINISHED,
+            error::CODE_PRODUCING_FINISHED,
         ))
     }
 }

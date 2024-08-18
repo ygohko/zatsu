@@ -37,11 +37,11 @@ pub const CODE_LOADING_FILE_FAILED: i32 = 8;
 pub const CODE_SAVING_FILE_FAILED: i32 = 9;
 pub const CODE_PRODUCING_FINISHED: i32 = 10;
 pub const CODE_CREATING_DIRECTORY_FAILED: i32 = 11;
+pub const CODE_DESERIALIZATION_FAILED: i32 = 3;
+pub const CODE_SERIALIZATION_FAILED: i32 = 12;
 
 #[derive(Debug)]
 pub struct ZatsuError {
-    // TODO: Remove domain field.
-    pub domain: String,
     pub code: i32,
     pub backtrace: String,
     pub details: String,
@@ -51,8 +51,8 @@ impl fmt::Display for ZatsuError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Zatsu error. domain: {}, code: {}, backtrace: {}, details: {}",
-            self.domain, self.code, self.backtrace, self.details
+            "Zatsu error. code: {}, backtrace: {}, details: {}",
+            self.code, self.backtrace, self.details
         )
     }
 }
@@ -60,11 +60,10 @@ impl fmt::Display for ZatsuError {
 impl Error for ZatsuError {}
 
 impl ZatsuError {
-    pub fn new(domain: String, code: i32) -> ZatsuError {
+    pub fn new(code: i32) -> ZatsuError {
         let backtrace = Backtrace::capture();
         let string = format!("{}", backtrace);
         return ZatsuError {
-            domain: domain,
             code: code,
             backtrace: string,
             details: "".to_string(),
@@ -72,11 +71,10 @@ impl ZatsuError {
     }
 
     #[allow(dead_code)]
-    pub fn new_with_details(domain: String, code: i32, details: String) -> ZatsuError {
+    pub fn with_details(code: i32, details: String) -> ZatsuError {
         let backtrace = Backtrace::capture();
         let string = format!("{}", backtrace);
         return ZatsuError {
-            domain: domain,
             code: code,
             backtrace: string,
             details: details,

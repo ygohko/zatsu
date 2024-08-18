@@ -26,14 +26,8 @@ use std::fs;
 use std::path::Path;
 
 use crate::entry::Entry;
+use crate::error;
 use crate::error::ZatsuError;
-
-#[allow(unused)]
-const ERROR_GENERAL: i32 = 0;
-const ERROR_LOADING_FAILED: i32 = 1;
-const ERROR_SAVING_FAILED: i32 = 2;
-const ERROR_SERIALIZATION_FAILED: i32 = 3;
-const ERROR_DESERIALIZATION_FAILED: i32 = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
@@ -49,8 +43,7 @@ impl Revision {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Revision".to_string(),
-                    ERROR_LOADING_FAILED,
+                    error::CODE_LOADING_FILE_FAILED,
                 ))
             }
         };
@@ -58,8 +51,7 @@ impl Revision {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Revision".to_string(),
-                    ERROR_DESERIALIZATION_FAILED,
+                    error::CODE_DESERIALIZATION_FAILED,
                 ))
             }
         };
@@ -72,8 +64,7 @@ impl Revision {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Revision".to_string(),
-                    ERROR_SERIALIZATION_FAILED,
+                    error::CODE_SERIALIZATION_FAILED,
                 ))
             }
         };
@@ -81,7 +72,7 @@ impl Revision {
         // println!("serialized: {}", serialized);
         let _ = match std::fs::write(path, serialized) {
             Ok(result) => result,
-            Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_SAVING_FAILED)),
+            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
 
         Ok(())
