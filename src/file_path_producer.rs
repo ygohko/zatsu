@@ -20,6 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use std::env::consts;
 use std::fs;
 use std::path::Path;
 
@@ -46,7 +47,10 @@ impl FilePathProducer {
         let done = false;
         while !done {
             if self.file_paths.len() > 0 {
-                let path = self.file_paths.pop().unwrap();
+                let mut path = self.file_paths.pop().unwrap();
+                if consts::OS == "windows" {
+                    path = path.replace("\\", "/");
+                }
 
                 return Ok(path);
             }
