@@ -65,20 +65,12 @@ impl ForgetCommand {
 fn process_garbage_collection() -> Result<(), ZatsuError> {
     let repository = match Repository::load(".zatsu/repository.json") {
         Ok(repository) => repository,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                error::CODE_LOADING_REPOSITORY_FAILED,
-            ))
-        }
+        Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED)),
     };
 
     let read_dir = match fs::read_dir(".zatsu/revisions") {
         Ok(read_dir) => read_dir,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                error::CODE_READING_DIRECTORY_FAILED,
-            ))
-        }
+        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
     };
     let mut revision_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -91,11 +83,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => {
-                return Err(ZatsuError::new(
-                    error::CODE_READING_DIRECTORY_FAILED,
-                ))
-            }
+            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
         };
         for result in read_dir {
             if result.is_ok() {
@@ -132,11 +120,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 
     let read_dir = match fs::read_dir(".zatsu/objects") {
         Ok(read_dir) => read_dir,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                error::CODE_READING_DIRECTORY_FAILED,
-            ))
-        }
+        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
     };
     let mut object_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -149,11 +133,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => {
-                return Err(ZatsuError::new(
-                    error::CODE_READING_DIRECTORY_FAILED,
-                ))
-            }
+            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
         };
 
         for result in read_dir {

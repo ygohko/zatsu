@@ -51,11 +51,7 @@ impl Command for LogCommand {
                 revision_number
             )) {
                 Ok(revision) => revision,
-                Err(_) => {
-                    return Err(ZatsuError::new(
-                        error::CODE_LOADING_FILE_FAILED,
-                    ))
-                }
+                Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
             };
             let entries = revision.entries;
             let mut previous_entries: Vec<Entry> = Vec::new();
@@ -67,11 +63,7 @@ impl Command for LogCommand {
                     previous_revision_number
                 )) {
                     Ok(revision) => revision,
-                    Err(_) => {
-                        return Err(ZatsuError::new(
-                            error::CODE_LOADING_FILE_FAILED,
-                        ))
-                    }
+                    Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
                 };
                 previous_entries = previous_revision.entries;
             }
