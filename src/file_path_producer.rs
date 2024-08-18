@@ -25,7 +25,7 @@ use std::path::Path;
 
 use crate::error::ZatsuError;
 
-// TODO: Publish error codes.
+// TODO: Remove these codes.
 #[allow(dead_code)]
 const ERROR_GENERAL: i32 = 0;
 const ERROR_READING_META_DATA_FAILED: i32 = 1;
@@ -59,7 +59,6 @@ impl FilePathProducer {
 
             if self.directory_paths.len() == 0 {
                 return Err(ZatsuError::new(
-                    "FilePathProducer".to_string(),
                     ERROR_PRODUCING_FINISHED,
                 ));
             }
@@ -84,7 +83,6 @@ impl FilePathProducer {
                     Ok(read_dir) => read_dir,
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "FilePathProducer".to_string(),
                             ERROR_READING_DIRECTORY_FAILED,
                         ))
                     }
@@ -97,7 +95,6 @@ impl FilePathProducer {
                             Ok(metadata) => metadata,
                             Err(_) => {
                                 return Err(ZatsuError::new(
-                                    "FilePathProducer".to_string(),
                                     ERROR_READING_META_DATA_FAILED,
                                 ))
                             }
@@ -120,7 +117,6 @@ impl FilePathProducer {
         }
 
         Err(ZatsuError::new(
-            "FilePathProducer".to_string(),
             ERROR_PRODUCING_FINISHED,
         ))
     }

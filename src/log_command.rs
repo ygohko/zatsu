@@ -53,7 +53,6 @@ impl Command for LogCommand {
                 Ok(revision) => revision,
                 Err(_) => {
                     return Err(ZatsuError::new(
-                        "main".to_string(),
                         error::CODE_LOADING_FILE_FAILED,
                     ))
                 }
@@ -70,7 +69,6 @@ impl Command for LogCommand {
                     Ok(revision) => revision,
                     Err(_) => {
                         return Err(ZatsuError::new(
-                            "main".to_string(),
                             error::CODE_LOADING_FILE_FAILED,
                         ))
                     }

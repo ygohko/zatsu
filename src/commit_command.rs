@@ -92,7 +92,6 @@ impl Command for CommitCommand {
             Ok(exists) => exists,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_SAVING_FILE_FAILED,
                 ))
             }
@@ -102,7 +101,6 @@ impl Command for CommitCommand {
                 Ok(()) => (),
                 Err(_) => {
                     return Err(ZatsuError::new(
-                        "main".to_string(),
                         error::CODE_SAVING_FILE_FAILED,
                     ))
                 }
@@ -112,7 +110,6 @@ impl Command for CommitCommand {
             Ok(_) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_SAVING_FILE_FAILED,
                 ))
             }
@@ -122,7 +119,6 @@ impl Command for CommitCommand {
             Ok(_) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_SAVING_FILE_FAILED,
                 ))
             }
@@ -143,7 +139,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
         Ok(metadata) => metadata,
         Err(_) => {
             return Err(ZatsuError::new(
-                "main".to_string(),
                 error::CODE_READING_META_DATA_FAILED,
             ))
         }
@@ -155,7 +150,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
             Ok(values) => values,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_LOADING_FILE_FAILED,
                 ))
             }
@@ -178,7 +172,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
             Ok(exists) => exists,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_SAVING_FILE_FAILED,
                 ))
             }
@@ -188,7 +181,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
                 Ok(()) => (),
                 Err(_) => {
                     return Err(ZatsuError::new(
-                        "main".to_string(),
                         error::CODE_SAVING_FILE_FAILED,
                     ))
                 }
@@ -201,7 +193,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
             Ok(exists) => exists,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_SAVING_FILE_FAILED,
                 ))
             }
@@ -212,7 +203,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
                 Ok(()) => (),
                 Err(_) => {
                     return Err(ZatsuError::new(
-                        "main".to_string(),
                         error::CODE_SAVING_FILE_FAILED,
                     ))
                 }
@@ -221,7 +211,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
                 Ok(compressed) => compressed,
                 Err(_) => {
                     return Err(ZatsuError::new(
-                        "main".to_string(),
                         error::CODE_SAVING_FILE_FAILED,
                     ))
                 }
@@ -231,7 +220,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
                 Ok(()) => (),
                 Err(_) => {
                     return Err(ZatsuError::new(
-                        "main".to_string(),
                         error::CODE_SAVING_FILE_FAILED,
                     ))
                 }

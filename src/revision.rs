@@ -49,7 +49,6 @@ impl Revision {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Revision".to_string(),
                     ERROR_LOADING_FAILED,
                 ))
             }
@@ -58,7 +57,6 @@ impl Revision {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Revision".to_string(),
                     ERROR_DESERIALIZATION_FAILED,
                 ))
             }
@@ -72,7 +70,6 @@ impl Revision {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Revision".to_string(),
                     ERROR_SERIALIZATION_FAILED,
                 ))
             }
@@ -81,7 +78,7 @@ impl Revision {
         // println!("serialized: {}", serialized);
         let _ = match std::fs::write(path, serialized) {
             Ok(result) => result,
-            Err(_) => return Err(ZatsuError::new("Revision".to_string(), ERROR_SAVING_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_SAVING_FAILED)),
         };
 
         Ok(())

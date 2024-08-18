@@ -45,7 +45,6 @@ impl Repository {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
                     ERROR_SERIALIZATION_FAILED,
                 ))
             }
@@ -55,7 +54,6 @@ impl Repository {
             Ok(result) => result,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
                     ERROR_SAVING_FAILED,
                 ))
             }
@@ -78,7 +76,6 @@ impl Repository {
             Ok(serialized) => serialized,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
                     ERROR_LOADING_FAILED,
                 ))
             }
@@ -87,7 +84,6 @@ impl Repository {
             Ok(repository) => repository,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "Repository".to_string(),
                     ERROR_DESERIALIZATION_FAILED,
                 ))
             }

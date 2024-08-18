@@ -36,7 +36,6 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_CREATING_REPOSITORY_FAILED,
                 ))
             }
@@ -45,7 +44,6 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_CREATING_REPOSITORY_FAILED,
                 ))
             }
@@ -54,7 +52,6 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_CREATING_REPOSITORY_FAILED,
                 ))
             }
@@ -63,7 +60,6 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_CREATING_REPOSITORY_FAILED,
                 ))
             }
@@ -75,7 +71,6 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_SAVING_FILE_FAILED,
                 ))
             }

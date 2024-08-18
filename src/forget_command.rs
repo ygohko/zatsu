@@ -67,7 +67,6 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         Ok(repository) => repository,
         Err(_) => {
             return Err(ZatsuError::new(
-                "main".to_string(),
                 error::CODE_LOADING_REPOSITORY_FAILED,
             ))
         }
@@ -77,7 +76,6 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         Ok(read_dir) => read_dir,
         Err(_) => {
             return Err(ZatsuError::new(
-                "main".to_string(),
                 error::CODE_READING_DIRECTORY_FAILED,
             ))
         }
@@ -95,7 +93,6 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
             Ok(read_dir) => read_dir,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_READING_DIRECTORY_FAILED,
                 ))
             }
@@ -137,7 +134,6 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         Ok(read_dir) => read_dir,
         Err(_) => {
             return Err(ZatsuError::new(
-                "main".to_string(),
                 error::CODE_READING_DIRECTORY_FAILED,
             ))
         }
@@ -155,7 +151,6 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
             Ok(read_dir) => read_dir,
             Err(_) => {
                 return Err(ZatsuError::new(
-                    "main".to_string(),
                     error::CODE_READING_DIRECTORY_FAILED,
                 ))
             }
