@@ -41,19 +41,11 @@ impl Revision {
     pub fn load(path: impl AsRef<Path>) -> Result<Revision, ZatsuError> {
         let serialized = match fs::read_to_string(path) {
             Ok(serialized) => serialized,
-            Err(_) => {
-                return Err(ZatsuError::new(
-                    error::CODE_LOADING_FILE_FAILED,
-                ))
-            }
+            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
         let revision = match serde_json::from_str(&serialized) {
             Ok(revision) => revision,
-            Err(_) => {
-                return Err(ZatsuError::new(
-                    error::CODE_DESERIALIZATION_FAILED,
-                ))
-            }
+            Err(_) => return Err(ZatsuError::new(error::CODE_DESERIALIZATION_FAILED)),
         };
 
         Ok(revision)
@@ -62,11 +54,7 @@ impl Revision {
     pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
-            Err(_) => {
-                return Err(ZatsuError::new(
-                    error::CODE_SERIALIZATION_FAILED,
-                ))
-            }
+            Err(_) => return Err(ZatsuError::new(error::CODE_SERIALIZATION_FAILED)),
         };
 
         // println!("serialized: {}", serialized);

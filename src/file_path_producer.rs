@@ -52,9 +52,7 @@ impl FilePathProducer {
             }
 
             if self.directory_paths.len() == 0 {
-                return Err(ZatsuError::new(
-                    error::CODE_PRODUCING_FINISHED,
-                ));
+                return Err(ZatsuError::new(error::CODE_PRODUCING_FINISHED));
             }
             let directory_path = self.directory_paths.pop().unwrap();
 
@@ -75,11 +73,7 @@ impl FilePathProducer {
             if scan {
                 let read_dir = match fs::read_dir(directory_path) {
                     Ok(read_dir) => read_dir,
-                    Err(_) => {
-                        return Err(ZatsuError::new(
-                            error::CODE_READING_DIRECTORY_FAILED,
-                        ))
-                    }
+                    Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
                 };
                 for result in read_dir {
                     if result.is_ok() {
@@ -88,9 +82,7 @@ impl FilePathProducer {
                         let metadata = match fs::metadata(entry.path()) {
                             Ok(metadata) => metadata,
                             Err(_) => {
-                                return Err(ZatsuError::new(
-                                    error::CODE_READING_META_DATA_FAILED,
-                                ))
+                                return Err(ZatsuError::new(error::CODE_READING_META_DATA_FAILED))
                             }
                         };
                         let path = entry.path().to_string_lossy().to_string();
@@ -110,8 +102,6 @@ impl FilePathProducer {
             }
         }
 
-        Err(ZatsuError::new(
-            error::CODE_PRODUCING_FINISHED,
-        ))
+        Err(ZatsuError::new(error::CODE_PRODUCING_FINISHED))
     }
 }
