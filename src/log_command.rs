@@ -21,6 +21,7 @@
  */
 
 use chrono::DateTime;
+use chrono::Local;
 use chrono::Utc;
 use std::collections::HashMap;
 
@@ -42,6 +43,8 @@ impl Command for LogCommand {
             },
         };
 
+        let utc_offset = Local::now().offset().local_minus_utc
+            () as i64;
         let count = repository.revision_numbers.len();
         for i in (0..count).rev() {
             let revision_number = repository.revision_numbers[i];
@@ -71,8 +74,8 @@ impl Command for LogCommand {
             let divided = divided_entries(&entries);
             let previous_divided = divided_entries(&previous_entries);
 
-            // TODO: Apply time zone.
-            let commited = match DateTime::from_timestamp_millis(revision.commited) {
+            let milliseconds = revision.commited + utc_offset * 1000;
+            let commited = match DateTime::from_timestamp_millis(milliseconds) {
                 Some(commited) => commited,
                 None => Utc::now(),
             };
