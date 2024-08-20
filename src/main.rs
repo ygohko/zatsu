@@ -47,17 +47,8 @@ use crate::repository::Repository;
 use crate::revision::Revision;
 
 fn main() -> Result<(), ZatsuError> {
-    println!("Hello, world!");
-
     let arguments: Vec<_> = env::args().collect();
     let count = arguments.len();
-    println!("count: {}", count);
-    if count > 0 {
-        println!("arguments[0]: {}", arguments[0]);
-    }
-    if count > 1 {
-        println!("arguments[1]: {}", arguments[1]);
-    }
 
     let mut command = "commit".to_string();
     if count > 1 {

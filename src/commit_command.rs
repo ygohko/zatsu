@@ -64,7 +64,7 @@ impl Command for CommitCommand {
             let result = producer.next();
             if result.is_ok() {
                 let path = result.unwrap();
-                println!("{}", path);
+                println!("Processing: {}", path);
                 let hash = match process_file(&PathBuf::from(path.clone())) {
                     Ok(hash) => hash,
                     Err(error) => return Err(error),
@@ -77,9 +77,6 @@ impl Command for CommitCommand {
                 revision.entries.push(entry);
             } else {
                 let error = result.unwrap_err();
-
-                println!("error.code: {}", error.code);
-
                 if error.code == error::CODE_PRODUCING_FINISHED {
                     done = true;
                 }
@@ -125,21 +122,16 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     };
     let mut hex_string = String::new();
     if metadata.is_file() {
-        println!("This is file.");
         let values = match fs::read(path) {
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        println!("{} bytes read.", values.len());
         let mut sha1 = Sha1::new();
         sha1.update(values.clone());
         let hash = sha1.finalize();
         let hash_values = hash.to_vec();
-        println!("{} bytes of hash generated.", hash_values.len());
-        // println!("{}", hash_values);
         let hex = HexString::from_bytes(&hash_values);
         hex_string = hex.as_string();
-        println!("{}", hex_string);
 
         let directory_name = hex_string[0..2].to_string();
         let path = format!(".zatsu/objects/{}", directory_name).to_string();
@@ -177,8 +169,6 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
                 Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
             };
         }
-    } else {
-        println!("This is not file.");
     }
 
     Ok(hex_string)
