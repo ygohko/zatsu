@@ -43,8 +43,7 @@ impl Command for LogCommand {
             },
         };
 
-        let utc_offset = Local::now().offset().local_minus_utc
-            () as i64;
+        let utc_offset = Local::now().offset().local_minus_utc() as i64;
         let count = repository.revision_numbers.len();
         for i in (0..count).rev() {
             let revision_number = repository.revision_numbers[i];
