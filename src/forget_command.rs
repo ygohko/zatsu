@@ -94,7 +94,8 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                 let option = path.file_stem();
                 if option.is_some() {
                     let file_stem = option.unwrap().to_string_lossy();
-                    println!("file_stem: {}", file_stem);
+                    println!("Checking: revision {}", file_stem);
+
                     let result = file_stem.parse();
                     if result.is_ok() {
                         let revision_number: i32 = result.unwrap();
@@ -143,6 +144,8 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                 let option = path.file_name();
                 if option.is_some() {
                     let hash = option.unwrap().to_string_lossy();
+                    println!("Checking: object {}", hash);
+
                     let mut found = false;
                     for revision_number in &repository.revision_numbers {
                         let result = Revision::load(format!(
