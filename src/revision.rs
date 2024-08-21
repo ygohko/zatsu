@@ -57,7 +57,6 @@ impl Revision {
             Err(_) => return Err(ZatsuError::new(error::CODE_SERIALIZATION_FAILED)),
         };
 
-        // println!("serialized: {}", serialized);
         let _ = match std::fs::write(path, serialized) {
             Ok(result) => result,
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),

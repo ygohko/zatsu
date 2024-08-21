@@ -39,7 +39,6 @@ impl Repository {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(error::CODE_SERIALIZATION_FAILED)),
         };
-        println!("serialized: {}", serialized);
         let _ = match fs::write(path, serialized) {
             Ok(result) => result,
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
