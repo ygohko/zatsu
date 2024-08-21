@@ -105,8 +105,9 @@ impl Command for CommitCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
 
+        println!("");
         println!("Commited as revision {}.", revision_number);
-        println!("There are {} revisions.", repository.revision_numbers.len());
+        println!("There are {} revision(s).", repository.revision_numbers.len());
         
         Ok(())
     }
