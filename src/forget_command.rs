@@ -80,7 +80,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         }
     }
 
-    let mut removed_revison_count = 0;
+    let mut removed_revision_count = 0;
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
@@ -115,7 +115,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                         Ok(()) => (),
                         Err(_) => (),
                     }
-                    removed_revison_count += 1;
+                    removed_revision_count += 1;
                 }
             }
         }
@@ -179,7 +179,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     }
 
     println!("");
-    println!("{} revision(s) and {} object(s) removed.", removed_revison_count, removed_object_count);
+    println!("{} revision(s) and {} object(s) removed.", removed_revision_count, removed_object_count);
 
     Ok(())
 }
