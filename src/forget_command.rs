@@ -80,6 +80,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         }
     }
 
+    let mut removed_revision_count = 0;
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
@@ -94,7 +95,8 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                 let option = path.file_stem();
                 if option.is_some() {
                     let file_stem = option.unwrap().to_string_lossy();
-                    println!("file_stem: {}", file_stem);
+                    println!("Checking: revision {}", file_stem);
+
                     let result = file_stem.parse();
                     if result.is_ok() {
                         let revision_number: i32 = result.unwrap();
@@ -113,6 +115,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                         Ok(()) => (),
                         Err(_) => (),
                     }
+                    removed_revision_count += 1;
                 }
             }
         }
@@ -130,6 +133,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         }
     }
 
+    let mut removed_object_count = 0;
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
@@ -143,6 +147,8 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                 let option = path.file_name();
                 if option.is_some() {
                     let hash = option.unwrap().to_string_lossy();
+                    println!("Checking: object {}", hash);
+
                     let mut found = false;
                     for revision_number in &repository.revision_numbers {
                         let result = Revision::load(format!(
@@ -165,11 +171,15 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                             Ok(()) => (),
                             Err(_) => (),
                         };
+                        removed_object_count += 1;
                     }
                 }
             }
         }
     }
+
+    println!("");
+    println!("{} revision(s) and {} object(s) removed.", removed_revision_count, removed_object_count);
 
     Ok(())
 }

@@ -100,6 +100,8 @@ impl GetCommand {
     }
 
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
+        println!("Processing: {}", self.path);
+
         let directory_name = hash[0..2].to_string();
         let values = match fs::read(&PathBuf::from(format!(
             ".zatsu/objects/{}/{}",
@@ -152,6 +154,8 @@ impl GetCommand {
         let mut hash: String;
         for entry in &revision.entries {
             if let Some(_) = entry.path.find(&self.path) {
+                println!("Processing: {}", entry.path);
+
                 hash = entry.hash.clone();
                 let directory_name = hash[0..2].to_string();
                 let values = match fs::read(&PathBuf::from(format!(
@@ -185,7 +189,6 @@ impl GetCommand {
                         path += &("/".to_string() + &split[i + 1]);
                     }
                 }
-                println!("path: {}", path);
                 match fs::create_dir_all(&path) {
                     Ok(_) => (),
                     Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),

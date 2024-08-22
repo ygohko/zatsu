@@ -60,8 +60,6 @@ impl FilePathProducer {
             }
             let directory_path = self.directory_paths.pop().unwrap();
 
-            println!("Reading directory: {}", directory_path);
-
             let mut scan = true;
             let option = Path::new(&directory_path).file_name();
             if option.is_some() {
@@ -92,13 +90,8 @@ impl FilePathProducer {
                         let path = entry.path().to_string_lossy().to_string();
                         if metadata.is_file() {
                             let path = path[self.prefix_length..].to_string();
-
-                            println!("Adding to file_paths: {}", path);
-
                             self.file_paths.push(path);
                         } else {
-                            println!("Adding to directory_paths: {}", path);
-
                             self.directory_paths.push(path);
                         }
                     }
