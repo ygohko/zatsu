@@ -80,6 +80,9 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         }
     }
 
+    let removed_revision_count = remove_unused_revisions(&repository, &revision_paths)?;
+
+    /*
     let mut removed_revision_count = 0;
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
@@ -120,6 +123,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
             }
         }
     }
+    */
 
     let read_dir = match fs::read_dir(".zatsu/objects") {
         Ok(read_dir) => read_dir,
@@ -182,4 +186,49 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
     println!("{} revision(s) and {} object(s) removed.", removed_revision_count, removed_object_count);
 
     Ok(())
+}
+
+fn remove_unused_revisions(repository: &Repository, revision_paths: &Vec<PathBuf>) -> Result<i32, ZatsuError> {
+    let mut removed_revision_count = 0;
+    for path in revision_paths {
+        let read_dir = match fs::read_dir(path) {
+            Ok(read_dir) => read_dir,
+            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+        };
+        for result in read_dir {
+            if result.is_ok() {
+                let entry = result.unwrap();
+                let path = entry.path();
+                let mut found = false;
+
+                let option = path.file_stem();
+                if option.is_some() {
+                    let file_stem = option.unwrap().to_string_lossy();
+                    println!("Checking: revision {}", file_stem);
+
+                    let result = file_stem.parse();
+                    if result.is_ok() {
+                        let revision_number: i32 = result.unwrap();
+                        let option = repository
+                            .revision_numbers
+                            .iter()
+                            .find(|&value| *value == revision_number);
+                        if option.is_some() {
+                            found = true;
+                        }
+                    }
+                }
+
+                if !found {
+                    match fs::remove_file(path) {
+                        Ok(()) => (),
+                        Err(_) => (),
+                    }
+                    removed_revision_count += 1;
+                }
+            }
+        }
+    }
+
+    Ok(removed_revision_count)
 }
