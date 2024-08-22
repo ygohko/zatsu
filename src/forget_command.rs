@@ -147,6 +147,12 @@ fn remove_unused_revisions(repository: &Repository, revision_paths: &Vec<PathBuf
 
 fn remove_unused_objects(repository: &Repository, object_paths: &Vec<PathBuf>) -> Result<i32, ZatsuError> {
     let mut removed_object_count = 0;
+
+    // TODO: Iterate for revisons.
+    // TODO: Iterate for entries.
+    // TODO: Mark using objects.
+    // TODO: Remove objects that are not marked.
+
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
