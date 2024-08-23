@@ -21,6 +21,7 @@
  */
 
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
@@ -153,6 +154,31 @@ fn remove_unused_objects(repository: &Repository, object_paths: &Vec<PathBuf>) -
     // TODO: Mark using objects.
     // TODO: Remove objects that are not marked.
 
+    for revision_number in &repository.revision_numbers {
+        let revision = match Revision::load(format!(
+            ".zatsu/revisions/{:02x}/{}.json",
+            revision_number & 0xFF,
+            revision_number
+        )) {
+            Ok(revision) => revision,
+                Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+        };
+
+        for entry in revision.entries {
+            let hash = entry.hash;
+            let directory_name = hash[0..2].to_string();
+            let mut path = format!(".zatsu/objects/{}/{}", directory_name, hash);
+            let exists = Path::new(&path).exists();
+            if exists {
+                path += ".mark";
+                let _ = fs::write(&path, b"marked");
+            }
+        }
+    }
+
+    Ok(0)
+
+    /*
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
@@ -198,4 +224,5 @@ fn remove_unused_objects(repository: &Repository, object_paths: &Vec<PathBuf>) -
     }
 
     Ok(removed_object_count)
+    */
 }
