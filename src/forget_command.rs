@@ -186,14 +186,15 @@ fn remove_unused_objects(repository: &Repository, object_paths: &Vec<PathBuf>) -
                 let option = path.file_name();
                 if option.is_some() {
                     let file_name = option.unwrap().to_string_lossy();
-                    println!("file_name: {}", file_name);
                     if !file_name.ends_with(".mark") {
-                        let directory_name = file_name[0..2].to_string();
-                        let mark_file_path = format!(".zatsu/objects/{}/{}.mark", directory_name, file_name);
+                        let hash = file_name.clone();
+                        println!("Checking: object {}", hash);
+                        let directory_name = hash[0..2].to_string();
+                        let mark_file_path = format!(".zatsu/objects/{}/{}.mark", directory_name, hash);
                         let marked = Path::new(&mark_file_path).exists();
                         if !marked {
-                            println!("Removing: {}", file_name);
-                            let path = format!(".zatsu/objects/{}/{}", directory_name, file_name);
+                            println!("Removing: object {}", hash);
+                            let path = format!(".zatsu/objects/{}/{}", directory_name, hash);
                             match fs::remove_file(&path) {
                                 Ok(_) => (),
                                 Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_FILE_FAILED)),
@@ -220,7 +221,6 @@ fn remove_unused_objects(repository: &Repository, object_paths: &Vec<PathBuf>) -
                 let option = path.file_name();
                 if option.is_some() {
                     let file_name = option.unwrap().to_string_lossy();
-                    println!("file_name: {}", file_name);
                     if file_name.ends_with(".mark") {
                         let directory_name = file_name[0..2].to_string();
                         let path = format!(".zatsu/objects/{}/{}", directory_name, file_name);
@@ -235,52 +235,4 @@ fn remove_unused_objects(repository: &Repository, object_paths: &Vec<PathBuf>) -
     }
 
     Ok(removed_object_count)
-
-    /*
-    for path in object_paths {
-        let read_dir = match fs::read_dir(path) {
-            Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
-        };
-
-        for result in read_dir {
-            if result.is_ok() {
-                let entry = result.unwrap();
-                let path = entry.path();
-                let option = path.file_name();
-                if option.is_some() {
-                    let hash = option.unwrap().to_string_lossy();
-                    println!("Checking: object {}", hash);
-
-                    let mut found = false;
-                    for revision_number in &repository.revision_numbers {
-                        let result = Revision::load(format!(
-                            ".zatsu/revisions/{:02x}/{}.json",
-                            revision_number & 0xFF,
-                            revision_number
-                        ));
-                        if result.is_ok() {
-                            let revision = result.unwrap();
-                            for entry in revision.entries {
-                                if entry.hash == hash {
-                                    found = true;
-                                }
-                            }
-                        }
-                    }
-
-                    if !found {
-                        match fs::remove_file(path) {
-                            Ok(()) => (),
-                            Err(_) => (),
-                        };
-                        removed_object_count += 1;
-                    }
-                }
-            }
-        }
-    }
-
-    Ok(removed_object_count)
-    */
 }
