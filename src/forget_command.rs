@@ -21,6 +21,7 @@
  */
 
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
@@ -79,7 +80,28 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
             revision_paths.push(entry.path());
         }
     }
+    let removed_revision_count = remove_unused_revisions(&repository, &revision_paths)?;
 
+    let read_dir = match fs::read_dir(".zatsu/objects") {
+        Ok(read_dir) => read_dir,
+        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+    };
+    let mut object_paths: Vec<PathBuf> = Vec::new();
+    for result in read_dir {
+        if result.is_ok() {
+            let entry = result.unwrap();
+            object_paths.push(entry.path());
+        }
+    }
+    let removed_object_count = remove_unused_objects(&repository, &object_paths)?;
+
+    println!("");
+    println!("{} revision(s) and {} object(s) removed.", removed_revision_count, removed_object_count);
+
+    Ok(())
+}
+
+fn remove_unused_revisions(repository: &Repository, revision_paths: &Vec<PathBuf>) -> Result<i32, ZatsuError> {
     let mut removed_revision_count = 0;
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
@@ -121,19 +143,36 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
         }
     }
 
-    let read_dir = match fs::read_dir(".zatsu/objects") {
-        Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
-    };
-    let mut object_paths: Vec<PathBuf> = Vec::new();
-    for result in read_dir {
-        if result.is_ok() {
-            let entry = result.unwrap();
-            object_paths.push(entry.path());
+    Ok(removed_revision_count)
+}
+
+fn remove_unused_objects(repository: &Repository, object_paths: &Vec<PathBuf>) -> Result<i32, ZatsuError> {
+    let mut removed_object_count = 0;
+
+    // Mark used objects.
+    for revision_number in &repository.revision_numbers {
+        let revision = match Revision::load(format!(
+            ".zatsu/revisions/{:02x}/{}.json",
+            revision_number & 0xFF,
+            revision_number
+        )) {
+            Ok(revision) => revision,
+                Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+        };
+
+        for entry in revision.entries {
+            let hash = entry.hash;
+            let directory_name = hash[0..2].to_string();
+            let mut path = format!(".zatsu/objects/{}/{}", directory_name, hash);
+            let exists = Path::new(&path).exists();
+            if exists {
+                path += ".mark";
+                let _ = fs::write(&path, b"marked");
+            }
         }
     }
 
-    let mut removed_object_count = 0;
+    // Remove objects that are not marked.
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
@@ -146,40 +185,54 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
                 let path = entry.path();
                 let option = path.file_name();
                 if option.is_some() {
-                    let hash = option.unwrap().to_string_lossy();
-                    println!("Checking: object {}", hash);
-
-                    let mut found = false;
-                    for revision_number in &repository.revision_numbers {
-                        let result = Revision::load(format!(
-                            ".zatsu/revisions/{:02x}/{}.json",
-                            revision_number & 0xFF,
-                            revision_number
-                        ));
-                        if result.is_ok() {
-                            let revision = result.unwrap();
-                            for entry in revision.entries {
-                                if entry.hash == hash {
-                                    found = true;
-                                }
-                            }
+                    let file_name = option.unwrap().to_string_lossy();
+                    if !file_name.ends_with(".mark") {
+                        let hash = file_name.clone();
+                        println!("Checking: object {}", hash);
+                        let directory_name = hash[0..2].to_string();
+                        let mark_file_path = format!(".zatsu/objects/{}/{}.mark", directory_name, hash);
+                        let marked = Path::new(&mark_file_path).exists();
+                        if !marked {
+                            println!("Removing: object {}", hash);
+                            let path = format!(".zatsu/objects/{}/{}", directory_name, hash);
+                            match fs::remove_file(&path) {
+                                Ok(_) => (),
+                                Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_FILE_FAILED)),
+                            };
+                            removed_object_count += 1;
                         }
-                    }
-
-                    if !found {
-                        match fs::remove_file(path) {
-                            Ok(()) => (),
-                            Err(_) => (),
-                        };
-                        removed_object_count += 1;
                     }
                 }
             }
         }
     }
 
-    println!("");
-    println!("{} revision(s) and {} object(s) removed.", removed_revision_count, removed_object_count);
+    // Remove mark files.
+    for path in object_paths {
+        let read_dir = match fs::read_dir(path) {
+            Ok(read_dir) => read_dir,
+            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+        };
 
-    Ok(())
+        for result in read_dir {
+            if result.is_ok() {
+                let entry = result.unwrap();
+                let path = entry.path();
+                let option = path.file_name();
+                if option.is_some() {
+                    let file_name = option.unwrap().to_string_lossy();
+                    if file_name.ends_with(".mark") {
+                        let directory_name = file_name[0..2].to_string();
+                        let path = format!(".zatsu/objects/{}/{}", directory_name, file_name);
+                        match fs::remove_file(&path) {
+                            Ok(_) => (),
+                            Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_FILE_FAILED)),
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(removed_object_count)
 }
