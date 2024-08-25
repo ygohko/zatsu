@@ -107,8 +107,11 @@ impl Command for CommitCommand {
 
         println!("");
         println!("Commited as revision {}.", revision_number);
-        println!("There are {} revision(s).", repository.revision_numbers.len());
-        
+        println!(
+            "There are {} revision(s).",
+            repository.revision_numbers.len()
+        );
+
         Ok(())
     }
 }
