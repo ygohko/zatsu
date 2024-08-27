@@ -160,6 +160,8 @@ fn remove_unused_objects(
 
     // Mark used objects.
     for revision_number in &repository.revision_numbers {
+        println!("Checking: revision {}", revision_number);
+
         let revision = match Revision::load(format!(
             ".zatsu/revisions/{:02x}/{}.json",
             revision_number & 0xFF,
@@ -176,7 +178,10 @@ fn remove_unused_objects(
             let exists = Path::new(&path).exists();
             if exists {
                 path += ".mark";
-                let _ = fs::write(&path, b"marked");
+                let exists = Path::new(&path).exists();
+                if !exists {
+                    let _ = fs::write(&path, b"marked");
+                }
             }
         }
     }
@@ -220,6 +225,7 @@ fn remove_unused_objects(
     }
 
     // Remove mark files.
+    println!("Cleaning...");
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
