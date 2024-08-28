@@ -48,7 +48,7 @@ impl Command for CommitCommand {
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
-            },
+            }
         };
         let latest_revision = repository.latest_revision();
         let revision_number = latest_revision + 1;
