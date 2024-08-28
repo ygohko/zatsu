@@ -41,7 +41,7 @@ impl Command for LogCommand {
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
-            },
+            }
         };
 
         let utc_offset = Local::now().offset().local_minus_utc() as i64;

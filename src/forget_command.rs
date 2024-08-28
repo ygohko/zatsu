@@ -41,7 +41,7 @@ impl Command for ForgetCommand {
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
-            },
+            }
         };
         let current_count = repository.revision_numbers.len() as i32;
         let removed_count = current_count - self.revision_count;

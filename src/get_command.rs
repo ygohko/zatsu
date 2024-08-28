@@ -43,7 +43,7 @@ impl Command for GetCommand {
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
-            },
+            }
         };
         let mut found = false;
         for a_revision_number in repository.revision_numbers {
