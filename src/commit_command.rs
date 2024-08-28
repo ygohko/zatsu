@@ -45,8 +45,9 @@ impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository = match Repository::load(".zatsu/repository.json") {
             Ok(repository) => repository,
-            Err(_) => Repository {
-                revision_numbers: Vec::new(),
+            Err(_) => {
+                println!("Error: repository not found. To create repository, execute zatsu init.");
+                return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
             },
         };
         let latest_revision = repository.latest_revision();

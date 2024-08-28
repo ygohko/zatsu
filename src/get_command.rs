@@ -40,8 +40,9 @@ impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let repository = match Repository::load(".zatsu/repository.json") {
             Ok(repository) => repository,
-            Err(_) => Repository {
-                revision_numbers: Vec::new(),
+            Err(_) => {
+                println!("Error: repository not found. To create repository, execute zatsu init.");
+                return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
             },
         };
         let mut found = false;

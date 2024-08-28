@@ -38,9 +38,9 @@ impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository = match Repository::load(".zatsu/repository.json") {
             Ok(repository) => repository,
-            // TODO: Ensure repository is created when zatsu init.
-            Err(_) => Repository {
-                revision_numbers: Vec::new(),
+            Err(_) => {
+                println!("Error: repository not found. To create repository, execute zatsu init.");
+                return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
             },
         };
         let current_count = repository.revision_numbers.len() as i32;
