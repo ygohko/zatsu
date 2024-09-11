@@ -87,6 +87,20 @@ fn main() -> Result<(), ZatsuError> {
         command = arguments[1].clone();
     }
 
+    let arguments1 = Arguments::parse();
+    let mut command = "commit".to_string();
+    /*
+    if arguments1.command.is_some() {
+        command = match arguments1.command.unwrap() {
+            Command::Init => "init".to_string(),
+            Command::Commit => "init".to_string(),
+            Command::Log => "init".to_string(),
+            Command::Get => "init".to_string(),
+            Command::Forget => "init".to_string(),            
+        }
+    }
+    */
+    
     if command == "commit" {
         let command = CommitCommand::new();
         match command.execute() {
