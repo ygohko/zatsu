@@ -32,6 +32,8 @@ mod log_command;
 mod repository;
 mod revision;
 
+use clap::Parser;
+use clap::Subcommand;
 use std::env;
 
 use crate::command::Command;
@@ -45,6 +47,22 @@ use crate::init_command::InitCommand;
 use crate::log_command::LogCommand;
 use crate::repository::Repository;
 use crate::revision::Revision;
+
+#[derive(Parser)]
+struct Args {
+    /// Command you want to do
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    Init,
+    Commit,
+    Log,
+    Get,
+    Forget,
+}
 
 fn main() -> Result<(), ZatsuError> {
     let arguments: Vec<_> = env::args().collect();
