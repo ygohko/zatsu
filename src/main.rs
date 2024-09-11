@@ -34,7 +34,6 @@ mod revision;
 
 use clap::Parser;
 use clap::Subcommand;
-use std::env;
 
 use crate::command::Command;
 use crate::commit_command::CommitCommand;
@@ -79,14 +78,6 @@ enum Commands {
 }
 
 fn main() -> Result<(), ZatsuError> {
-    let arguments: Vec<_> = env::args().collect();
-    let count = arguments.len();
-
-    let mut command = "commit".to_string();
-    if count > 1 {
-        command = arguments[1].clone();
-    }
-
     let arguments1 = Arguments::parse();
     let mut command = "commit".to_string();
     let mut revision_number = 0;
@@ -95,12 +86,12 @@ fn main() -> Result<(), ZatsuError> {
     if arguments1.command.is_some() {
         command = match arguments1.command.unwrap() {
             Commands::Init => "init".to_string(),
-            Commands::Commit => "init".to_string(),
-            Commands::Log => "init".to_string(),
+            Commands::Commit => "commit".to_string(),
+            Commands::Log => "log".to_string(),
             Commands::Get(get_arguments) => {
                 revision_number = get_arguments.revision;
                 path = get_arguments.path;
-                "init".to_string()
+                "get".to_string()
             },
             Commands::Forget(forget_arguments) => {
                 revision_count = forget_arguments.count;
@@ -124,22 +115,18 @@ fn main() -> Result<(), ZatsuError> {
         };
     }
     if command == "get" {
-        if count > 3 {
-            let command = GetCommand::new(revision_number, &path);
-            match command.execute() {
-                Ok(()) => (),
-                Err(error) => return Err(error),
-            };
-        }
+        let command = GetCommand::new(revision_number, &path);
+        match command.execute() {
+            Ok(()) => (),
+            Err(error) => return Err(error),
+        };
     }
     if command == "forget" {
-        if count > 2 {
-            let command = ForgetCommand::new(revision_count);
-            match command.execute() {
-                Ok(()) => (),
-                Err(error) => return Err(error),
-            };
-        }
+        let command = ForgetCommand::new(revision_count);
+        match command.execute() {
+            Ok(()) => (),
+            Err(error) => return Err(error),
+        };
     }
     if command == "init" {
         let command = InitCommand::new();
