@@ -49,10 +49,24 @@ use crate::repository::Repository;
 use crate::revision::Revision;
 
 #[derive(Parser)]
-struct Args {
+struct Arguments {
     /// Command you want to do
     #[command(subcommand)]
     command: Option<Commands>,
+}
+
+#[derive(Parser)]
+struct GetArguments {
+    /// Revision to get a file or directory
+    revision: i32,
+    /// Path to get a file or directory
+    path: String,
+}
+
+#[derive(Parser)]
+struct ForgetArguments {
+    /// Revision count to keep
+    count: i32,
 }
 
 #[derive(Subcommand)]
@@ -60,8 +74,8 @@ enum Commands {
     Init,
     Commit,
     Log,
-    Get,
-    Forget,
+    Get(GetArguments),
+    Forget(ForgetArguments),
 }
 
 fn main() -> Result<(), ZatsuError> {
