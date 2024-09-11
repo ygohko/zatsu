@@ -89,17 +89,25 @@ fn main() -> Result<(), ZatsuError> {
 
     let arguments1 = Arguments::parse();
     let mut command = "commit".to_string();
-    /*
+    let mut revision_number = 0;
+    let mut path = "".to_string();
+    let mut revision_count = 0;
     if arguments1.command.is_some() {
         command = match arguments1.command.unwrap() {
-            Command::Init => "init".to_string(),
-            Command::Commit => "init".to_string(),
-            Command::Log => "init".to_string(),
-            Command::Get => "init".to_string(),
-            Command::Forget => "init".to_string(),            
-        }
+            Commands::Init => "init".to_string(),
+            Commands::Commit => "init".to_string(),
+            Commands::Log => "init".to_string(),
+            Commands::Get(get_arguments) => {
+                revision_number = get_arguments.revision;
+                path = get_arguments.path;
+                "init".to_string()
+            },
+            Commands::Forget(forget_arguments) => {
+                revision_count = forget_arguments.count;
+                "forget".to_string()
+            },
+        };
     }
-    */
     
     if command == "commit" {
         let command = CommitCommand::new();
@@ -117,9 +125,6 @@ fn main() -> Result<(), ZatsuError> {
     }
     if command == "get" {
         if count > 3 {
-            // TODO: Do not panic is parse failed.
-            let revision_number: i32 = arguments[2].parse().unwrap();
-            let path = arguments[3].clone();
             let command = GetCommand::new(revision_number, &path);
             match command.execute() {
                 Ok(()) => (),
@@ -129,8 +134,6 @@ fn main() -> Result<(), ZatsuError> {
     }
     if command == "forget" {
         if count > 2 {
-            // TODO: Do not panic is parse failed.
-            let revision_count: i32 = arguments[2].parse().unwrap();
             let command = ForgetCommand::new(revision_count);
             match command.execute() {
                 Ok(()) => (),
