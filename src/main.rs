@@ -32,7 +32,8 @@ mod log_command;
 mod repository;
 mod revision;
 
-use std::env;
+use clap::Parser;
+use clap::Subcommand;
 
 use crate::command::Command;
 use crate::commit_command::CommitCommand;
@@ -46,15 +47,59 @@ use crate::log_command::LogCommand;
 use crate::repository::Repository;
 use crate::revision::Revision;
 
+#[derive(Parser)]
+struct Arguments {
+    /// Command you want to do
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Parser)]
+struct GetArguments {
+    /// Revision to get a file or directory
+    revision: i32,
+    /// Path to get a file or directory
+    path: String,
+}
+
+#[derive(Parser)]
+struct ForgetArguments {
+    /// Revision count to keep
+    count: i32,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    Init,
+    Commit,
+    Log,
+    Get(GetArguments),
+    Forget(ForgetArguments),
+}
+
 fn main() -> Result<(), ZatsuError> {
-    let arguments: Vec<_> = env::args().collect();
-    let count = arguments.len();
-
+    let arguments = Arguments::parse();
     let mut command = "commit".to_string();
-    if count > 1 {
-        command = arguments[1].clone();
+    let mut revision_number = 0;
+    let mut path = "".to_string();
+    let mut revision_count = 0;
+    if arguments.command.is_some() {
+        command = match arguments.command.unwrap() {
+            Commands::Init => "init".to_string(),
+            Commands::Commit => "commit".to_string(),
+            Commands::Log => "log".to_string(),
+            Commands::Get(get_arguments) => {
+                revision_number = get_arguments.revision;
+                path = get_arguments.path;
+                "get".to_string()
+            },
+            Commands::Forget(forget_arguments) => {
+                revision_count = forget_arguments.count;
+                "forget".to_string()
+            },
+        };
     }
-
+    
     if command == "commit" {
         let command = CommitCommand::new();
         match command.execute() {
@@ -70,27 +115,18 @@ fn main() -> Result<(), ZatsuError> {
         };
     }
     if command == "get" {
-        if count > 3 {
-            // TODO: Do not panic is parse failed.
-            let revision_number: i32 = arguments[2].parse().unwrap();
-            let path = arguments[3].clone();
-            let command = GetCommand::new(revision_number, &path);
-            match command.execute() {
-                Ok(()) => (),
-                Err(error) => return Err(error),
-            };
-        }
+        let command = GetCommand::new(revision_number, &path);
+        match command.execute() {
+            Ok(()) => (),
+            Err(error) => return Err(error),
+        };
     }
     if command == "forget" {
-        if count > 2 {
-            // TODO: Do not panic is parse failed.
-            let revision_count: i32 = arguments[2].parse().unwrap();
-            let command = ForgetCommand::new(revision_count);
-            match command.execute() {
-                Ok(()) => (),
-                Err(error) => return Err(error),
-            };
-        }
+        let command = ForgetCommand::new(revision_count);
+        match command.execute() {
+            Ok(()) => (),
+            Err(error) => return Err(error),
+        };
     }
     if command == "init" {
         let command = InitCommand::new();
