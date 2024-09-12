@@ -88,27 +88,6 @@ fn main() -> Result<(), ZatsuError> {
     if arguments.command.is_some() {
         command = arguments.command.unwrap();
     }
-    let mut revision_number = 0;
-    let mut path = "".to_string();
-    let mut revision_count = 0;
-    /*
-    if arguments.command.is_some() {
-        command = match arguments.command.unwrap() {
-            Commands::Init => "init".to_string(),
-            Commands::Commit => "commit".to_string(),
-            Commands::Log => "log".to_string(),
-            Commands::Get(get_arguments) => {
-                revision_number = get_arguments.revision;
-                path = get_arguments.path;
-                "get".to_string()
-            },
-            Commands::Forget(forget_arguments) => {
-                revision_count = forget_arguments.count;
-                "forget".to_string()
-            },
-        };
-    }
-    */
 
     if command == Commands::Commit {
         let command = CommitCommand::new();
