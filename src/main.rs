@@ -78,13 +78,13 @@ enum Commands {
 }
 
 fn main() -> Result<(), ZatsuError> {
-    let arguments1 = Arguments::parse();
+    let arguments = Arguments::parse();
     let mut command = "commit".to_string();
     let mut revision_number = 0;
     let mut path = "".to_string();
     let mut revision_count = 0;
-    if arguments1.command.is_some() {
-        command = match arguments1.command.unwrap() {
+    if arguments.command.is_some() {
+        command = match arguments.command.unwrap() {
             Commands::Init => "init".to_string(),
             Commands::Commit => "commit".to_string(),
             Commands::Log => "log".to_string(),
