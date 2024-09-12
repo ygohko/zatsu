@@ -54,7 +54,7 @@ struct Arguments {
     command: Option<Commands>,
 }
 
-#[derive(Parser)]
+#[derive(Parser, PartialEq)]
 struct GetArguments {
     /// Revision to get a file or directory
     revision: i32,
@@ -62,13 +62,13 @@ struct GetArguments {
     path: String,
 }
 
-#[derive(Parser)]
+#[derive(Parser, PartialEq)]
 struct ForgetArguments {
     /// Revision count to keep
     count: i32,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, PartialEq)]
 enum Commands {
     /// Initialize a repository into this directory
     Init,
@@ -84,10 +84,14 @@ enum Commands {
 
 fn main() -> Result<(), ZatsuError> {
     let arguments = Arguments::parse();
-    let mut command = "commit".to_string();
+    let mut command = Commands::Commit;
+    if arguments.command.is_some() {
+        command = arguments.command.unwrap();
+    }
     let mut revision_number = 0;
     let mut path = "".to_string();
     let mut revision_count = 0;
+    /*
     if arguments.command.is_some() {
         command = match arguments.command.unwrap() {
             Commands::Init => "init".to_string(),
@@ -104,36 +108,37 @@ fn main() -> Result<(), ZatsuError> {
             },
         };
     }
-    
-    if command == "commit" {
+    */
+
+    if command == Commands::Commit {
         let command = CommitCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "log" {
+    else if command == Commands::Log {
         let command = LogCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "get" {
-        let command = GetCommand::new(revision_number, &path);
+    else if let Commands::Get(arguments) = command {
+        let command = GetCommand::new(arguments.revision, &arguments.path);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "forget" {
-        let command = ForgetCommand::new(revision_count);
+    else if let Commands::Forget(arguments) = command {
+        let command = ForgetCommand::new(arguments.count);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "init" {
+    else if command == Commands::Init {
         let command = InitCommand::new();
         match command.execute() {
             Ok(()) => (),
