@@ -70,10 +70,15 @@ struct ForgetArguments {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Initialize a repository into this directory
     Init,
+    /// Commit current files into this direcrory's repository
     Commit,
+    /// Show logs of this directory's repository
     Log,
+    /// Get a file or direcrory that is specified
     Get(GetArguments),
+    /// Remove stored revisions to shrink this directory's repository to specified size
     Forget(ForgetArguments),
 }
 
