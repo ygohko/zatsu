@@ -51,7 +51,7 @@ use crate::revision::Revision;
 struct Arguments {
     /// Command you want to do
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Option<CommandKind>,
 }
 
 #[derive(Parser, PartialEq)]
@@ -69,7 +69,7 @@ struct ForgetArguments {
 }
 
 #[derive(Subcommand, PartialEq)]
-enum Commands {
+enum CommandKind {
     /// Initialize a repository into this directory
     Init,
     /// Commit current files into this direcrory's repository
@@ -84,40 +84,40 @@ enum Commands {
 
 fn main() -> Result<(), ZatsuError> {
     let arguments = Arguments::parse();
-    let mut command = Commands::Commit;
+    let mut command = CommandKind::Commit;
     if arguments.command.is_some() {
         command = arguments.command.unwrap();
     }
 
-    if command == Commands::Commit {
+    if command == CommandKind::Commit {
         let command = CommitCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    else if command == Commands::Log {
+    else if command == CommandKind::Log {
         let command = LogCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    else if let Commands::Get(arguments) = command {
+    else if let CommandKind::Get(arguments) = command {
         let command = GetCommand::new(arguments.revision, &arguments.path);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    else if let Commands::Forget(arguments) = command {
+    else if let CommandKind::Forget(arguments) = command {
         let command = ForgetCommand::new(arguments.count);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    else if command == Commands::Init {
+    else if command == CommandKind::Init {
         let command = InitCommand::new();
         match command.execute() {
             Ok(()) => (),
