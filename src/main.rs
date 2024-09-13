@@ -51,10 +51,10 @@ use crate::revision::Revision;
 struct Arguments {
     /// Command you want to do
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Option<CommandKind>,
 }
 
-#[derive(Parser)]
+#[derive(Parser, PartialEq)]
 struct GetArguments {
     /// Revision to get a file or directory
     revision: i32,
@@ -62,73 +62,62 @@ struct GetArguments {
     path: String,
 }
 
-#[derive(Parser)]
+#[derive(Parser, PartialEq)]
 struct ForgetArguments {
     /// Revision count to keep
     count: i32,
 }
 
-#[derive(Subcommand)]
-enum Commands {
+#[derive(Subcommand, PartialEq)]
+enum CommandKind {
+    /// Initialize a repository into this directory
     Init,
+    /// Commit current files into this direcrory's repository
     Commit,
+    /// Show logs of this directory's repository
     Log,
+    /// Get a file or direcrory that is specified
     Get(GetArguments),
+    /// Remove stored revisions to shrink this directory's repository to specified size
     Forget(ForgetArguments),
 }
 
 fn main() -> Result<(), ZatsuError> {
     let arguments = Arguments::parse();
-    let mut command = "commit".to_string();
-    let mut revision_number = 0;
-    let mut path = "".to_string();
-    let mut revision_count = 0;
+    let mut command = CommandKind::Commit;
     if arguments.command.is_some() {
-        command = match arguments.command.unwrap() {
-            Commands::Init => "init".to_string(),
-            Commands::Commit => "commit".to_string(),
-            Commands::Log => "log".to_string(),
-            Commands::Get(get_arguments) => {
-                revision_number = get_arguments.revision;
-                path = get_arguments.path;
-                "get".to_string()
-            },
-            Commands::Forget(forget_arguments) => {
-                revision_count = forget_arguments.count;
-                "forget".to_string()
-            },
-        };
+        command = arguments.command.unwrap();
     }
-    
-    if command == "commit" {
+
+    if command == CommandKind::Commit {
         let command = CommitCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "log" {
+    else if command == CommandKind::Log {
         let command = LogCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "get" {
-        let command = GetCommand::new(revision_number, &path);
+    else if let CommandKind::Get(arguments) = command {
+        let command = GetCommand::new(arguments.revision, &arguments.path);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "forget" {
-        let command = ForgetCommand::new(revision_count);
+    else if let CommandKind::Forget(arguments) = command {
+        let command = ForgetCommand::new(arguments.count);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
     }
-    if command == "init" {
+    else if command == CommandKind::Init {
         let command = InitCommand::new();
         match command.execute() {
             Ok(()) => (),
