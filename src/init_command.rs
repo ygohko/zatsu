@@ -26,12 +26,18 @@ use crate::Repository;
 use crate::ZatsuError;
 
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 
 pub struct InitCommand {}
 
 impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
+        if Path::new(".zatsu").exists() {
+            println!("Error: This directory already has a repository.");
+            return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED));
+        }
+
         match fs::create_dir_all(".zatsu") {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_REPOSITORY_FAILED)),
