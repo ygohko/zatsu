@@ -95,29 +95,25 @@ fn main() -> Result<(), ZatsuError> {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
-    }
-    else if command == CommandKind::Log {
+    } else if command == CommandKind::Log {
         let command = LogCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
-    }
-    else if let CommandKind::Get(arguments) = command {
+    } else if let CommandKind::Get(arguments) = command {
         let command = GetCommand::new(arguments.revision, &arguments.path);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
-    }
-    else if let CommandKind::Forget(arguments) = command {
+    } else if let CommandKind::Forget(arguments) = command {
         let command = ForgetCommand::new(arguments.count);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
-    }
-    else if command == CommandKind::Init {
+    } else if command == CommandKind::Init {
         let command = InitCommand::new();
         match command.execute() {
             Ok(()) => (),
