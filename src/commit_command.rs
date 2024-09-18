@@ -43,7 +43,7 @@ pub struct CommitCommand {}
 
 impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match Repository::load(".zatsu/repository.json") {
+        let mut repository = match Repository::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -101,7 +101,7 @@ impl Command for CommitCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
         repository.revision_numbers.push(revision_number);
-        match repository.save(&PathBuf::from(".zatsu/repository.json")) {
+        match repository.save(".zatsu") {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };

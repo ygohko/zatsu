@@ -38,7 +38,7 @@ pub struct GetCommand {
 
 impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match Repository::load(".zatsu/repository.json") {
+        let repository = match Repository::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");

@@ -36,7 +36,7 @@ pub struct ForgetCommand {
 
 impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match Repository::load(".zatsu/repository.json") {
+        let mut repository = match Repository::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -50,7 +50,7 @@ impl Command for ForgetCommand {
         }
         let index: usize = removed_count as usize;
         repository.revision_numbers = repository.revision_numbers.drain(index..).collect();
-        repository.save(".zatsu/repository.json")?;
+        repository.save(".zatsu")?;
         process_garbage_collection()?;
 
         Ok(())
@@ -64,7 +64,7 @@ impl ForgetCommand {
 }
 
 fn process_garbage_collection() -> Result<(), ZatsuError> {
-    let repository = match Repository::load(".zatsu/repository.json") {
+    let repository = match Repository::load(".zatsu") {
         Ok(repository) => repository,
         Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED)),
     };
