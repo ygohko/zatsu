@@ -46,7 +46,7 @@ impl Repository {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(error::CODE_SERIALIZATION_FAILED)),
         };
-        let json_path = path.join("repository.json");
+        let json_path = path.as_ref().join("repository.json");
         let _ = match fs::write(json_path, serialized) {
             Ok(result) => result,
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
@@ -65,7 +65,7 @@ impl Repository {
     }
 
     pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
-        let json_path = path.join("repository.json");
+        let json_path = path.as_ref().join("repository.json");
         let serialized = match fs::read_to_string(json_path) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
