@@ -63,6 +63,8 @@ impl Command for InitCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
 
+        // TODO: Show a message that indicates operation succeeded.
+
         Ok(())
     }
 }

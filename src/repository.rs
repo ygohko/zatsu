@@ -30,7 +30,7 @@ use crate::error::ZatsuError;
 
 #[derive(Serialize, Deserialize)]
 pub struct RepositoryV1 {
-    pub revision_numbers: Vec<i32>,
+    revision_numbers: Vec<i32>,
 }
 
 pub struct Repository {
@@ -39,7 +39,7 @@ pub struct Repository {
 }
 
 impl RepositoryV1 {
-    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(error::CODE_SERIALIZATION_FAILED)),
@@ -53,16 +53,7 @@ impl RepositoryV1 {
         Ok(())
     }
 
-    pub fn latest_revision(&self) -> i32 {
-        let count = self.revision_numbers.len();
-        if count == 0 {
-            return 0;
-        }
-
-        return self.revision_numbers[count - 1];
-    }
-
-    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
+    fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
         let json_path = path.as_ref().join("repository.json");
         let serialized = match fs::read_to_string(json_path) {
             Ok(serialized) => serialized,
@@ -102,9 +93,21 @@ impl Repository {
     
     pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
         // TODO: Check repository version.
-        let repository_v1 = RepositoryV1::load(path)?;
+        let version_path = path.as_ref().join("version.txt");
+        let string = match fs::read_to_string(version_path) {
+            Ok(string) => string,
+            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+        };
+        let version: i32 = match string.parse() {
+            Ok(version) => version,
+            Err(_) => 1,
+        };
 
-        Ok(Repository::from_v1(&repository_v1))
+        let repository_v1 = RepositoryV1::load(path)?;
+        let mut repository = Repository::from_v1(&repository_v1);
+        repository.version = version;
+
+        Ok(repository)
     }
 
     pub fn from_v1(repository_v1: &RepositoryV1) -> Self {
