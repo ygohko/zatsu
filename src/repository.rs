@@ -29,18 +29,16 @@ use crate::error;
 use crate::error::ZatsuError;
 
 #[derive(Serialize, Deserialize)]
-pub struct Repository {
+pub struct RepositoryV1 {
     pub revision_numbers: Vec<i32>,
 }
 
-/*
-pub struct RepositoryNG {
+pub struct Repository {
     pub revision_numbers: Vec<i32>,
     pub version: i32,
 }
-*/
 
-impl Repository {
+impl RepositoryV1 {
     pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
@@ -70,7 +68,7 @@ impl Repository {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        let repository: Repository = match serde_json::from_str(&serialized) {
+        let repository: RepositoryV1 = match serde_json::from_str(&serialized) {
             Ok(repository) => repository,
             Err(_) => return Err(ZatsuError::new(error::CODE_DESERIALIZATION_FAILED)),
         };
@@ -79,13 +77,40 @@ impl Repository {
     }
 }
 
-/*
-impl RepositoryNG {
-    fn from_v1(&repository_v1: RepositoryV1) -> Self {
+impl Repository {
+    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+        let repository_v1 = self.to_v1();
+        repository_v1.save(path)?;
+
+        Ok(())
+    }
+
+    pub fn latest_revision(&self) -> i32 {
+        let count = self.revision_numbers.len();
+        if count == 0 {
+            return 0;
+        }
+
+        return self.revision_numbers[count - 1];
+    }
+
+    pub fn to_v1(&self) -> RepositoryV1 {
+        RepositoryV1 {
+            revision_numbers: self.revision_numbers.clone(),
+        }
+    }
+    
+    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
+        // TODO: Check repository version.
+        let repository_v1 = RepositoryV1::load(path)?;
+
+        Ok(Repository::from_v1(&repository_v1))
+    }
+
+    pub fn from_v1(repository_v1: &RepositoryV1) -> Self {
         Repository {
-            revision_numbers: repository.revision_numbers.clone(),
+            revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
         }
     }
 }
-*/

@@ -56,6 +56,7 @@ impl Command for InitCommand {
         };
         let repository = Repository {
             revision_numbers: Vec::new(),
+            version: 1,
         };
         match repository.save(&PathBuf::from(".zatsu")) {
             Ok(()) => (),
