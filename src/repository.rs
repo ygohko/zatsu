@@ -28,14 +28,63 @@ use std::path::Path;
 use crate::error;
 use crate::error::ZatsuError;
 
-#[derive(Serialize, Deserialize)]
-pub struct RepositoryV1 {
-    revision_numbers: Vec<i32>,
-}
-
 pub struct Repository {
     pub revision_numbers: Vec<i32>,
     pub version: i32,
+}
+
+impl Repository {
+    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+        let repository_v1 = self.to_v1();
+        repository_v1.save(path)?;
+
+        Ok(())
+    }
+
+    pub fn latest_revision(&self) -> i32 {
+        let count = self.revision_numbers.len();
+        if count == 0 {
+            return 0;
+        }
+
+        return self.revision_numbers[count - 1];
+    }
+
+    pub fn to_v1(&self) -> RepositoryV1 {
+        RepositoryV1 {
+            revision_numbers: self.revision_numbers.clone(),
+        }
+    }
+    
+    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
+        let version_path = path.as_ref().join("version.txt");
+        let string = match fs::read_to_string(version_path) {
+            Ok(string) => string,
+            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+        };
+        let version: i32 = match string.parse() {
+            Ok(version) => version,
+            Err(_) => 1,
+        };
+
+        let repository_v1 = RepositoryV1::load(path)?;
+        let mut repository = Repository::from_v1(&repository_v1);
+        repository.version = version;
+
+        Ok(repository)
+    }
+
+    pub fn from_v1(repository_v1: &RepositoryV1) -> Self {
+        Repository {
+            revision_numbers: repository_v1.revision_numbers.clone(),
+            version: 1,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RepositoryV1 {
+    revision_numbers: Vec<i32>,
 }
 
 impl RepositoryV1 {
@@ -65,55 +114,5 @@ impl RepositoryV1 {
         };
 
         Ok(repository)
-    }
-}
-
-impl Repository {
-    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
-        let repository_v1 = self.to_v1();
-        repository_v1.save(path)?;
-
-        Ok(())
-    }
-
-    pub fn latest_revision(&self) -> i32 {
-        let count = self.revision_numbers.len();
-        if count == 0 {
-            return 0;
-        }
-
-        return self.revision_numbers[count - 1];
-    }
-
-    pub fn to_v1(&self) -> RepositoryV1 {
-        RepositoryV1 {
-            revision_numbers: self.revision_numbers.clone(),
-        }
-    }
-    
-    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
-        // TODO: Check repository version.
-        let version_path = path.as_ref().join("version.txt");
-        let string = match fs::read_to_string(version_path) {
-            Ok(string) => string,
-            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
-        };
-        let version: i32 = match string.parse() {
-            Ok(version) => version,
-            Err(_) => 1,
-        };
-
-        let repository_v1 = RepositoryV1::load(path)?;
-        let mut repository = Repository::from_v1(&repository_v1);
-        repository.version = version;
-
-        Ok(repository)
-    }
-
-    pub fn from_v1(repository_v1: &RepositoryV1) -> Self {
-        Repository {
-            revision_numbers: repository_v1.revision_numbers.clone(),
-            version: 1,
-        }
     }
 }
