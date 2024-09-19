@@ -134,6 +134,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
+        // TODO: Add a function to calculate object ID.
         let mut sha1 = Sha1::new();
         sha1.update(values.clone());
         let hash = sha1.finalize();
