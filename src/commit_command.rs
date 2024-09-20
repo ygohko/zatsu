@@ -120,7 +120,7 @@ impl Command for CommitCommand {
 impl CommitCommand {
     pub fn new() -> Self {
         Self {}
-    }
+    }   
 }
 
 fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
@@ -135,12 +135,15 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
         // TODO: Add a function to calculate object ID.
+        /*
         let mut sha1 = Sha1::new();
         sha1.update(values.clone());
         let hash = sha1.finalize();
         let hash_values = hash.to_vec();
         let hex = HexString::from_bytes(&hash_values);
         hex_string = hex.as_string();
+         */
+        hex_string = object_id(&values, 1);
 
         let directory_name = hex_string[0..2].to_string();
         let path = format!(".zatsu/objects/{}", directory_name).to_string();
@@ -181,4 +184,27 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     }
 
     Ok(hex_string)
+}
+
+fn object_id(values: &Vec<u8>, version: i32) -> String {
+    let result: String;
+    if version <= 1 {
+        let mut sha1 = Sha1::new();
+        sha1.update(values.clone());
+        let hash = sha1.finalize();
+        let hash_values = hash.to_vec();
+        let hex = HexString::from_bytes(&hash_values);
+        result = hex.as_string();
+    }
+    else {
+        // TODO: Calculate SHA-256 based calculation.
+        let mut sha1 = Sha1::new();
+        sha1.update(values.clone());
+        let hash = sha1.finalize();
+        let hash_values = hash.to_vec();
+        let hex = HexString::from_bytes(&hash_values);
+        result = hex.as_string();
+    }
+
+    result
 }
