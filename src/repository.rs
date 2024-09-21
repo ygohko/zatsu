@@ -62,11 +62,16 @@ impl Repository {
             Ok(string) => string,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
+
+        println!("string: {}", string);
+        
         let version: i32 = match string.parse() {
             Ok(version) => version,
             Err(_) => 1,
         };
 
+        println!("version: {}", version);
+        
         let repository_v1 = RepositoryV1::load(path)?;
         let mut repository = Repository::from_v1(&repository_v1);
         repository.version = version;

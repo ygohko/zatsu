@@ -191,6 +191,9 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
 fn object_hash(values: &Vec<u8>, version: i32) -> String {
     let result: String;
     if version <= 1 {
+
+        println!("Using SHA-1.");
+        
         let mut sha1 = Sha1::new();
         sha1.update(values.clone());
         let hash = sha1.finalize();
@@ -199,7 +202,9 @@ fn object_hash(values: &Vec<u8>, version: i32) -> String {
         result = hex.as_string();
     }
     else {
-        // TODO: Calculate SHA-256 based calculation.
+
+        println!("Using SHA-256.");
+        
         let mut sha256 = Sha256::new();
         sha256.update(values.clone());
         let hash = sha256.finalize();
