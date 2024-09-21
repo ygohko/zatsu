@@ -26,6 +26,8 @@ use flate2::Compression;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
+// use sha2::Digest as Digest2;
+use sha2::Sha256;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -143,7 +145,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
         let hex = HexString::from_bytes(&hash_values);
         hex_string = hex.as_string();
          */
-        hex_string = object_id(&values, 1);
+        hex_string = object_hash(&values, 1);
 
         let directory_name = hex_string[0..2].to_string();
         let path = format!(".zatsu/objects/{}", directory_name).to_string();
@@ -186,7 +188,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     Ok(hex_string)
 }
 
-fn object_id(values: &Vec<u8>, version: i32) -> String {
+fn object_hash(values: &Vec<u8>, version: i32) -> String {
     let result: String;
     if version <= 1 {
         let mut sha1 = Sha1::new();
@@ -198,13 +200,15 @@ fn object_id(values: &Vec<u8>, version: i32) -> String {
     }
     else {
         // TODO: Calculate SHA-256 based calculation.
-        let mut sha1 = Sha1::new();
-        sha1.update(values.clone());
-        let hash = sha1.finalize();
+        let mut sha256 = Sha256::new();
+        sha256.update(values.clone());
+        let hash = sha256.finalize();
         let hash_values = hash.to_vec();
         let hex = HexString::from_bytes(&hash_values);
         result = hex.as_string();
     }
 
+    println!("result: {}", result);
+    
     result
 }
