@@ -68,7 +68,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match process_file(&PathBuf::from(path.clone())) {
+                let hash = match process_file(&PathBuf::from(path.clone()), repository.version) {
                     Ok(hash) => hash,
                     Err(error) => return Err(error),
                 };
@@ -125,7 +125,7 @@ impl CommitCommand {
     }   
 }
 
-fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
+fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(&path) {
         Ok(metadata) => metadata,
         Err(_) => return Err(ZatsuError::new(error::CODE_READING_META_DATA_FAILED)),
@@ -145,7 +145,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
         let hex = HexString::from_bytes(&hash_values);
         hex_string = hex.as_string();
          */
-        hex_string = object_hash(&values, 1);
+        hex_string = object_hash(&values, repository_version);
 
         let directory_name = hex_string[0..2].to_string();
         let path = format!(".zatsu/objects/{}", directory_name).to_string();

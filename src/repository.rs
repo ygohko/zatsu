@@ -58,10 +58,11 @@ impl Repository {
     
     pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
         let version_path = path.as_ref().join("version.txt");
-        let string = match fs::read_to_string(version_path) {
+        let mut string = match fs::read_to_string(version_path) {
             Ok(string) => string,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
+        string = string.replace("\n", "");
 
         println!("string: {}", string);
         
