@@ -29,7 +29,9 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
-pub struct InitCommand {}
+pub struct InitCommand {
+    version: i32,
+}
 
 impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
@@ -42,7 +44,7 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_REPOSITORY_FAILED)),
         };
-        match fs::write(".zatsu/version.txt", "1") {
+        match fs::write(".zatsu/version.txt", self.version.to_string()) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_REPOSITORY_FAILED)),
         };
@@ -56,7 +58,7 @@ impl Command for InitCommand {
         };
         let repository = Repository {
             revision_numbers: Vec::new(),
-            version: 1,
+            version: self.version,
         };
         match repository.save(&PathBuf::from(".zatsu")) {
             Ok(()) => (),
@@ -70,7 +72,9 @@ impl Command for InitCommand {
 }
 
 impl InitCommand {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(version: i32) -> Self {
+        Self {
+            version,
+        }
     }
 }
