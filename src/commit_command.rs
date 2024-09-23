@@ -26,6 +26,7 @@ use flate2::Compression;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
+use sha2::Sha256;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -43,7 +44,7 @@ pub struct CommitCommand {}
 
 impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match Repository::load(".zatsu/repository.json") {
+        let mut repository = match Repository::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -66,7 +67,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match process_file(&PathBuf::from(path.clone())) {
+                let hash = match process_file(&PathBuf::from(path.clone()), repository.version) {
                     Ok(hash) => hash,
                     Err(error) => return Err(error),
                 };
@@ -101,7 +102,7 @@ impl Command for CommitCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
         repository.revision_numbers.push(revision_number);
-        match repository.save(&PathBuf::from(".zatsu/repository.json")) {
+        match repository.save(".zatsu") {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
@@ -123,7 +124,7 @@ impl CommitCommand {
     }
 }
 
-fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
+fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(&path) {
         Ok(metadata) => metadata,
         Err(_) => return Err(ZatsuError::new(error::CODE_READING_META_DATA_FAILED)),
@@ -134,12 +135,7 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        let mut sha1 = Sha1::new();
-        sha1.update(values.clone());
-        let hash = sha1.finalize();
-        let hash_values = hash.to_vec();
-        let hex = HexString::from_bytes(&hash_values);
-        hex_string = hex.as_string();
+        hex_string = object_hash(&values, repository_version);
 
         let directory_name = hex_string[0..2].to_string();
         let path = format!(".zatsu/objects/{}", directory_name).to_string();
@@ -180,4 +176,26 @@ fn process_file(path: impl AsRef<Path>) -> Result<String, ZatsuError> {
     }
 
     Ok(hex_string)
+}
+
+fn object_hash(values: &Vec<u8>, version: i32) -> String {
+    let result: String;
+    if version <= 1 {
+        let mut sha1 = Sha1::new();
+        sha1.update(values.clone());
+        let hash = sha1.finalize();
+        let hash_values = hash.to_vec();
+        let hex = HexString::from_bytes(&hash_values);
+        result = hex.as_string();
+    }
+    else {
+        let mut sha256 = Sha256::new();
+        sha256.update(values.clone());
+        let hash = sha256.finalize();
+        let hash_values = hash.to_vec();
+        let hex = HexString::from_bytes(&hash_values);
+        result = hex.as_string();
+    }
+
+    result
 }

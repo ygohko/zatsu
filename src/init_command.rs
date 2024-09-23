@@ -56,11 +56,14 @@ impl Command for InitCommand {
         };
         let repository = Repository {
             revision_numbers: Vec::new(),
+            version: 1,
         };
-        match repository.save(&PathBuf::from(".zatsu/repository.json")) {
+        match repository.save(&PathBuf::from(".zatsu")) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
+
+        // TODO: Show a message that indicates operation succeeded.
 
         Ok(())
     }
