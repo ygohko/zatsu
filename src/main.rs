@@ -55,6 +55,13 @@ struct Arguments {
 }
 
 #[derive(Parser, PartialEq)]
+struct InitArguments {
+    /// Repository version to be created.
+    #[arg(short, long)]
+    version: Option<i32>,
+}
+
+#[derive(Parser, PartialEq)]
 struct GetArguments {
     /// Revision to get a file or directory
     revision: i32,
@@ -71,7 +78,7 @@ struct ForgetArguments {
 #[derive(Subcommand, PartialEq)]
 enum CommandKind {
     /// Initialize a repository into this directory
-    Init,
+    Init(InitArguments),
     /// Commit current files into this direcrory's repository
     Commit,
     /// Show logs of this directory's repository
@@ -113,8 +120,15 @@ fn main() -> Result<(), ZatsuError> {
             Ok(()) => (),
             Err(error) => return Err(error),
         };
-    } else if command == CommandKind::Init {
-        let command = InitCommand::new();
+    } else if let CommandKind::Init(arguments) = command {
+        let version: i32;
+        if arguments.version.is_some() {
+            version = arguments.version.unwrap();
+        }
+        else {
+            version = 1
+        }
+        let command = InitCommand::new(version);
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
