@@ -26,7 +26,6 @@ use flate2::Compression;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
-// use sha2::Digest as Digest2;
 use sha2::Sha256;
 use std::fs;
 use std::io::Write;
@@ -122,7 +121,7 @@ impl Command for CommitCommand {
 impl CommitCommand {
     pub fn new() -> Self {
         Self {}
-    }   
+    }
 }
 
 fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<String, ZatsuError> {
@@ -136,15 +135,6 @@ fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<Strin
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        // TODO: Add a function to calculate object ID.
-        /*
-        let mut sha1 = Sha1::new();
-        sha1.update(values.clone());
-        let hash = sha1.finalize();
-        let hash_values = hash.to_vec();
-        let hex = HexString::from_bytes(&hash_values);
-        hex_string = hex.as_string();
-         */
         hex_string = object_hash(&values, repository_version);
 
         let directory_name = hex_string[0..2].to_string();
@@ -191,9 +181,6 @@ fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<Strin
 fn object_hash(values: &Vec<u8>, version: i32) -> String {
     let result: String;
     if version <= 1 {
-
-        println!("Using SHA-1.");
-        
         let mut sha1 = Sha1::new();
         sha1.update(values.clone());
         let hash = sha1.finalize();
@@ -202,9 +189,6 @@ fn object_hash(values: &Vec<u8>, version: i32) -> String {
         result = hex.as_string();
     }
     else {
-
-        println!("Using SHA-256.");
-        
         let mut sha256 = Sha256::new();
         sha256.update(values.clone());
         let hash = sha256.finalize();
@@ -213,7 +197,5 @@ fn object_hash(values: &Vec<u8>, version: i32) -> String {
         result = hex.as_string();
     }
 
-    println!("result: {}", result);
-    
     result
 }
