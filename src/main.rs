@@ -31,6 +31,7 @@ mod init_command;
 mod log_command;
 mod repository;
 mod revision;
+mod upgrade_command;
 
 use clap::Parser;
 use clap::Subcommand;
@@ -46,6 +47,7 @@ use crate::init_command::InitCommand;
 use crate::log_command::LogCommand;
 use crate::repository::Repository;
 use crate::revision::Revision;
+use crate::upgrade_command::UpgradeCommand;
 
 #[derive(Parser)]
 struct Arguments {
@@ -87,6 +89,8 @@ enum CommandKind {
     Get(GetArguments),
     /// Remove stored revisions to shrink this directory's repository to specified size
     Forget(ForgetArguments),
+    /// Upgrade this repository
+    Upgrade,
 }
 
 fn main() -> Result<(), ZatsuError> {
@@ -129,6 +133,12 @@ fn main() -> Result<(), ZatsuError> {
             version = 1
         }
         let command = InitCommand::new(version);
+        match command.execute() {
+            Ok(()) => (),
+            Err(error) => return Err(error),
+        };
+    } else if command == CommandKind::Upgrade {
+        let command = UpgradeCommand::new();
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
