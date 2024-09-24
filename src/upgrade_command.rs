@@ -20,6 +20,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use std::fs;
+
 use crate::Command;
 use crate::error;
 use crate::Repository;
@@ -42,11 +44,18 @@ impl Command for UpgradeCommand {
             return Err(ZatsuError::new(error::CODE_GENERAL));
         }
 
-        // TODO: Move objects directory.
+        // Move objects directory.
+        match fs::rename(".zatsu/objects", ".zatsu/objects-v1") {
+            Ok(()) => (),
+            Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),
+        };
 
         // TODO: Copy objects into new new directory.
+        
 
         // TODO: Update hashes of entries.
+
+
         Ok(())
     }
 }
