@@ -22,6 +22,7 @@
 
 mod command;
 mod commit_command;
+mod commons;
 mod entry;
 mod error;
 mod file_path_producer;
