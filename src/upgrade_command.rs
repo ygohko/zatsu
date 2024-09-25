@@ -51,18 +51,10 @@ impl Command for UpgradeCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),
         };
 
+        // TODO: Create new object direcrory.
+        // match fs::
+        
         // TODO: Copy objects into new new directory.
-        let read_dir = match fs::read_dir(".zatsu/objects-v1") {
-            Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
-        };
-        let mut object_paths: Vec<PathBuf> = Vec::new();
-        for result in read_dir {
-            if result.is_ok() {
-                let entry = result.unwrap();
-                object_paths.push(entry.path());
-            }
-        }
 
 
         // TODO: Update hashes of entries.
@@ -75,5 +67,34 @@ impl Command for UpgradeCommand {
 impl UpgradeCommand {
     pub fn new() -> Self {
         Self {}
+    }
+}
+
+fn copy_objects() -> Result<(), ZatsuError> {
+    let read_dir = match fs::read_dir(".zatsu/objects-v1") {
+        Ok(read_dir) => read_dir,
+        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+    };
+    let mut object_paths: Vec<PathBuf> = Vec::new();
+    for result in read_dir {
+        if result.is_ok() {
+            let entry = result.unwrap();
+            object_paths.push(entry.path());
+        }
+    }
+
+    for path in object_paths {
+        let mut directory_path = Path::new(".zatsu/objects-v1");
+        directory_path.join(path);
+        let read_dir = match fs::read_dir(directory_path) {
+            Ok(read_dir) => read_dir,
+            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+        };
+        for result in read_dir {
+            if result.is_ok() {
+                let entry = result.unwrap();
+                
+            }
+        }
     }
 }
