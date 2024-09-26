@@ -21,7 +21,6 @@
  */
 
 use std::fs;
-use std::path::Path;
 use std::path::PathBuf;
 
 use crate::Command;
@@ -53,8 +52,11 @@ impl Command for UpgradeCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),
         };
 
-        // TODO: Create new object direcrory.
-        // match fs::
+        // Create new object direcrory.
+        match fs::create_dir(".zatsu/objects") {
+            Ok(()) => (),
+            Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),
+        };
         
         // TODO: Copy objects into new new directory.
 
