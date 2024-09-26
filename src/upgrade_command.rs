@@ -109,7 +109,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
 
                 // TODO: Write new object hash.
                 // file_path = directory_path.clone();
-                // let file_name = format!("{}.new", entry.path());
+                // 0let file_name = format!("{}.new", entry.path());
             }
         }
     }
