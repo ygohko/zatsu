@@ -86,17 +86,17 @@ fn copy_objects() -> Result<(), ZatsuError> {
     }
 
     for path in object_paths {
-        let mut directory_path = PathBuf::new(".zatsu/objects-v1");
+        let mut directory_path = PathBuf::from(".zatsu/objects-v1");
         directory_path = directory_path.join(path);
-        let read_dir = match fs::read_dir(directory_path) {
+        let read_dir = match fs::read_dir(directory_path.clone()) {
             Ok(read_dir) => read_dir,
             Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
         };
         for result in read_dir {
             if result.is_ok() {
                 let entry = result.unwrap();
-                let mut file_path = directory_path;
-                file_path =&file_path.join(entry.path());
+                let mut file_path = directory_path.clone();
+                file_path = file_path.join(entry.path());
                 let values = match fs::read(file_path) {
                     Ok(values) => values,
                     Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
