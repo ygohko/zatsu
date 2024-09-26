@@ -58,8 +58,8 @@ impl Command for UpgradeCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),
         };
         
-        // TODO: Copy objects into new new directory.
-
+        // Copy objects into new new directory.
+        copy_objects();
 
         // TODO: Update hashes of entries.
 
@@ -105,6 +105,9 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 };
 
                 let hash = commons::object_hash(&values, 2);
+                commons::save_object(&values, &hash, 2);
+
+                // TODO: Write new object hash.
             }
         }
     }
