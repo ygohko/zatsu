@@ -107,9 +107,14 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 let hash = commons::object_hash(&values, 2);
                 commons::save_object(&values, &hash, 2);
 
-                // TODO: Write new object hash.
-                // file_path = directory_path.clone();
-                // 0let file_name = format!("{}.new", entry.path());
+                // Write new object hash.
+                file_path = directory_path.clone();
+                let file_name = format!("{}.new", entry.path().to_string_lossy());
+                file_path = file_path.join(&file_name);
+                match fs::write(file_path, hash) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+                };
             }
         }
     }
