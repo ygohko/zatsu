@@ -20,7 +20,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use flate2::write::ZlibDecoder;
 use std::fs;
+use std::io::Write;
 use std::path::PathBuf;
 
 use crate::Command;
@@ -59,7 +61,7 @@ impl Command for UpgradeCommand {
         };
         
         // Copy objects into new new directory.
-        copy_objects();
+        copy_objects()?;
 
         // TODO: Update hashes of entries.
 
@@ -103,9 +105,18 @@ fn copy_objects() -> Result<(), ZatsuError> {
                     Ok(values) => values,
                     Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
                 };
+                let mut decoder = ZlibDecoder::new(Vec::new());
+                match decoder.write_all(&values) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+                };
+                let decoded = match decoder.finish() {
+                    Ok(decoded) => decoded,
+                    Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+                };
 
-                let hash = commons::object_hash(&values, 2);
-                commons::save_object(&values, &hash, 2);
+                let hash = commons::object_hash(&decoded, 2);
+                commons::save_object(&decoded, &hash)?;
 
                 // Write new object hash.
                 file_path = directory_path.clone();

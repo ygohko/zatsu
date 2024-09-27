@@ -33,7 +33,7 @@ use std::path::Path;
 use crate::error;
 use crate::error::ZatsuError;
 
-pub fn save_object(values: &Vec<u8>, hash: &str, version: i32) -> Result<(), ZatsuError> {
+pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
     let directory_name = hash[0..2].to_string();
     let path = format!(".zatsu/objects/{}", directory_name).to_string();
     let a_path = Path::new(&path);
