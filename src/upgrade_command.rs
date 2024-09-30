@@ -132,3 +132,23 @@ fn copy_objects() -> Result<(), ZatsuError> {
 
     Ok(())
 }
+
+fn update_entries() -> Result<(), ZatsuError> {
+    let mut directory_path = PathBuf::from(".zatsu/revisions");
+    let read_dir = match fs::read_dir(directory_path) {
+        Ok(read_dir) => read_dir,
+        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+    };
+    let mut revision_path: Vec<PathBuf> = Vec::new();
+    for result in read_dir {
+        if result.is_ok() {
+            let entry = result.unwrap();
+        }
+    }
+
+    for path in revision_path {
+        
+    }
+
+    Ok(())
+}
