@@ -27,10 +27,11 @@ use std::path::PathBuf;
 
 use crate::Command;
 use crate::commons;
+use crate::Entry;
 use crate::error;
 use crate::Repository;
+use crate::Revision;
 use crate::ZatsuError;
-
 pub struct UpgradeCommand {
 }
 
@@ -133,7 +134,8 @@ fn copy_objects() -> Result<(), ZatsuError> {
     Ok(())
 }
 
-fn update_entries() -> Result<(), ZatsuError> {
+fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
+    /*
     let mut directory_path = PathBuf::from(".zatsu/revisions");
     let read_dir = match fs::read_dir(directory_path) {
         Ok(read_dir) => read_dir,
@@ -148,6 +150,34 @@ fn update_entries() -> Result<(), ZatsuError> {
 
     for path in revision_path {
         
+    }
+    */
+
+
+
+
+    for revision_number in revision_numbers {
+        let path = format!(".zatsu/revisions/{:02x}/{}.json", (revision_number & 0xFF), revision_number);
+        let mut revision = Revision::load(&path)?;
+        let mut new_entries: Vec<Entry> = Vec::new();
+        for entry in revision.entries {
+            let directory_name = entry.hash[0..2].to_string();
+            let path = format!(".zatsu/objects/{}/{}.new", directory_name, entry.hash);
+            let new_hash = match fs::read_to_string(path) {
+                Ok(new_hash) => new_hash,
+                Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+            };
+
+            let new_entry = Entry {
+                path: entry.path,
+                hash: new_hash,
+                permission: entry.permission,
+            };
+            new_entries.push(new_entry);
+        }
+
+        revision.entries = new_entries;
+        revision.save(path)?;
     }
 
     Ok(())
