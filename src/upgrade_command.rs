@@ -92,8 +92,9 @@ fn copy_objects() -> Result<(), ZatsuError> {
 
     for path in object_paths {
         let mut directory_path = PathBuf::from(".zatsu/objects-v1");
-        directory_path = directory_path.join(path);
-
+        // directory_path = directory_path.join(path);
+        directory_path = path;
+        
         println!("directory_path: {}", directory_path.to_string_lossy());
         
         let read_dir = match fs::read_dir(directory_path.clone()) {
@@ -104,8 +105,13 @@ fn copy_objects() -> Result<(), ZatsuError> {
             if result.is_ok() {
                 let entry = result.unwrap();
                 let mut file_path = directory_path.clone();
-                file_path = file_path.join(entry.path());
-                let values = match fs::read(file_path) {
+                // file_path = file_path.join(entry.path());
+                file_path = entry.path();
+
+                println!("entry.path(): {}", entry.path().to_string_lossy());
+                println!("file_path: {}", file_path.to_string_lossy());
+                
+                let values = match fs::read(file_path.clone()) {
                     Ok(values) => values,
                     Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
                 };
@@ -123,10 +129,14 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 commons::save_object(&decoded, &hash)?;
 
                 // Write new object hash.
+                let mut new_file_path = file_path.to_string_lossy().to_mut().clone();
+                new_file_path.push_str(".new");
+                /*
                 file_path = directory_path.clone();
                 let file_name = format!("{}.new", entry.path().to_string_lossy());
                 file_path = file_path.join(&file_name);
-                match fs::write(file_path, hash) {
+                */
+                match fs::write(&new_file_path, hash) {
                     Ok(()) => (),
                     Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
                 };
