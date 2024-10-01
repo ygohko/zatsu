@@ -65,7 +65,7 @@ impl Command for UpgradeCommand {
         copy_objects()?;
 
         // TODO: Update hashes of entries.
-
+        update_entries(&repository.revision_numbers)?;
 
         Ok(())
     }
