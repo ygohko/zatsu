@@ -73,6 +73,12 @@ impl Command for UpgradeCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
 
+        // TODO: Remove V1 objects.
+        match fs::remove_dir_all(".zatsu/objects-v1") {
+            Ok(()) => (),
+            Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_FILE_FAILED)),            
+        };
+
         Ok(())
     }
 }

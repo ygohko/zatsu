@@ -40,6 +40,7 @@ pub const CODE_CREATING_DIRECTORY_FAILED: i32 = 11;
 pub const CODE_DESERIALIZATION_FAILED: i32 = 12;
 pub const CODE_SERIALIZATION_FAILED: i32 = 13;
 pub const CODE_REMOVING_FILE_FAILED: i32 = 14;
+pub const CODE_REMOVING_DIRECTORY_FAILED: i32 = 15;
 
 #[derive(Debug)]
 pub struct ZatsuError {
