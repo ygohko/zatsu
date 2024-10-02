@@ -178,6 +178,7 @@ fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<Strin
     Ok(hex_string)
 }
 
+// TODO: Deprecate this.
 fn object_hash(values: &Vec<u8>, version: i32) -> String {
     let result: String;
     if version <= 1 {
