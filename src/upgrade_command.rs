@@ -175,8 +175,11 @@ fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
         let mut new_entries: Vec<Entry> = Vec::new();
         for entry in revision.entries {
             let directory_name = entry.hash[0..2].to_string();
-            let path = format!(".zatsu/objects/{}/{}.new", directory_name, entry.hash);
-            let new_hash = match fs::read_to_string(path) {
+            let path = format!(".zatsu/objects-v1/{}/{}.new", directory_name, entry.hash);
+
+            println!("path: {}", path);
+            
+            let new_hash = match fs::read_to_string(&path) {
                 Ok(new_hash) => new_hash,
                 Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
             };
