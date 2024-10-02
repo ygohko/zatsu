@@ -67,6 +67,8 @@ impl Command for UpgradeCommand {
         // TODO: Update hashes of entries.
         update_entries(&repository.revision_numbers)?;
 
+        // TODO: Update version.txt.
+
         Ok(())
     }
 }
