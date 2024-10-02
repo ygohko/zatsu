@@ -64,19 +64,19 @@ impl Command for UpgradeCommand {
         // Copy objects into new new directory.
         copy_objects()?;
 
-        // TODO: Update hashes of entries.
+        // Update hashes of entries.
         update_entries(&repository.revision_numbers)?;
 
-        // TODO: Update version.txt.
+        // Update version.txt.
         match fs::write(".zatsu/version.txt", "2") {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
 
-        // TODO: Remove V1 objects.
+        // Remove V1 objects.
         match fs::remove_dir_all(".zatsu/objects-v1") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_FILE_FAILED)),            
+            Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_DIRECTORY_FAILED)),            
         };
 
         Ok(())
@@ -103,10 +103,8 @@ fn copy_objects() -> Result<(), ZatsuError> {
     }
 
     for path in object_paths {
-        let mut directory_path = PathBuf::from(".zatsu/objects-v1");
-        // directory_path = directory_path.join(path);
-        directory_path = path;
-        
+        let directory_path = path;
+
         println!("directory_path: {}", directory_path.to_string_lossy());
         
         let read_dir = match fs::read_dir(directory_path.clone()) {
@@ -116,11 +114,8 @@ fn copy_objects() -> Result<(), ZatsuError> {
         for result in read_dir {
             if result.is_ok() {
                 let entry = result.unwrap();
-                let mut file_path = directory_path.clone();
-                // file_path = file_path.join(entry.path());
-                file_path = entry.path();
+                let file_path = entry.path();
 
-                println!("entry.path(): {}", entry.path().to_string_lossy());
                 println!("file_path: {}", file_path.to_string_lossy());
                 
                 let values = match fs::read(file_path.clone()) {
@@ -143,11 +138,6 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 // Write new object hash.
                 let mut new_file_path = file_path.to_string_lossy().to_mut().clone();
                 new_file_path.push_str(".new");
-                /*
-                file_path = directory_path.clone();
-                let file_name = format!("{}.new", entry.path().to_string_lossy());
-                file_path = file_path.join(&file_name);
-                */
                 match fs::write(&new_file_path, hash) {
                     Ok(()) => (),
                     Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
@@ -160,27 +150,6 @@ fn copy_objects() -> Result<(), ZatsuError> {
 }
 
 fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
-    /*
-    let mut directory_path = PathBuf::from(".zatsu/revisions");
-    let read_dir = match fs::read_dir(directory_path) {
-        Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
-    };
-    let mut revision_path: Vec<PathBuf> = Vec::new();
-    for result in read_dir {
-        if result.is_ok() {
-            let entry = result.unwrap();
-        }
-    }
-
-    for path in revision_path {
-        
-    }
-    */
-
-
-
-
     for revision_number in revision_numbers {
         let path = format!(".zatsu/revisions/{:02x}/{}.json", (revision_number & 0xFF), revision_number);
         let mut revision = Revision::load(&path)?;
