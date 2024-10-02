@@ -68,6 +68,10 @@ impl Command for UpgradeCommand {
         update_entries(&repository.revision_numbers)?;
 
         // TODO: Update version.txt.
+        match fs::write(".zatsu/version.txt", "2") {
+            Ok(()) => (),
+            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+        };
 
         Ok(())
     }
