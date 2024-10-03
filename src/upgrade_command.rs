@@ -50,6 +50,7 @@ impl Command for UpgradeCommand {
         }
 
         // Move objects directory.
+        println!("Moving current objects...");
         match fs::rename(".zatsu/objects", ".zatsu/objects-v1") {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),
