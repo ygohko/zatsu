@@ -79,6 +79,9 @@ impl Command for UpgradeCommand {
             Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_DIRECTORY_FAILED)),            
         };
 
+        println!("");
+        println!("Repository successfully upgraded to V2.");
+
         Ok(())
     }
 }
@@ -104,9 +107,6 @@ fn copy_objects() -> Result<(), ZatsuError> {
 
     for path in object_paths {
         let directory_path = path;
-
-        println!("directory_path: {}", directory_path.to_string_lossy());
-        
         let read_dir = match fs::read_dir(directory_path.clone()) {
             Ok(read_dir) => read_dir,
             Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
@@ -115,9 +115,6 @@ fn copy_objects() -> Result<(), ZatsuError> {
             if result.is_ok() {
                 let entry = result.unwrap();
                 let file_path = entry.path();
-
-                println!("file_path: {}", file_path.to_string_lossy());
-                
                 let values = match fs::read(file_path.clone()) {
                     Ok(values) => values,
                     Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
@@ -151,15 +148,14 @@ fn copy_objects() -> Result<(), ZatsuError> {
 
 fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
     for revision_number in revision_numbers {
+        println!("Updating:revision  {}", revision_number);
         let path = format!(".zatsu/revisions/{:02x}/{}.json", (revision_number & 0xFF), revision_number);
         let mut revision = Revision::load(&path)?;
         let mut new_entries: Vec<Entry> = Vec::new();
         for entry in revision.entries {
             let directory_name = entry.hash[0..2].to_string();
             let path = format!(".zatsu/objects-v1/{}/{}.new", directory_name, entry.hash);
-
-            println!("path: {}", path);
-            
+            println!("Updating: {}", entry.path);
             let new_hash = match fs::read_to_string(&path) {
                 Ok(new_hash) => new_hash,
                 Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
