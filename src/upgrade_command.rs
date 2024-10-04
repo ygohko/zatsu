@@ -40,7 +40,7 @@ impl Command for UpgradeCommand {
         let repository = match Repository::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
-                println!("Error: repository not found. To create repository, execute zatsu init.");
+                println!("Error: Repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
             }
         };
@@ -116,6 +116,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
             if result.is_ok() {
                 let entry = result.unwrap();
                 let file_path = entry.path();
+                println!("Copying: {}", file_path.to_string_lossy());
                 let values = match fs::read(file_path.clone()) {
                     Ok(values) => values,
                     Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
@@ -149,7 +150,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
 
 fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
     for revision_number in revision_numbers {
-        println!("Updating:revision  {}", revision_number);
+        println!("Updating: Revision {}", revision_number);
         let path = format!(".zatsu/revisions/{:02x}/{}.json", (revision_number & 0xFF), revision_number);
         let mut revision = Revision::load(&path)?;
         let mut new_entries: Vec<Entry> = Vec::new();
