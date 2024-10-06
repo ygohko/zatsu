@@ -188,8 +188,7 @@ fn object_hash(values: &Vec<u8>, version: i32) -> String {
         let hash_values = hash.to_vec();
         let hex = HexString::from_bytes(&hash_values);
         result = hex.as_string();
-    }
-    else {
+    } else {
         let mut sha256 = Sha256::new();
         sha256.update(values.clone());
         let hash = sha256.finalize();

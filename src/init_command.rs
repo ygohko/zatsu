@@ -73,8 +73,6 @@ impl Command for InitCommand {
 
 impl InitCommand {
     pub fn new(version: i32) -> Self {
-        Self {
-            version,
-        }
+        Self { version }
     }
 }

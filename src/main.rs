@@ -129,8 +129,7 @@ fn main() -> Result<(), ZatsuError> {
         let version: i32;
         if arguments.version.is_some() {
             version = arguments.version.unwrap();
-        }
-        else {
+        } else {
             version = 1
         }
         let command = InitCommand::new(version);
