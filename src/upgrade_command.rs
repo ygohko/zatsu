@@ -25,15 +25,14 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
-use crate::Command;
 use crate::commons;
-use crate::Entry;
 use crate::error;
+use crate::Command;
+use crate::Entry;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
-pub struct UpgradeCommand {
-}
+pub struct UpgradeCommand {}
 
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
@@ -61,7 +60,7 @@ impl Command for UpgradeCommand {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_DIRECTORY_FAILED)),
         };
-        
+
         // Copy objects into new new directory.
         copy_objects()?;
 
@@ -77,7 +76,7 @@ impl Command for UpgradeCommand {
         // Remove V1 objects.
         match fs::remove_dir_all(".zatsu/objects-v1") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_DIRECTORY_FAILED)),            
+            Err(_) => return Err(ZatsuError::new(error::CODE_REMOVING_DIRECTORY_FAILED)),
         };
 
         println!("");
@@ -151,7 +150,11 @@ fn copy_objects() -> Result<(), ZatsuError> {
 fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
     for revision_number in revision_numbers {
         println!("Updating: Revision {}", revision_number);
-        let path = format!(".zatsu/revisions/{:02x}/{}.json", (revision_number & 0xFF), revision_number);
+        let path = format!(
+            ".zatsu/revisions/{:02x}/{}.json",
+            (revision_number & 0xFF),
+            revision_number
+        );
         let mut revision = Revision::load(&path)?;
         let mut new_entries: Vec<Entry> = Vec::new();
         for entry in revision.entries {
