@@ -23,15 +23,12 @@
 use chrono::Utc;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
-use hex_string::HexString;
-use sha1::Digest;
-use sha1::Sha1;
-use sha2::Sha256;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::commons;
 use crate::error;
 use crate::Command;
 use crate::Entry;
@@ -135,7 +132,7 @@ fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<Strin
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        hex_string = object_hash(&values, repository_version);
+        hex_string = commons::object_hash(&values, repository_version);
 
         let directory_name = hex_string[0..2].to_string();
         let path = format!(".zatsu/objects/{}", directory_name).to_string();
@@ -176,26 +173,4 @@ fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<Strin
     }
 
     Ok(hex_string)
-}
-
-// TODO: Deprecate this.
-fn object_hash(values: &Vec<u8>, version: i32) -> String {
-    let result: String;
-    if version <= 1 {
-        let mut sha1 = Sha1::new();
-        sha1.update(values.clone());
-        let hash = sha1.finalize();
-        let hash_values = hash.to_vec();
-        let hex = HexString::from_bytes(&hash_values);
-        result = hex.as_string();
-    } else {
-        let mut sha256 = Sha256::new();
-        sha256.update(values.clone());
-        let hash = sha256.finalize();
-        let hash_values = hash.to_vec();
-        let hex = HexString::from_bytes(&hash_values);
-        result = hex.as_string();
-    }
-
-    result
 }
