@@ -76,3 +76,14 @@ impl InitCommand {
         Self { version }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_creatable() {
+        let _command = InitCommand::new(1);
+        let _command = InitCommand::new(2);
+    }
+}
