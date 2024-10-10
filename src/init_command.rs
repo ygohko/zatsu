@@ -81,9 +81,24 @@ impl InitCommand {
 mod tests {
     use super::*;
 
+    use std::env;
+
     #[test]
     fn is_creatable() {
         let _command = InitCommand::new(1);
         let _command = InitCommand::new(2);
+    }
+
+    #[test]
+    fn is_runnable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        let result = command.execute();
+        assert!(result.is_ok());
+        let exists = Path::new(".zatsu").exists();
+        assert_eq!(true, exists);
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
     }
 }
