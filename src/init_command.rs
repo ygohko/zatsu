@@ -90,7 +90,7 @@ mod tests {
     }
 
     #[test]
-    fn is_runnable() {
+    fn is_executable() {
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
