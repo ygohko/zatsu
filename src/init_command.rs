@@ -20,14 +20,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
+
 use crate::error;
 use crate::Command;
 use crate::Repository;
 use crate::ZatsuError;
-
-use std::fs;
-use std::path::Path;
-use std::path::PathBuf;
 
 pub struct InitCommand {
     version: i32,
@@ -94,6 +94,16 @@ mod tests {
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
+        let result = command.execute();
+        assert!(result.is_ok());
+        let exists = Path::new(".zatsu").exists();
+        assert_eq!(true, exists);
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
         let result = command.execute();
         assert!(result.is_ok());
         let exists = Path::new(".zatsu").exists();
