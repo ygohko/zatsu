@@ -192,3 +192,41 @@ fn update_changes(changes: &mut Vec<String>, entries: &Vec<Entry>, previous_entr
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::env;
+    use std::fs;
+
+    use crate::InitCommand;
+
+    #[test]
+    fn is_creatable() {
+        let _command = LogCommand::new();
+    }
+
+    #[test]
+    fn is_executable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        let command = LogCommand::new();
+        let result = command.execute();
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
+        command.execute().unwrap();
+        let command = LogCommand::new();
+        let result = command.execute();
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+}
