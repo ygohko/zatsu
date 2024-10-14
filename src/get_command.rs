@@ -234,6 +234,8 @@ mod tests {
         let command = GetCommand::new(1, "a.txt");
         let result = command.execute();
         assert!(result.is_ok());
+        let string = fs::read_to_string("a-r1.txt").unwrap();
+        assert_eq!("Hello, World!", string);
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
 
@@ -247,7 +249,9 @@ mod tests {
         let command = GetCommand::new(1, "a.txt");
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
+        let string = fs::read_to_string("a-r1.txt").unwrap();
+        assert_eq!("Hello, World!", string);
+         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
     }
 }
