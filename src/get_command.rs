@@ -206,3 +206,52 @@ impl GetCommand {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::env;
+    use std::fs;
+
+    use crate::CommitCommand;
+    use crate::InitCommand;
+
+    #[test]
+    fn is_creatable() {
+        let _command = GetCommand::new(1, "a.txt");
+    }
+
+    #[test]
+    fn is_executable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        fs::write("a.txt", "Hello, World!").unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let command = GetCommand::new(1, "a.txt");
+        let result = command.execute();
+        assert!(result.is_ok());
+        let string = fs::read_to_string("a-r1.txt").unwrap();
+        assert_eq!("Hello, World!", string);
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
+        command.execute().unwrap();
+        fs::write("a.txt", "Hello, World!").unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let command = GetCommand::new(1, "a.txt");
+        let result = command.execute();
+        assert!(result.is_ok());
+        let string = fs::read_to_string("a-r1.txt").unwrap();
+        assert_eq!("Hello, World!", string);
+         env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+}
