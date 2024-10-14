@@ -236,5 +236,18 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
+
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
+        command.execute().unwrap();
+        fs::write("a.txt", "Hello, World!").unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let command = GetCommand::new(1, "a.txt");
+        let result = command.execute();
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
     }
 }
