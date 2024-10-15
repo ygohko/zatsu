@@ -180,3 +180,13 @@ fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn is_creatable() {
+        let _command = UpgradeCommand::new();
+    }
+}
