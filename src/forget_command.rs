@@ -256,3 +256,52 @@ fn remove_unused_objects(
 
     Ok(removed_object_count)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::fs;
+    use std::env;
+
+    use crate::InitCommand;
+    use crate::CommitCommand;
+
+    #[test]
+    fn is_creatable() {
+        let _command = ForgetCommand::new(1);
+    }
+
+    #[test]
+    fn is_executable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        fs::write("a.txt", "Hello, World!").unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let command = ForgetCommand::new(1);
+        let result = command.execute();
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+        
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
+        command.execute().unwrap();
+        fs::write("a.txt", "Hello, World!").unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let command = ForgetCommand::new(1);
+        let result = command.execute();
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+}
