@@ -187,7 +187,10 @@ mod test {
 
     use std::env;
     use std::fs;
-    
+
+    use crate::InitCommand;
+    use crate::CommitCommand;
+
     #[test]
     fn is_creatable() {
         let _command = UpgradeCommand::new();
