@@ -210,6 +210,5 @@ mod test {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
-
     }
 }
