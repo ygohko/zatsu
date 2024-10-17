@@ -102,3 +102,16 @@ impl FilePathProducer {
         Err(ZatsuError::new(error::CODE_PRODUCING_FINISHED))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_creatable() {
+        let producer = FilePathProducer::new(".".to_string());
+        assert_eq!(0, producer.file_paths.len());
+        assert_eq!(1, producer.directory_paths.len());
+        assert_eq!(2, producer.prefix_length);
+    }
+}
