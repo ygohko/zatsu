@@ -83,3 +83,28 @@ impl ZatsuError {
         };
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_creatable() {
+        let error = ZatsuError::new(123);
+        assert_eq!(123, error.code);
+        assert_eq!("disabled backtrace".to_string(), error.backtrace);
+        assert_eq!("".to_string(), error.details);
+
+        let error = ZatsuError::with_details(456, "details".to_string());
+        assert_eq!(456, error.code);
+        assert_eq!("disabled backtrace".to_string(), error.backtrace);
+        assert_eq!("details".to_string(), error.details);
+    }
+
+    #[test]
+    fn is_formattable() {
+        let error = ZatsuError::with_details(789, "details".to_string());
+        let formatted = format!("{}", error);
+        assert_eq!("Zatsu error. code: 789, backtrace: disabled backtrace, details: details", formatted);
+    }
+}
