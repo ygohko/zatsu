@@ -126,6 +126,9 @@ mod tests {
     use std::env;
     use std::fs;
 
+    use crate::Command;
+    use crate::InitCommand;
+    
     #[test]
     fn repository_is_savable() {
         let repository = Repository {
@@ -152,6 +155,21 @@ mod tests {
     }
 
     #[test]
+    fn repository_is_gettable_latest_revision() {
+        let repository = Repository {
+            revision_numbers: vec![1, 2, 3],
+            version: 1,
+        };
+        assert_eq!(3, repository.latest_revision());
+
+        let repository = Repository {
+            revision_numbers: vec![1, 2, 3],
+            version: 2,
+        };
+        assert_eq!(3, repository.latest_revision());
+    }
+
+    #[test]
     fn repository_is_convertable_to_repository_v1() {
         let repository = Repository {
             revision_numbers: vec![1, 2, 3],
@@ -159,5 +177,26 @@ mod tests {
         };
         let repository_v1 = repository.to_v1();
         assert_eq!(repository.revision_numbers, repository_v1.revision_numbers);
+    }
+
+    #[test]
+    fn repository_is_loadable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        let result = Repository::load(".zatsu");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
+        command.execute().unwrap();
+        let result = Repository::load(".zatsu");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
     }
 }
