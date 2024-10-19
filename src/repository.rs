@@ -118,3 +118,17 @@ impl RepositoryV1 {
         Ok(repository)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn repository_is_savable() {
+        let repository = Repository {
+            revision_numbers: Vec::new(),
+            version: 1,
+        };
+        
+    }
+}
