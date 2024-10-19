@@ -210,4 +210,31 @@ mod tests {
         let repository = Repository::from_v1(&repository_v1);
         assert_eq!(repository_v1.revision_numbers, repository.revision_numbers);
     }
+
+    #[test]
+    fn repository_v1_is_savable() {
+        let repository = Repository {
+            revision_numbers: vec![1, 2, 3],
+            version: 1,
+        };
+        let repository_v1 = repository.to_v1();
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let result = repository_v1.save(".");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+
+    #[test]
+    fn repository_v1_is_loadable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        let result = RepositoryV1::load(".zatsu");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
 }
