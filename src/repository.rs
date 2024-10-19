@@ -199,4 +199,15 @@ mod tests {
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
     }
+
+    #[test]
+    fn repository_is_convertable_from_repository_v1() {
+        let repository = Repository {
+            revision_numbers: vec![1, 2, 3],
+            version: 1,
+        };
+        let repository_v1 = repository.to_v1();
+        let repository = Repository::from_v1(&repository_v1);
+        assert_eq!(repository_v1.revision_numbers, repository.revision_numbers);
+    }
 }
