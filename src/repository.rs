@@ -123,12 +123,41 @@ impl RepositoryV1 {
 mod tests {
     use super::*;
 
+    use std::env;
+    use std::fs;
+
     #[test]
     fn repository_is_savable() {
         let repository = Repository {
-            revision_numbers: Vec::new(),
+            revision_numbers: vec![1, 2, 3],
             version: 1,
         };
-        
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let result = repository.save(".");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+
+        let repository = Repository {
+            revision_numbers: vec![1, 2, 3],
+            version: 2,
+        };
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let result = repository.save(".");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+
+    #[test]
+    fn repository_is_convertable_to_repository_v1() {
+        let repository = Repository {
+            revision_numbers: vec![1, 2, 3],
+            version: 1,
+        };
+        let repository_v1 = repository.to_v1();
+        assert_eq!(repository.revision_numbers, repository_v1.revision_numbers);
     }
 }
