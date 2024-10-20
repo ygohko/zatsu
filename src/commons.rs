@@ -116,5 +116,24 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
+
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
+        command.execute().unwrap();
+        let string = "Hello, World!".to_string();
+        let values = string.into_bytes();
+        let result = save_object(&values, "12345678");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+
+    #[test]
+    fn object_hash_is_calculatable() {
+        let string = "Hello, World!".to_string();
+        let values = string.into_bytes();
+        let _hash = object_hash(&values, 1);
+        let _hash = object_hash(&values, 2);
     }
 }
