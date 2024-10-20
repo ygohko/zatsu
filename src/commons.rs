@@ -94,3 +94,27 @@ pub fn object_hash(values: &Vec<u8>, version: i32) -> String {
 
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::env;
+
+    use crate::Command;
+    use crate::InitCommand;
+
+    #[test]
+    fn object_is_savable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        let string = "Hello, World!".to_string();
+        let values = string.into_bytes();
+        let result = save_object(&values, "12345678");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+}
