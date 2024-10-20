@@ -65,3 +65,57 @@ impl Revision {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::env;
+
+    use crate::Command;
+    use crate::CommitCommand;
+    use crate::InitCommand;
+
+    #[test]
+    fn is_loadable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let result = Revision::load(".zatsu/revisions/01/1.json");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(2);
+        command.execute().unwrap();
+        let command = CommitCommand::new();
+        command.execute().unwrap();
+        let result = Revision::load(".zatsu/revisions/01/1.json");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+
+    #[test]
+    fn is_savable() {
+        fs::create_dir("tmp").unwrap();
+        env::set_current_dir("tmp").unwrap();
+        let command = InitCommand::new(1);
+        command.execute().unwrap();
+        fs::create_dir_all(".zatsu/revisions/01").unwrap();
+        let revision = Revision {
+            commited: 123,
+            entries: vec!(),
+            description: "".to_string(),
+        };
+        let result = revision.save(".zatsu/revisions/01/1.json");
+        assert!(result.is_ok());
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+    }
+}
