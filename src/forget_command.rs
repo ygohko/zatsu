@@ -261,11 +261,11 @@ fn remove_unused_objects(
 mod tests {
     use super::*;
 
-    use std::fs;
     use std::env;
+    use std::fs;
 
-    use crate::InitCommand;
     use crate::CommitCommand;
+    use crate::InitCommand;
 
     #[test]
     fn is_creatable() {
@@ -288,7 +288,7 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
-        
+
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(2);

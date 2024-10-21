@@ -128,7 +128,7 @@ mod tests {
 
     use crate::Command;
     use crate::InitCommand;
-    
+
     #[test]
     fn repository_is_savable() {
         let repository = Repository {

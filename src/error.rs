@@ -105,6 +105,9 @@ mod tests {
     fn is_formattable() {
         let error = ZatsuError::with_details(789, "details".to_string());
         let formatted = format!("{}", error);
-        assert_eq!("Zatsu error. code: 789, backtrace: disabled backtrace, details: details", formatted);
+        assert_eq!(
+            "Zatsu error. code: 789, backtrace: disabled backtrace, details: details",
+            formatted
+        );
     }
 }

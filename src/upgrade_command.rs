@@ -188,8 +188,8 @@ mod test {
     use std::env;
     use std::fs;
 
-    use crate::InitCommand;
     use crate::CommitCommand;
+    use crate::InitCommand;
 
     #[test]
     fn is_creatable() {
@@ -197,7 +197,7 @@ mod test {
     }
 
     #[test]
-    fn is_executable(){
+    fn is_executable() {
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
