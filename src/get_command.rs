@@ -251,7 +251,7 @@ mod tests {
         assert!(result.is_ok());
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
-         env::set_current_dir("..").unwrap();
+        env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
     }
 }

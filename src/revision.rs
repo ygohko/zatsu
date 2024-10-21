@@ -110,7 +110,7 @@ mod tests {
         fs::create_dir_all(".zatsu/revisions/01").unwrap();
         let revision = Revision {
             commited: 123,
-            entries: vec!(),
+            entries: vec![],
             description: "".to_string(),
         };
         let result = revision.save(".zatsu/revisions/01/1.json");
