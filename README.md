@@ -1,8 +1,8 @@
-# zatsu: Experimental general purpose tiny version control system
+# zatsu: Experimental general purpose basic version control system
 
 ## About
 
-zatsu is an experimental general purpose tiny version control system. It has these concepts:
+zatsu is an experimental general purpose basic version control system. It has these concepts:
 
 * Tool for commiting files only
 * Does not have branches
