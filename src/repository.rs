@@ -61,8 +61,6 @@ impl Repository for RepositoryBase {
             revision_numbers: self.revision_numbers.clone(),
         }
     }
-
-
 }
 
 impl RepositoryBase {
@@ -104,7 +102,7 @@ impl RepositoryBase {
         };
 
         let repository_v1 = SerializableRepositoryV1::load(path)?;
-        let mut repository = Repository::from_v1(&repository_v1);
+        let mut repository = Repository::from_serializablev1(&repository_v1);
         repository.version = version;
 
         Ok(repository)
@@ -129,6 +127,26 @@ pub mod factory {
             }
         )
     }
+
+    pub fn load(path: impl AsRef<Path>) -> Result<Box<impl Repository>, ZatsuError> {
+        let version_path = path.as_ref().join("version.txt");
+        let mut string = match fs::read_to_string(version_path) {
+            Ok(string) => string,
+            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+        };
+        string = string.replace("\n", "");
+
+        let version: i32 = match string.parse() {
+            Ok(version) => version,
+            Err(_) => 1,
+        };
+
+        let repository_v1 = SerializableRepositoryV1::load(path)?;
+        let mut repository = RepositoryBase::from_serializable_v1(&repository_v1);
+        repository.version = version;
+
+        Ok(Box::new(repository))
+    }    
 }
 
 #[derive(Serialize, Deserialize)]

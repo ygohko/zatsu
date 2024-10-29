@@ -57,7 +57,7 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_REPOSITORY_FAILED)),
         };
-        let repository = factory::new();
+        let repository = factory::new(self.version);
         match repository.save(&PathBuf::from(".zatsu")) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),

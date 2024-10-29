@@ -26,6 +26,7 @@ use chrono::Utc;
 use std::collections::HashMap;
 
 use crate::error;
+use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::Repository;
@@ -36,7 +37,7 @@ pub struct LogCommand {}
 
 impl Command for LogCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match Repository::load(".zatsu") {
+        let repository = match factory::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
