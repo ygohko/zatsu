@@ -34,12 +34,39 @@ pub trait Repository {
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
 }
 
-pub struct RepositoryV1 {
+pub struct RepositoryBase {
     pub revision_numbers: Vec<i32>,
     pub version: i32,
 }
 
-impl RepositoryV1 {
+impl Repository for RepositoryBase {
+    fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+        let repository_v1 = self.to_serializable_v1();
+        repository_v1.save(path)?;
+
+        Ok(())
+    }
+
+    fn latest_revision(&self) -> i32 {
+        let count = self.revision_numbers.len();
+        if count == 0 {
+            return 0;
+        }
+
+        return self.revision_numbers[count - 1];
+    }
+
+    fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
+        SerializableRepositoryV1 {
+            revision_numbers: self.revision_numbers.clone(),
+        }
+    }
+
+
+}
+
+impl RepositoryBase {
+    /*
     pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
@@ -61,7 +88,8 @@ impl RepositoryV1 {
             revision_numbers: self.revision_numbers.clone(),
         }
     }
-
+    */
+ 
     pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
         let version_path = path.as_ref().join("version.txt");
         let mut string = match fs::read_to_string(version_path) {
@@ -82,8 +110,8 @@ impl RepositoryV1 {
         Ok(repository)
     }
 
-    pub fn from_v1(repository_v1: &SerializableRepositoryV1) -> Self {
-        Repository {
+    pub fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
+        RepositoryBase {
             revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
         }
@@ -91,11 +119,13 @@ impl RepositoryV1 {
 }
 
 pub mod factory {
-    pub fn new() -> Box<Repository> {
+    use super::*;
+
+    pub fn new(version: i32) -> Box<impl Repository> {
         Box::new(
-            RepositoryV1 {
+            RepositoryBase {
                 revision_numbers: Vec::new(),
-                version: self.version,
+                version: version,
             }
         )
     }
