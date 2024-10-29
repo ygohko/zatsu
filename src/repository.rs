@@ -35,7 +35,7 @@ pub struct Repository {
 
 impl Repository {
     pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
-        let repository_v1 = self.to_v1();
+        let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
 
         Ok(())
@@ -50,8 +50,8 @@ impl Repository {
         return self.revision_numbers[count - 1];
     }
 
-    pub fn to_v1(&self) -> RepositoryV1 {
-        RepositoryV1 {
+    pub fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
+        SerializableRepositoryV1 {
             revision_numbers: self.revision_numbers.clone(),
         }
     }
@@ -69,14 +69,14 @@ impl Repository {
             Err(_) => 1,
         };
 
-        let repository_v1 = RepositoryV1::load(path)?;
+        let repository_v1 = SerializableRepositoryV1::load(path)?;
         let mut repository = Repository::from_v1(&repository_v1);
         repository.version = version;
 
         Ok(repository)
     }
 
-    pub fn from_v1(repository_v1: &RepositoryV1) -> Self {
+    pub fn from_v1(repository_v1: &SerializableRepositoryV1) -> Self {
         Repository {
             revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
@@ -85,11 +85,11 @@ impl Repository {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct RepositoryV1 {
+pub struct SerializableRepositoryV1 {
     revision_numbers: Vec<i32>,
 }
 
-impl RepositoryV1 {
+impl SerializableRepositoryV1 {
     fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
@@ -110,7 +110,7 @@ impl RepositoryV1 {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        let repository: RepositoryV1 = match serde_json::from_str(&serialized) {
+        let repository: SerializableRepositoryV1 = match serde_json::from_str(&serialized) {
             Ok(repository) => repository,
             Err(_) => return Err(ZatsuError::new(error::CODE_DESERIALIZATION_FAILED)),
         };
