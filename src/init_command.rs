@@ -25,6 +25,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::repository::factory;
 use crate::Command;
 use crate::Repository;
 use crate::ZatsuError;
@@ -56,10 +57,7 @@ impl Command for InitCommand {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_CREATING_REPOSITORY_FAILED)),
         };
-        let repository = Repository {
-            revision_numbers: Vec::new(),
-            version: self.version,
-        };
+        let repository = factory::new();
         match repository.save(&PathBuf::from(".zatsu")) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),

@@ -28,12 +28,18 @@ use std::path::Path;
 use crate::error;
 use crate::error::ZatsuError;
 
-pub struct Repository {
+pub trait Repository {
+    fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError>;
+    fn latest_revision(&self) -> i32;
+    fn to_serializable_v1(&self) -> SerializableRepositoryV1;
+}
+
+pub struct RepositoryV1 {
     pub revision_numbers: Vec<i32>,
     pub version: i32,
 }
 
-impl Repository {
+impl RepositoryV1 {
     pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
@@ -81,6 +87,17 @@ impl Repository {
             revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
         }
+    }
+}
+
+pub mod factory {
+    pub fn new() -> Box<Repository> {
+        Box::new(
+            RepositoryV1 {
+                revision_numbers: Vec::new(),
+                version: self.version,
+            }
+        )
     }
 }
 
