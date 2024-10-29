@@ -175,7 +175,7 @@ mod tests {
             revision_numbers: vec![1, 2, 3],
             version: 1,
         };
-        let repository_v1 = repository.to_v1();
+        let repository_v1 = repository.to_serializable_v1();
         assert_eq!(repository.revision_numbers, repository_v1.revision_numbers);
     }
 
@@ -206,7 +206,7 @@ mod tests {
             revision_numbers: vec![1, 2, 3],
             version: 1,
         };
-        let repository_v1 = repository.to_v1();
+        let repository_v1 = repository.to_serializable_v1();
         let repository = Repository::from_v1(&repository_v1);
         assert_eq!(repository_v1.revision_numbers, repository.revision_numbers);
     }
@@ -217,7 +217,7 @@ mod tests {
             revision_numbers: vec![1, 2, 3],
             version: 1,
         };
-        let repository_v1 = repository.to_v1();
+        let repository_v1 = repository.to_serializable_v1();
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let result = repository_v1.save(".");
@@ -232,7 +232,7 @@ mod tests {
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
         command.execute().unwrap();
-        let result = RepositoryV1::load(".zatsu");
+        let result = SerializableRepositoryV1::load(".zatsu");
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
