@@ -25,6 +25,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::repository::factory;
 use crate::Command;
 use crate::Repository;
 use crate::Revision;
@@ -36,21 +37,23 @@ pub struct ForgetCommand {
 
 impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match Repository::load(".zatsu") {
+        let mut repository = match factory::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
             }
         };
-        let current_count = repository.revision_numbers.len() as i32;
+        let mut revision_numbers = repository.revision_numbers();
+        let current_count = revision_numbers.len() as i32;
         let removed_count = current_count - self.revision_count;
         if removed_count <= 0 {
             return Ok(());
         }
         let index: usize = removed_count as usize;
-        repository.revision_numbers = repository.revision_numbers.drain(index..).collect();
-        repository.save(".zatsu")?;
+        revision_numbers = revision_numbers.drain(index..).collect();
+        repository.set_revision_numbers(&revision_numbers);
+        repository.save(&Path::new(".zatsu"))?;
         process_garbage_collection()?;
 
         Ok(())
