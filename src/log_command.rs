@@ -29,6 +29,7 @@ use crate::error;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
+use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
 
@@ -45,9 +46,9 @@ impl Command for LogCommand {
         };
 
         let utc_offset = Local::now().offset().local_minus_utc() as i64;
-        let count = repository.revision_numbers.len();
+        let count = repository.revision_numbers().len();
         for i in (0..count).rev() {
-            let revision_number = repository.revision_numbers[i];
+            let revision_number = repository.revision_numbers()[i];
             let revision = match Revision::load(format!(
                 ".zatsu/revisions/{:02x}/{}.json",
                 revision_number & 0xFF,
@@ -59,7 +60,7 @@ impl Command for LogCommand {
             let entries = revision.entries;
             let mut previous_entries: Vec<Entry> = Vec::new();
             if i > 0 {
-                let previous_revision_number = repository.revision_numbers[i - 1];
+                let previous_revision_number = repository.revision_numbers()[i - 1];
                 let previous_revision = match Revision::load(format!(
                     ".zatsu/revisions/{:02x}/{}.json",
                     previous_revision_number & 0xFF,

@@ -30,6 +30,7 @@ use crate::error::ZatsuError;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
+    fn revision_numbers(&self) -> Vec<i32>;
     fn latest_revision(&self) -> i32;
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
 }
@@ -45,6 +46,10 @@ impl Repository for RepositoryBase {
         repository_v1.save(path)?;
 
         Ok(())
+    }
+
+    fn revision_numbers(&self) -> Vec<i32> {
+        self.revision_numbers.clone()
     }
 
     fn latest_revision(&self) -> i32 {

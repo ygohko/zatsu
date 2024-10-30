@@ -26,6 +26,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::repository::factory;
 use crate::Command;
 use crate::Repository;
 use crate::Revision;
@@ -38,7 +39,7 @@ pub struct GetCommand {
 
 impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match Repository::load(".zatsu") {
+        let repository = match factory::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -46,7 +47,7 @@ impl Command for GetCommand {
             }
         };
         let mut found = false;
-        for a_revision_number in repository.revision_numbers {
+        for a_revision_number in repository.revision_numbers() {
             if a_revision_number == self.revision_number {
                 found = true;
             }
