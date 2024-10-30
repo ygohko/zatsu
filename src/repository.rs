@@ -29,7 +29,7 @@ use crate::error;
 use crate::error::ZatsuError;
 
 pub trait Repository {
-    fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError>;
+    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
     fn latest_revision(&self) -> i32;
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
 }
@@ -40,7 +40,7 @@ pub struct RepositoryBase {
 }
 
 impl Repository for RepositoryBase {
-    fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
         let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
 
@@ -102,7 +102,7 @@ impl RepositoryBase {
         };
 
         let repository_v1 = SerializableRepositoryV1::load(path)?;
-        let mut repository = Repository::from_serializablev1(&repository_v1);
+        let mut repository = RepositoryBase::from_serializable_v1(&repository_v1);
         repository.version = version;
 
         Ok(repository)
