@@ -79,52 +79,6 @@ impl Repository for RepositoryBase {
 }
 
 impl RepositoryBase {
-    /*
-    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
-        let repository_v1 = self.to_serializable_v1();
-        repository_v1.save(path)?;
-
-        Ok(())
-    }
-
-    pub fn latest_revision(&self) -> i32 {
-        let count = self.revision_numbers.len();
-        if count == 0 {
-            return 0;
-        }
-
-        return self.revision_numbers[count - 1];
-    }
-
-    pub fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
-        SerializableRepositoryV1 {
-            revision_numbers: self.revision_numbers.clone(),
-        }
-    }
-    */
-
-    /*
-    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
-        let version_path = path.as_ref().join("version.txt");
-        let mut string = match fs::read_to_string(version_path) {
-            Ok(string) => string,
-            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
-        };
-        string = string.replace("\n", "");
-
-        let version: i32 = match string.parse() {
-            Ok(version) => version,
-            Err(_) => 1,
-        };
-
-        let repository_v1 = SerializableRepositoryV1::load(path)?;
-        let mut repository = RepositoryBase::from_serializable_v1(&repository_v1);
-        repository.version = version;
-
-        Ok(repository)
-    }
-    */
-
     pub fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
         RepositoryBase {
             revision_numbers: repository_v1.revision_numbers.clone(),
