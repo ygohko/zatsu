@@ -162,6 +162,15 @@ pub mod factory {
 
         Ok(Box::new(repository))
     }
+
+    pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<impl Repository> {
+        let mut repository = RepositoryBase {
+            revision_numbers: revision_numbers.to_vec(),
+            version: version,
+        };
+
+        Box::new(repository)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -211,10 +220,10 @@ mod tests {
 
     #[test]
     fn repository_is_savable() {
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 1,
-        };
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let result = repository.save(".");
@@ -222,10 +231,10 @@ mod tests {
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
 
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 2,
-        };
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            2,
+        );
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let result = repository.save(".");
