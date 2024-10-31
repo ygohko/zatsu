@@ -102,7 +102,8 @@ impl RepositoryBase {
         }
     }
     */
- 
+
+    /*
     pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
         let version_path = path.as_ref().join("version.txt");
         let mut string = match fs::read_to_string(version_path) {
@@ -122,6 +123,7 @@ impl RepositoryBase {
 
         Ok(repository)
     }
+    */
 
     pub fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
         RepositoryBase {
