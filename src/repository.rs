@@ -163,6 +163,7 @@ pub mod factory {
         Ok(Box::new(repository))
     }
 
+    #[allow(dead_code)]
     pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<impl Repository> {
         let repository = RepositoryBase {
             revision_numbers: revision_numbers.to_vec(),
