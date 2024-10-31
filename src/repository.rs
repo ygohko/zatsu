@@ -137,12 +137,10 @@ pub mod factory {
     use super::*;
 
     pub fn new(version: i32) -> Box<impl Repository> {
-        Box::new(
-            RepositoryBase {
-                revision_numbers: Vec::new(),
-                version: version,
-            }
-        )
+        Box::new(RepositoryBase {
+            revision_numbers: Vec::new(),
+            version: version,
+        })
     }
 
     pub fn load(path: impl AsRef<Path>) -> Result<Box<impl Repository>, ZatsuError> {
@@ -163,7 +161,7 @@ pub mod factory {
         repository.version = version;
 
         Ok(Box::new(repository))
-    }    
+    }
 }
 
 #[derive(Serialize, Deserialize)]
