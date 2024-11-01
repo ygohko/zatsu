@@ -25,6 +25,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::repository::factory;
 use crate::Command;
 use crate::Repository;
 use crate::Revision;
@@ -36,21 +37,23 @@ pub struct ForgetCommand {
 
 impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match Repository::load(".zatsu") {
+        let mut repository = match factory::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
             }
         };
-        let current_count = repository.revision_numbers.len() as i32;
+        let mut revision_numbers = repository.revision_numbers();
+        let current_count = revision_numbers.len() as i32;
         let removed_count = current_count - self.revision_count;
         if removed_count <= 0 {
             return Ok(());
         }
         let index: usize = removed_count as usize;
-        repository.revision_numbers = repository.revision_numbers.drain(index..).collect();
-        repository.save(".zatsu")?;
+        revision_numbers = revision_numbers.drain(index..).collect();
+        repository.set_revision_numbers(&revision_numbers);
+        repository.save(&Path::new(".zatsu"))?;
         process_garbage_collection()?;
 
         Ok(())
@@ -64,7 +67,7 @@ impl ForgetCommand {
 }
 
 fn process_garbage_collection() -> Result<(), ZatsuError> {
-    let repository = match Repository::load(".zatsu") {
+    let repository = match factory::load(".zatsu") {
         Ok(repository) => repository,
         Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED)),
     };
@@ -105,7 +108,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 }
 
 fn remove_unused_revisions(
-    repository: &Repository,
+    repository: &Box<impl Repository>,
     revision_paths: &Vec<PathBuf>,
 ) -> Result<i32, ZatsuError> {
     let mut removed_revision_count = 0;
@@ -128,8 +131,8 @@ fn remove_unused_revisions(
                     let result = file_stem.parse();
                     if result.is_ok() {
                         let revision_number: i32 = result.unwrap();
-                        let option = repository
-                            .revision_numbers
+                        let revision_numbers = repository.revision_numbers();
+                        let option = revision_numbers
                             .iter()
                             .find(|&value| *value == revision_number);
                         if option.is_some() {
@@ -153,13 +156,13 @@ fn remove_unused_revisions(
 }
 
 fn remove_unused_objects(
-    repository: &Repository,
+    repository: &Box<impl Repository>,
     object_paths: &Vec<PathBuf>,
 ) -> Result<i32, ZatsuError> {
     let mut removed_object_count = 0;
 
     // Mark used objects.
-    for revision_number in &repository.revision_numbers {
+    for revision_number in &repository.revision_numbers() {
         println!("Checking: revision {}", revision_number);
 
         let revision = match Revision::load(format!(

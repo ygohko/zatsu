@@ -28,20 +28,41 @@ use std::path::Path;
 use crate::error;
 use crate::error::ZatsuError;
 
-pub struct Repository {
+pub trait Repository {
+    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
+    fn revision_numbers(&self) -> Vec<i32>;
+    fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
+    fn version(&self) -> i32;
+    fn latest_revision(&self) -> i32;
+    fn to_serializable_v1(&self) -> SerializableRepositoryV1;
+}
+
+pub struct RepositoryBase {
     pub revision_numbers: Vec<i32>,
     pub version: i32,
 }
 
-impl Repository {
-    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
-        let repository_v1 = self.to_v1();
+impl Repository for RepositoryBase {
+    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+        let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
 
         Ok(())
     }
 
-    pub fn latest_revision(&self) -> i32 {
+    fn revision_numbers(&self) -> Vec<i32> {
+        self.revision_numbers.clone()
+    }
+
+    fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>) {
+        self.revision_numbers = revision_numbers.clone();
+    }
+
+    fn version(&self) -> i32 {
+        self.version
+    }
+
+    fn latest_revision(&self) -> i32 {
         let count = self.revision_numbers.len();
         if count == 0 {
             return 0;
@@ -50,13 +71,33 @@ impl Repository {
         return self.revision_numbers[count - 1];
     }
 
-    pub fn to_v1(&self) -> RepositoryV1 {
-        RepositoryV1 {
+    fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
+        SerializableRepositoryV1 {
             revision_numbers: self.revision_numbers.clone(),
         }
     }
+}
 
-    pub fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
+impl RepositoryBase {
+    pub fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
+        RepositoryBase {
+            revision_numbers: repository_v1.revision_numbers.clone(),
+            version: 1,
+        }
+    }
+}
+
+pub mod factory {
+    use super::*;
+
+    pub fn new(version: i32) -> Box<impl Repository> {
+        Box::new(RepositoryBase {
+            revision_numbers: Vec::new(),
+            version: version,
+        })
+    }
+
+    pub fn load(path: impl AsRef<Path>) -> Result<Box<impl Repository>, ZatsuError> {
         let version_path = path.as_ref().join("version.txt");
         let mut string = match fs::read_to_string(version_path) {
             Ok(string) => string,
@@ -69,27 +110,30 @@ impl Repository {
             Err(_) => 1,
         };
 
-        let repository_v1 = RepositoryV1::load(path)?;
-        let mut repository = Repository::from_v1(&repository_v1);
+        let repository_v1 = SerializableRepositoryV1::load(path)?;
+        let mut repository = RepositoryBase::from_serializable_v1(&repository_v1);
         repository.version = version;
 
-        Ok(repository)
+        Ok(Box::new(repository))
     }
 
-    pub fn from_v1(repository_v1: &RepositoryV1) -> Self {
-        Repository {
-            revision_numbers: repository_v1.revision_numbers.clone(),
-            version: 1,
-        }
+    #[allow(dead_code)]
+    pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<impl Repository> {
+        let repository = RepositoryBase {
+            revision_numbers: revision_numbers.to_vec(),
+            version: version,
+        };
+
+        Box::new(repository)
     }
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct RepositoryV1 {
+pub struct SerializableRepositoryV1 {
     revision_numbers: Vec<i32>,
 }
 
-impl RepositoryV1 {
+impl SerializableRepositoryV1 {
     fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
@@ -110,7 +154,7 @@ impl RepositoryV1 {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        let repository: RepositoryV1 = match serde_json::from_str(&serialized) {
+        let repository: SerializableRepositoryV1 = match serde_json::from_str(&serialized) {
             Ok(repository) => repository,
             Err(_) => return Err(ZatsuError::new(error::CODE_DESERIALIZATION_FAILED)),
         };
@@ -131,24 +175,24 @@ mod tests {
 
     #[test]
     fn repository_is_savable() {
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 1,
-        };
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
-        let result = repository.save(".");
+        let result = repository.save(&".");
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
 
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 2,
-        };
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            2,
+        );
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
-        let result = repository.save(".");
+        let result = repository.save(&".");
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
@@ -156,27 +200,27 @@ mod tests {
 
     #[test]
     fn repository_is_gettable_latest_revision() {
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 1,
-        };
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
         assert_eq!(3, repository.latest_revision());
 
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 2,
-        };
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            2,
+        );
         assert_eq!(3, repository.latest_revision());
     }
 
     #[test]
     fn repository_is_convertable_to_repository_v1() {
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 1,
-        };
-        let repository_v1 = repository.to_v1();
-        assert_eq!(repository.revision_numbers, repository_v1.revision_numbers);
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
+        let repository_v1 = repository.to_serializable_v1();
+        assert_eq!(repository.revision_numbers(), repository_v1.revision_numbers);
     }
 
     #[test]
@@ -185,7 +229,7 @@ mod tests {
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
         command.execute().unwrap();
-        let result = Repository::load(".zatsu");
+        let result = factory::load(".zatsu");
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
@@ -194,7 +238,7 @@ mod tests {
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(2);
         command.execute().unwrap();
-        let result = Repository::load(".zatsu");
+        let result = factory::load(".zatsu");
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
@@ -202,22 +246,22 @@ mod tests {
 
     #[test]
     fn repository_is_convertable_from_repository_v1() {
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 1,
-        };
-        let repository_v1 = repository.to_v1();
-        let repository = Repository::from_v1(&repository_v1);
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
+        let repository_v1 = repository.to_serializable_v1();
+        let repository = RepositoryBase::from_serializable_v1(&repository_v1);
         assert_eq!(repository_v1.revision_numbers, repository.revision_numbers);
     }
 
     #[test]
     fn repository_v1_is_savable() {
-        let repository = Repository {
-            revision_numbers: vec![1, 2, 3],
-            version: 1,
-        };
-        let repository_v1 = repository.to_v1();
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
+        let repository_v1 = repository.to_serializable_v1();
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let result = repository_v1.save(".");
@@ -232,7 +276,7 @@ mod tests {
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
         command.execute().unwrap();
-        let result = RepositoryV1::load(".zatsu");
+        let result = SerializableRepositoryV1::load(".zatsu");
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();

@@ -30,6 +30,7 @@ use std::path::PathBuf;
 
 use crate::commons;
 use crate::error;
+use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::FilePathProducer;
@@ -41,7 +42,7 @@ pub struct CommitCommand {}
 
 impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match Repository::load(".zatsu") {
+        let mut repository = match factory::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -64,7 +65,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match process_file(&PathBuf::from(path.clone()), repository.version) {
+                let hash = match process_file(&PathBuf::from(path.clone()), repository.version()) {
                     Ok(hash) => hash,
                     Err(error) => return Err(error),
                 };
@@ -98,18 +99,17 @@ impl Command for CommitCommand {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
-        repository.revision_numbers.push(revision_number);
-        match repository.save(".zatsu") {
+        let mut revision_numbers = repository.revision_numbers();
+        revision_numbers.push(revision_number);
+        repository.set_revision_numbers(&revision_numbers);
+        match repository.save(&Path::new(".zatsu")) {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
 
         println!("");
         println!("Commited as revision {}.", revision_number);
-        println!(
-            "There are {} revision(s).",
-            repository.revision_numbers.len()
-        );
+        println!("There are {} revision(s).", revision_numbers.len());
 
         Ok(())
     }

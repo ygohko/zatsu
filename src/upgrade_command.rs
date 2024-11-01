@@ -27,6 +27,7 @@ use std::path::PathBuf;
 
 use crate::commons;
 use crate::error;
+use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::Repository;
@@ -36,14 +37,14 @@ pub struct UpgradeCommand {}
 
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match Repository::load(".zatsu") {
+        let repository = match factory::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
                 return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
             }
         };
-        if repository.version != 1 {
+        if repository.version() != 1 {
             println!("Error: Repository is already up to date. Do nothing.");
             return Err(ZatsuError::new(error::CODE_GENERAL));
         }
@@ -65,7 +66,7 @@ impl Command for UpgradeCommand {
         copy_objects()?;
 
         // Update hashes of entries.
-        update_entries(&repository.revision_numbers)?;
+        update_entries(&repository.revision_numbers())?;
 
         // Update version.txt.
         match fs::write(".zatsu/version.txt", "2") {
