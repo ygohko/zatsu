@@ -87,6 +87,36 @@ impl RepositoryBase {
     }
 }
 
+struct RepositoryV1 {
+    base: RepositoryBase,
+}
+
+impl Repository for RepositoryV1 {
+    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+        self.base.save(path)
+    }
+
+    fn revision_numbers(&self) -> Vec<i32> {
+        self.base.revision_numbers()
+    }
+
+    fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>) {
+        self.base.set_revision_numbers(revision_numbers)
+    }
+
+    fn version(&self) -> i32 {
+        self.base.version()
+    }
+
+    fn latest_revision(&self) -> i32 {
+        self.base.latest_revision()
+    }
+
+    fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
+        self.base.to_serializable_v1()
+    }
+}
+
 pub mod factory {
     use super::*;
 
