@@ -151,10 +151,19 @@ pub mod factory {
     use super::*;
 
     pub fn new(version: i32) -> Box<impl Repository> {
-        Box::new(RepositoryBase {
+        let base = RepositoryBase {
             revision_numbers: Vec::new(),
             version: version,
-        })
+        };
+        if version == 1 {
+            Box::new(RepositoryV1 {
+                base: base,
+            })
+        } else {
+            Box::new(RepositoryV2 {
+                base: base,
+            })
+        }
     }
 
     pub fn load(path: impl AsRef<Path>) -> Result<Box<impl Repository>, ZatsuError> {
