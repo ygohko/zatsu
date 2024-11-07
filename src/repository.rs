@@ -150,7 +150,7 @@ impl Repository for RepositoryV2 {
 pub mod factory {
     use super::*;
 
-    pub fn new(version: i32) -> Box<impl Repository> {
+    pub fn new(version: i32) -> Box<dyn Repository> {
         let base = RepositoryBase {
             revision_numbers: Vec::new(),
             version: version,
@@ -166,7 +166,7 @@ pub mod factory {
         }
     }
 
-    pub fn load(path: impl AsRef<Path>) -> Result<Box<impl Repository>, ZatsuError> {
+    pub fn load(path: impl AsRef<Path>) -> Result<Box<dyn Repository>, ZatsuError> {
         let version_path = path.as_ref().join("version.txt");
         let mut string = match fs::read_to_string(version_path) {
             Ok(string) => string,
@@ -180,10 +180,17 @@ pub mod factory {
         };
 
         let repository_v1 = SerializableRepositoryV1::load(path)?;
-        let mut repository = RepositoryBase::from_serializable_v1(&repository_v1);
-        repository.version = version;
-
-        Ok(Box::new(repository))
+        let mut base = RepositoryBase::from_serializable_v1(&repository_v1);
+        base.version = version;
+        if version == 1 {
+            Ok(Box::new(RepositoryV1 {
+                base: base,
+            }))
+        } else {
+            Ok(Box::new(RepositoryV2 {
+                base: base,
+            }))
+        }
     }
 
     #[allow(dead_code)]

@@ -108,7 +108,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 }
 
 fn remove_unused_revisions(
-    repository: &Box<impl Repository>,
+    repository: &Box<dyn Repository>,
     revision_paths: &Vec<PathBuf>,
 ) -> Result<i32, ZatsuError> {
     let mut removed_revision_count = 0;
@@ -156,7 +156,7 @@ fn remove_unused_revisions(
 }
 
 fn remove_unused_objects(
-    repository: &Box<impl Repository>,
+    repository: &Box<dyn Repository>,
     object_paths: &Vec<PathBuf>,
 ) -> Result<i32, ZatsuError> {
     let mut removed_object_count = 0;
