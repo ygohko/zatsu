@@ -37,9 +37,9 @@ pub trait Repository {
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
 }
 
-pub struct RepositoryBase {
-    pub revision_numbers: Vec<i32>,
-    pub version: i32,
+struct RepositoryBase {
+    revision_numbers: Vec<i32>,
+    version: i32,
 }
 
 impl Repository for RepositoryBase {
@@ -79,7 +79,7 @@ impl Repository for RepositoryBase {
 }
 
 impl RepositoryBase {
-    pub fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
+    fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
         RepositoryBase {
             revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
