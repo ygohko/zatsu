@@ -34,7 +34,6 @@ use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::FilePathProducer;
-use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
 

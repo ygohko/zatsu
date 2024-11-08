@@ -28,7 +28,6 @@ use std::path::PathBuf;
 use crate::error;
 use crate::repository::factory;
 use crate::Command;
-use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
 
