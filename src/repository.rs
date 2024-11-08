@@ -194,13 +194,21 @@ pub mod factory {
     }
 
     #[allow(dead_code)]
-    pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<impl Repository> {
-        let repository = RepositoryBase {
+    pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<dyn Repository> {
+        let base = RepositoryBase {
             revision_numbers: revision_numbers.to_vec(),
             version: version,
         };
 
-        Box::new(repository)
+        if version == 1 {
+            Box::new(RepositoryV1 {
+                base: base,
+            })
+        } else {
+            Box::new(RepositoryV2 {
+                base: base,
+            })
+        }
     }
 }
 
