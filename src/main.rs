@@ -82,11 +82,11 @@ struct ForgetArguments {
 enum CommandKind {
     /// Initialize a repository into this directory
     Init(InitArguments),
-    /// Commit current files into this direcrory's repository
+    /// Commit current files into this directory's repository
     Commit,
     /// Show logs of this directory's repository
     Log,
-    /// Get a file or direcrory that is specified
+    /// Get a file or directory that is specified
     Get(GetArguments),
     /// Remove stored revisions to shrink this directory's repository to specified size
     Forget(ForgetArguments),
