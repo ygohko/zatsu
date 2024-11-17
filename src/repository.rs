@@ -37,9 +37,9 @@ pub trait Repository {
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
 }
 
-pub struct RepositoryBase {
-    pub revision_numbers: Vec<i32>,
-    pub version: i32,
+struct RepositoryBase {
+    revision_numbers: Vec<i32>,
+    version: i32,
 }
 
 impl Repository for RepositoryBase {
@@ -79,7 +79,7 @@ impl Repository for RepositoryBase {
 }
 
 impl RepositoryBase {
-    pub fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
+    fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
         RepositoryBase {
             revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
@@ -87,17 +87,86 @@ impl RepositoryBase {
     }
 }
 
+struct RepositoryV1 {
+    base: RepositoryBase,
+}
+
+impl Repository for RepositoryV1 {
+    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+        self.base.save(path)
+    }
+
+    fn revision_numbers(&self) -> Vec<i32> {
+        self.base.revision_numbers()
+    }
+
+    fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>) {
+        self.base.set_revision_numbers(revision_numbers)
+    }
+
+    fn version(&self) -> i32 {
+        self.base.version()
+    }
+
+    fn latest_revision(&self) -> i32 {
+        self.base.latest_revision()
+    }
+
+    fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
+        self.base.to_serializable_v1()
+    }
+}
+
+struct RepositoryV2 {
+    base: RepositoryBase,
+}
+
+impl Repository for RepositoryV2 {
+    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+        self.base.save(path)
+    }
+
+    fn revision_numbers(&self) -> Vec<i32> {
+        self.base.revision_numbers()
+    }
+
+    fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>) {
+        self.base.set_revision_numbers(revision_numbers)
+    }
+
+    fn version(&self) -> i32 {
+        self.base.version()
+    }
+
+    fn latest_revision(&self) -> i32 {
+        self.base.latest_revision()
+    }
+
+    fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
+        self.base.to_serializable_v1()
+    }
+}
+
 pub mod factory {
     use super::*;
 
-    pub fn new(version: i32) -> Box<impl Repository> {
-        Box::new(RepositoryBase {
+    pub fn new(version: i32) -> Box<dyn Repository> {
+        let base = RepositoryBase {
             revision_numbers: Vec::new(),
             version: version,
-        })
+        };
+        if version == 1 {
+            Box::new(RepositoryV1 {
+                base: base,
+            })
+        } else {
+            Box::new(RepositoryV2 {
+                base: base,
+            })
+        }
     }
 
-    pub fn load(path: impl AsRef<Path>) -> Result<Box<impl Repository>, ZatsuError> {
+    pub fn load(path: impl AsRef<Path>) -> Result<Box<dyn Repository>, ZatsuError> {
         let version_path = path.as_ref().join("version.txt");
         let mut string = match fs::read_to_string(version_path) {
             Ok(string) => string,
@@ -111,20 +180,35 @@ pub mod factory {
         };
 
         let repository_v1 = SerializableRepositoryV1::load(path)?;
-        let mut repository = RepositoryBase::from_serializable_v1(&repository_v1);
-        repository.version = version;
-
-        Ok(Box::new(repository))
+        let mut base = RepositoryBase::from_serializable_v1(&repository_v1);
+        base.version = version;
+        if version == 1 {
+            Ok(Box::new(RepositoryV1 {
+                base: base,
+            }))
+        } else {
+            Ok(Box::new(RepositoryV2 {
+                base: base,
+            }))
+        }
     }
 
     #[allow(dead_code)]
-    pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<impl Repository> {
-        let repository = RepositoryBase {
+    pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<dyn Repository> {
+        let base = RepositoryBase {
             revision_numbers: revision_numbers.to_vec(),
             version: version,
         };
 
-        Box::new(repository)
+        if version == 1 {
+            Box::new(RepositoryV1 {
+                base: base,
+            })
+        } else {
+            Box::new(RepositoryV2 {
+                base: base,
+            })
+        }
     }
 }
 

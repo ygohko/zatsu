@@ -30,7 +30,6 @@ use crate::error;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
-use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
 pub struct UpgradeCommand {}
