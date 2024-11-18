@@ -14,9 +14,9 @@ zatsu is an experimental general purpose basic version control system. It has th
 zatsu has these commands:
 
 * init ... Initialize a repository into this directory
-* commit ... Commit current files into this direcory's repository
+* commit ... Commit current files into this directory's repository
 * log ... Show logs of this directory's repository
-* get ... Get a file or direcory that is specified
+* get ... Get a file or directory that is specified
 * forget ... Remove stored revisions to shrink this directory's repository to specified size
 * upgrade ... Upgrade this repository
 * help ... Print this message or the help of the given subcommand(s)
