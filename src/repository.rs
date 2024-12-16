@@ -20,8 +20,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use hex_string::HexString;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use sha1::Digest;
+use sha1::Sha1;
+use sha2::Sha256;
 use std::fs;
 use std::path::Path;
 
@@ -35,6 +39,7 @@ pub trait Repository {
     fn version(&self) -> i32;
     fn latest_revision(&self) -> i32;
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
+    fn object_hash(&self, values: &Vec<u8>) -> String;
 }
 
 struct RepositoryBase {
@@ -76,6 +81,10 @@ impl Repository for RepositoryBase {
             revision_numbers: self.revision_numbers.clone(),
         }
     }
+
+    fn object_hash(&self, _values: &Vec<u8>) -> String {
+        panic!("This method is not implemented.");
+    }
 }
 
 impl RepositoryBase {
@@ -115,6 +124,18 @@ impl Repository for RepositoryV1 {
     fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
         self.base.to_serializable_v1()
     }
+
+    fn object_hash(&self, values: &Vec<u8>) -> String {
+        let result: String;
+        let mut sha1 = Sha1::new();
+        sha1.update(values.clone());
+        let hash = sha1.finalize();
+        let hash_values = hash.to_vec();
+        let hex = HexString::from_bytes(&hash_values);
+        result = hex.as_string();
+
+        result
+    }
 }
 
 struct RepositoryV2 {
@@ -144,6 +165,18 @@ impl Repository for RepositoryV2 {
 
     fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
         self.base.to_serializable_v1()
+    }
+
+    fn object_hash(&self, values: &Vec<u8>) -> String {
+        let result: String;
+        let mut sha256 = Sha256::new();
+        sha256.update(values.clone());
+        let hash = sha256.finalize();
+        let hash_values = hash.to_vec();
+        let hex = HexString::from_bytes(&hash_values);
+        result = hex.as_string();
+
+        result
     }
 }
 
