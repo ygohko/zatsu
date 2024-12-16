@@ -287,6 +287,7 @@ mod tests {
     use std::env;
     use std::fs;
 
+    use crate::commons;
     use crate::Command;
     use crate::InitCommand;
 
@@ -397,5 +398,32 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
+    }
+
+    #[test]
+    fn repository_is_calculatable_object_hash() {
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
+        let mut values: Vec<u8> = Vec::new();
+        values.push(1);
+        values.push(2);
+        values.push(3);
+        let hash1 = repository.object_hash(&values);
+        let hash2 = commons::object_hash(&values, 1);
+        assert_eq!(hash1, hash2);
+        
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            2,
+        );
+        let mut values: Vec<u8> = Vec::new();
+        values.push(1);
+        values.push(2);
+        values.push(3);
+        let hash1 = repository.object_hash(&values);
+        let hash2 = commons::object_hash(&values, 2);
+        assert_eq!(hash1, hash2);
     }
 }
