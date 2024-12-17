@@ -123,9 +123,6 @@ impl Repository for RepositoryV1 {
     }
 
     fn object_hash(&self, values: &Vec<u8>) -> String {
-
-        println!("Entering RepositoryV1's object_hash()");
-
         commons::object_hash(values, 1)
     }
 }
@@ -160,9 +157,6 @@ impl Repository for RepositoryV2 {
     }
 
     fn object_hash(&self, values: &Vec<u8>) -> String {
-
-        println!("Entering RepositoryV2's object_hash()");
-
         commons::object_hash(values, 2)
     }
 }
