@@ -126,6 +126,9 @@ impl Repository for RepositoryV1 {
     }
 
     fn object_hash(&self, values: &Vec<u8>) -> String {
+
+        println!("Entering RepositoryV1's object_hash()");
+        
         let result: String;
         let mut sha1 = Sha1::new();
         sha1.update(values.clone());
@@ -168,6 +171,9 @@ impl Repository for RepositoryV2 {
     }
 
     fn object_hash(&self, values: &Vec<u8>) -> String {
+
+        println!("Entering RepositoryV2's object_hash()");
+        
         let result: String;
         let mut sha256 = Sha256::new();
         sha256.update(values.clone());
