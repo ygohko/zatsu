@@ -28,7 +28,6 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::commons;
 use crate::error;
 use crate::repository::factory;
 use crate::Command;

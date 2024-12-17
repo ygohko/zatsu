@@ -20,15 +20,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-use hex_string::HexString;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use sha1::Digest;
-use sha1::Sha1;
-use sha2::Sha256;
 use std::fs;
 use std::path::Path;
 
+use crate::commons;
 use crate::error;
 use crate::error::ZatsuError;
 
@@ -128,16 +125,8 @@ impl Repository for RepositoryV1 {
     fn object_hash(&self, values: &Vec<u8>) -> String {
 
         println!("Entering RepositoryV1's object_hash()");
-        
-        let result: String;
-        let mut sha1 = Sha1::new();
-        sha1.update(values.clone());
-        let hash = sha1.finalize();
-        let hash_values = hash.to_vec();
-        let hex = HexString::from_bytes(&hash_values);
-        result = hex.as_string();
 
-        result
+        commons::object_hash(values, 1)
     }
 }
 
@@ -173,16 +162,8 @@ impl Repository for RepositoryV2 {
     fn object_hash(&self, values: &Vec<u8>) -> String {
 
         println!("Entering RepositoryV2's object_hash()");
-        
-        let result: String;
-        let mut sha256 = Sha256::new();
-        sha256.update(values.clone());
-        let hash = sha256.finalize();
-        let hash_values = hash.to_vec();
-        let hex = HexString::from_bytes(&hash_values);
-        result = hex.as_string();
 
-        result
+        commons::object_hash(values, 2)
     }
 }
 
