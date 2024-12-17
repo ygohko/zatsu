@@ -25,6 +25,7 @@ use serde_derive::Serialize;
 use std::fs;
 use std::path::Path;
 
+use crate::commons;
 use crate::error;
 use crate::error::ZatsuError;
 
@@ -35,6 +36,7 @@ pub trait Repository {
     fn version(&self) -> i32;
     fn latest_revision(&self) -> i32;
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
+    fn object_hash(&self, values: &Vec<u8>) -> String;
 }
 
 struct RepositoryBase {
@@ -76,6 +78,10 @@ impl Repository for RepositoryBase {
             revision_numbers: self.revision_numbers.clone(),
         }
     }
+
+    fn object_hash(&self, _values: &Vec<u8>) -> String {
+        panic!("This method is not implemented.");
+    }
 }
 
 impl RepositoryBase {
@@ -115,6 +121,10 @@ impl Repository for RepositoryV1 {
     fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
         self.base.to_serializable_v1()
     }
+
+    fn object_hash(&self, values: &Vec<u8>) -> String {
+        commons::object_hash(values, 1)
+    }
 }
 
 struct RepositoryV2 {
@@ -144,6 +154,10 @@ impl Repository for RepositoryV2 {
 
     fn to_serializable_v1(&self) -> SerializableRepositoryV1 {
         self.base.to_serializable_v1()
+    }
+
+    fn object_hash(&self, values: &Vec<u8>) -> String {
+        commons::object_hash(values, 2)
     }
 }
 
@@ -254,6 +268,7 @@ mod tests {
     use std::env;
     use std::fs;
 
+    use crate::commons;
     use crate::Command;
     use crate::InitCommand;
 
@@ -364,5 +379,32 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
+    }
+
+    #[test]
+    fn repository_is_calculatable_object_hash() {
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            1,
+        );
+        let mut values: Vec<u8> = Vec::new();
+        values.push(1);
+        values.push(2);
+        values.push(3);
+        let hash1 = repository.object_hash(&values);
+        let hash2 = commons::object_hash(&values, 1);
+        assert_eq!(hash1, hash2);
+        
+        let repository = factory::with_arguments(
+            &vec![1, 2, 3],
+            2,
+        );
+        let mut values: Vec<u8> = Vec::new();
+        values.push(1);
+        values.push(2);
+        values.push(3);
+        let hash1 = repository.object_hash(&values);
+        let hash2 = commons::object_hash(&values, 2);
+        assert_eq!(hash1, hash2);
     }
 }

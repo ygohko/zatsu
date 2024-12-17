@@ -28,12 +28,12 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::commons;
 use crate::error;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::FilePathProducer;
+use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
 
@@ -64,7 +64,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match process_file(&PathBuf::from(path.clone()), repository.version()) {
+                let hash = match process_file(&PathBuf::from(path.clone()), &repository) {
                     Ok(hash) => hash,
                     Err(error) => return Err(error),
                 };
@@ -120,7 +120,7 @@ impl CommitCommand {
     }
 }
 
-fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<String, ZatsuError> {
+fn process_file(path: impl AsRef<Path>, repository: &Box<dyn Repository>) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(&path) {
         Ok(metadata) => metadata,
         Err(_) => return Err(ZatsuError::new(error::CODE_READING_META_DATA_FAILED)),
@@ -131,7 +131,7 @@ fn process_file(path: impl AsRef<Path>, repository_version: i32) -> Result<Strin
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
-        hex_string = commons::object_hash(&values, repository_version);
+        hex_string = repository.object_hash(&values);
 
         let directory_name = hex_string[0..2].to_string();
         let path = format!(".zatsu/objects/{}", directory_name).to_string();
