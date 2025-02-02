@@ -54,7 +54,7 @@ impl Command for GetCommand {
         if !found {
             return Err(ZatsuError::new(error::CODE_REVISION_NOT_FOUND));
         }
-
+        // TODO: Add a wrapper method to repository.
         let revision = match Revision::load(format!(
             ".zatsu/revisions/{:02x}/{}.json",
             self.revision_number & 0xFF,

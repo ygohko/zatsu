@@ -82,6 +82,7 @@ impl Command for CommitCommand {
             }
         }
 
+        // TODO: Add a wrapper method to repository.
         let path = format!(".zatsu/revisions/{:02x}", revision_number & 0xFF).to_string();
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
