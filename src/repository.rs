@@ -28,6 +28,7 @@ use std::path::Path;
 use crate::commons;
 use crate::error;
 use crate::error::ZatsuError;
+use crate::Revision;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
@@ -55,7 +56,7 @@ impl Repository for RepositoryBase {
 
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
         // TODO: Implement this.
-        Err(ZatsuError(error::CODE_GENERAL))
+        Err(ZatsuError::new(error::CODE_GENERAL))
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
@@ -108,6 +109,10 @@ impl Repository for RepositoryV1 {
         self.base.save(path)
     }
 
+    fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
+        self.base.load_revision(revision_number)
+    }
+
     fn revision_numbers(&self) -> Vec<i32> {
         self.base.revision_numbers()
     }
@@ -140,6 +145,10 @@ struct RepositoryV2 {
 impl Repository for RepositoryV2 {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
         self.base.save(path)
+    }
+
+    fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
+        self.base.load_revision(revision_number)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
