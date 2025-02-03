@@ -55,8 +55,16 @@ impl Repository for RepositoryBase {
     }
 
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
-        // TODO: Implement this.
-        Err(ZatsuError::new(error::CODE_GENERAL))
+        let revision = match Revision::load(format!(
+            ".zatsu/revisions/{:02x}/{}.json",
+            revision_number & 0xFF,
+            revision_number
+        )) {
+            Ok(revision) => revision,
+            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REVISION_FAILED)),
+        };
+
+        Ok(revision)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
