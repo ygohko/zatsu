@@ -33,6 +33,7 @@ use crate::Revision;
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
+    fn save_revision(&self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError>;
     fn revision_numbers(&self) -> Vec<i32>;
     fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
     fn version(&self) -> i32;
@@ -65,6 +66,11 @@ impl Repository for RepositoryBase {
         };
 
         Ok(revision)
+    }
+
+    fn save_revision(&self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+        // TODO: Implement this.
+        Err(ZatsuError::new(error::CODE_GENERAL))
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
@@ -121,6 +127,10 @@ impl Repository for RepositoryV1 {
         self.base.load_revision(revision_number)
     }
 
+    fn save_revision(&self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+        self.base.save_revision(revision, revision_number)
+    }
+
     fn revision_numbers(&self) -> Vec<i32> {
         self.base.revision_numbers()
     }
@@ -157,6 +167,10 @@ impl Repository for RepositoryV2 {
 
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
         self.base.load_revision(revision_number)
+    }
+
+    fn save_revision(&self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+        self.base.save_revision(revision, revision_number)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
