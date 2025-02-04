@@ -82,7 +82,12 @@ impl Command for CommitCommand {
             }
         }
 
+        match repository.save_revision(&revision, revision_number) {
+            Ok(_) => (),
+            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+        };
         // TODO: Add a wrapper method to repository.
+        /*
         let path = format!(".zatsu/revisions/{:02x}", revision_number & 0xFF).to_string();
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
@@ -106,10 +111,11 @@ impl Command for CommitCommand {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
+        */
 
         println!("");
         println!("Commited as revision {}.", revision_number);
-        println!("There are {} revision(s).", revision_numbers.len());
+        println!("There are {} revision(s).", repository.revision_numbers().len());
 
         Ok(())
     }
