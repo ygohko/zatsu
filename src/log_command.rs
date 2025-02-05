@@ -48,6 +48,7 @@ impl Command for LogCommand {
         let count = repository.revision_numbers().len();
         for i in (0..count).rev() {
             let revision_number = repository.revision_numbers()[i];
+            // TODO: Migrate to load_revision().
             let revision = match Revision::load(format!(
                 ".zatsu/revisions/{:02x}/{}.json",
                 revision_number & 0xFF,
@@ -60,6 +61,7 @@ impl Command for LogCommand {
             let mut previous_entries: Vec<Entry> = Vec::new();
             if i > 0 {
                 let previous_revision_number = repository.revision_numbers()[i - 1];
+                // TODO: Migrate to load_revision().
                 let previous_revision = match Revision::load(format!(
                     ".zatsu/revisions/{:02x}/{}.json",
                     previous_revision_number & 0xFF,
