@@ -93,8 +93,7 @@ impl Repository for RepositoryBase {
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
 
-
-        Err(ZatsuError::new(error::CODE_GENERAL))
+        Ok(())
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
