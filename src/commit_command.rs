@@ -86,32 +86,6 @@ impl Command for CommitCommand {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
         };
-        // TODO: Add a wrapper method to repository.
-        /*
-        let path = format!(".zatsu/revisions/{:02x}", revision_number & 0xFF).to_string();
-        let a_path = Path::new(&path);
-        let exists = match a_path.try_exists() {
-            Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
-        };
-        if !exists {
-            match fs::create_dir(&path) {
-                Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
-            };
-        }
-        match revision.save(format!("{}/{}.json", &path, revision_number)) {
-            Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
-        };
-        let mut revision_numbers = repository.revision_numbers();
-        revision_numbers.push(revision_number);
-        repository.set_revision_numbers(&revision_numbers);
-        match repository.save(&Path::new(".zatsu")) {
-            Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
-        };
-        */
 
         println!("");
         println!("Commited as revision {}.", revision_number);

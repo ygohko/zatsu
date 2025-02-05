@@ -56,7 +56,7 @@ impl Command for GetCommand {
         }
         let revision = match repository.load_revision(self.revision_number) {
             Ok(revision) => revision,
-            Err(error) => return Err(error),
+            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REVISION_FAILED)),
         };
         let mut hash = "".to_string();
         let mut file_found = false;
