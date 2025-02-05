@@ -150,6 +150,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
 fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
     for revision_number in revision_numbers {
         println!("Updating: Revision {}", revision_number);
+        // TODO: Migrate to load_revision().
         let path = format!(
             ".zatsu/revisions/{:02x}/{}.json",
             (revision_number & 0xFF),
