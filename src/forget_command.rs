@@ -28,7 +28,6 @@ use crate::error;
 use crate::repository::factory;
 use crate::Command;
 use crate::Repository;
-use crate::Revision;
 use crate::ZatsuError;
 
 pub struct ForgetCommand {
@@ -165,12 +164,7 @@ fn remove_unused_objects(
     for revision_number in &repository.revision_numbers() {
         println!("Checking: revision {}", revision_number);
 
-        // TODO: Migrate to load_revision().
-        let revision = match Revision::load(format!(
-            ".zatsu/revisions/{:02x}/{}.json",
-            revision_number & 0xFF,
-            revision_number
-        )) {
+        let revision = match repository.load_revision(*revision_number) {
             Ok(revision) => revision,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
         };
