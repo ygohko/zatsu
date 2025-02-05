@@ -48,40 +48,18 @@ impl Command for LogCommand {
         let count = repository.revision_numbers().len();
         for i in (0..count).rev() {
             let revision_number = repository.revision_numbers()[i];
-            // TODO: Migrate to load_revision().
             let revision = match repository.load_revision(revision_number) {
                 Ok(revision) => revision,
                 Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
             };
-            /*
-            let revision = match Revision::load(format!(
-                ".zatsu/revisions/{:02x}/{}.json",
-                revision_number & 0xFF,
-                revision_number
-            )) {
-                Ok(revision) => revision,
-                Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
-            };
-            */
             let entries = revision.entries;
             let mut previous_entries: Vec<Entry> = Vec::new();
             if i > 0 {
                 let previous_revision_number = repository.revision_numbers()[i - 1];
-                // TODO: Migrate to load_revision().
                 let previous_revision = match repository.load_revision(previous_revision_number) {
                     Ok(revision) => revision,
                     Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
                 };
-                /*
-                let previous_revision = match Revision::load(format!(
-                    ".zatsu/revisions/{:02x}/{}.json",
-                    previous_revision_number & 0xFF,
-                    previous_revision_number
-                )) {
-                    Ok(revision) => revision,
-                    Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
-                };
-                */
                 previous_entries = previous_revision.entries;
             }
 
