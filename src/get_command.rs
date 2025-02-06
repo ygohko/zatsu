@@ -54,12 +54,7 @@ impl Command for GetCommand {
         if !found {
             return Err(ZatsuError::new(error::CODE_REVISION_NOT_FOUND));
         }
-
-        let revision = match Revision::load(format!(
-            ".zatsu/revisions/{:02x}/{}.json",
-            self.revision_number & 0xFF,
-            self.revision_number
-        )) {
+        let revision = match repository.load_revision(self.revision_number) {
             Ok(revision) => revision,
             Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REVISION_FAILED)),
         };

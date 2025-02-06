@@ -28,9 +28,12 @@ use std::path::Path;
 use crate::commons;
 use crate::error;
 use crate::error::ZatsuError;
+use crate::Revision;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
+    fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
+    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError>;
     fn revision_numbers(&self) -> Vec<i32>;
     fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
     fn version(&self) -> i32;
@@ -48,6 +51,47 @@ impl Repository for RepositoryBase {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
         let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
+
+        Ok(())
+    }
+
+    fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
+        let revision = match Revision::load(format!(
+            ".zatsu/revisions/{:02x}/{}.json",
+            revision_number & 0xFF,
+            revision_number
+        )) {
+            Ok(revision) => revision,
+            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REVISION_FAILED)),
+        };
+
+        Ok(revision)
+    }
+
+    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+        let path = format!(".zatsu/revisions/{:02x}", revision_number & 0xFF).to_string();
+        let a_path = Path::new(&path);
+        let exists = match a_path.try_exists() {
+            Ok(exists) => exists,
+            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+        };
+        if !exists {
+            match fs::create_dir(&path) {
+                Ok(()) => (),
+                Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+            };
+        }
+        match revision.save(format!("{}/{}.json", &path, revision_number)) {
+            Ok(_) => (),
+            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+        };
+        let mut revision_numbers = self.revision_numbers();
+        revision_numbers.push(revision_number);
+        self.set_revision_numbers(&revision_numbers);
+        match self.save(&Path::new(".zatsu")) {
+            Ok(_) => (),
+            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+        };
 
         Ok(())
     }
@@ -102,6 +146,14 @@ impl Repository for RepositoryV1 {
         self.base.save(path)
     }
 
+    fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
+        self.base.load_revision(revision_number)
+    }
+
+    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+        self.base.save_revision(revision, revision_number)
+    }
+
     fn revision_numbers(&self) -> Vec<i32> {
         self.base.revision_numbers()
     }
@@ -134,6 +186,14 @@ struct RepositoryV2 {
 impl Repository for RepositoryV2 {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
         self.base.save(path)
+    }
+
+    fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
+        self.base.load_revision(revision_number)
+    }
+
+    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+        self.base.save_revision(revision, revision_number)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
