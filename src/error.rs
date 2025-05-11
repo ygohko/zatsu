@@ -24,27 +24,32 @@ use std::backtrace::Backtrace;
 use std::error::Error;
 use std::fmt;
 
+pub type ErrorId = &'static str;
+pub type ErrorCode = i32;
+pub type Result<T> = std::result::Result<T, Error>;
+
 #[allow(dead_code)]
-pub const CODE_GENERAL: i32 = 0;
-pub const CODE_READING_META_DATA_FAILED: i32 = 1;
-pub const CODE_READING_DIRECTORY_FAILED: i32 = 2;
-pub const CODE_CREATING_REPOSITORY_FAILED: i32 = 3;
-pub const CODE_LOADING_REPOSITORY_FAILED: i32 = 4;
-pub const CODE_REVISION_NOT_FOUND: i32 = 5;
-pub const CODE_LOADING_REVISION_FAILED: i32 = 6;
-pub const CODE_FILE_NOT_FOUND: i32 = 7;
-pub const CODE_LOADING_FILE_FAILED: i32 = 8;
-pub const CODE_SAVING_FILE_FAILED: i32 = 9;
-pub const CODE_PRODUCING_FINISHED: i32 = 10;
-pub const CODE_CREATING_DIRECTORY_FAILED: i32 = 11;
-pub const CODE_DESERIALIZATION_FAILED: i32 = 12;
-pub const CODE_SERIALIZATION_FAILED: i32 = 13;
-pub const CODE_REMOVING_FILE_FAILED: i32 = 14;
-pub const CODE_REMOVING_DIRECTORY_FAILED: i32 = 15;
+pub const CODE_GENERAL: ErrorCode = 0;
+pub const CODE_READING_META_DATA_FAILED: ErrorCode = 1;
+pub const CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
+pub const CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
+pub const CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+pub const CODE_REVISION_NOT_FOUND: ErrorCode = 5;
+pub const CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
+pub const CODE_FILE_NOT_FOUND: ErrorCode = 7;
+pub const CODE_LOADING_FILE_FAILED: ErrorCode = 8;
+pub const CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+pub const CODE_PRODUCING_FINISHED: ErrorCode = 10;
+pub const CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
+pub const CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
+pub const CODE_SERIALIZATION_FAILED: ErrorCode = 13;
+pub const CODE_REMOVING_FILE_FAILED: ErrorCode = 14;
+pub const CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 15;
 
 #[derive(Debug)]
 pub struct ZatsuError {
-    pub code: i32,
+    pub id: ErrorId,
+    pub code: ErrorCode,
     pub backtrace: String,
     pub details: String,
 }
@@ -53,8 +58,8 @@ impl fmt::Display for ZatsuError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Zatsu error. code: {}, backtrace: {}, details: {}",
-            self.code, self.backtrace, self.details
+            "Zatsu error. id: {}, code: {}, backtrace: {}, details: {}",
+            self.id, self.code, self.backtrace, self.details
         )
     }
 }
@@ -62,10 +67,11 @@ impl fmt::Display for ZatsuError {
 impl Error for ZatsuError {}
 
 impl ZatsuError {
-    pub fn new(code: i32) -> ZatsuError {
+    pub fn new(id: ErrorId, code: ErrorCode) -> ZatsuError {
         let backtrace = Backtrace::capture();
         let string = format!("{}", backtrace);
         return ZatsuError {
+            id: id,
             code: code,
             backtrace: string,
             details: "".to_string(),
@@ -73,10 +79,11 @@ impl ZatsuError {
     }
 
     #[allow(dead_code)]
-    pub fn with_details(code: i32, details: String) -> ZatsuError {
+    pub fn with_details(id: ErrorId, code: ErrorCode, details: String) -> ZatsuError {
         let backtrace = Backtrace::capture();
         let string = format!("{}", backtrace);
         return ZatsuError {
+            id: id,
             code: code,
             backtrace: string,
             details: details,

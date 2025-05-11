@@ -29,6 +29,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
@@ -36,6 +37,8 @@ use crate::FilePathProducer;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
+
+pub const ERROR_ID: ErrorId = "commit_command";
 
 pub struct CommitCommand {}
 
@@ -45,7 +48,7 @@ impl Command for CommitCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REPOSITORY_FAILED));
             }
         };
         let latest_revision = repository.latest_revision();
@@ -84,7 +87,7 @@ impl Command for CommitCommand {
 
         match repository.save_revision(&revision, revision_number) {
             Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
         };
 
         println!("");
@@ -104,13 +107,13 @@ impl CommitCommand {
 fn process_file(path: impl AsRef<Path>, repository: &Box<dyn Repository>) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(&path) {
         Ok(metadata) => metadata,
-        Err(_) => return Err(ZatsuError::new(error::CODE_READING_META_DATA_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_META_DATA_FAILED)),
     };
     let mut hex_string = String::new();
     if metadata.is_file() {
         let values = match fs::read(path) {
             Ok(values) => values,
-            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
         };
         hex_string = repository.object_hash(&values);
 
@@ -119,12 +122,12 @@ fn process_file(path: impl AsRef<Path>, repository: &Box<dyn Repository>) -> Res
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
             Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
         };
         if !exists {
             match fs::create_dir(&path) {
                 Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
             };
         }
 
@@ -132,22 +135,22 @@ fn process_file(path: impl AsRef<Path>, repository: &Box<dyn Repository>) -> Res
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
             Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
         };
         if !exists {
             let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
             match encoder.write_all(&values) {
                 Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
             }
             let compressed = match encoder.finish() {
                 Ok(compressed) => compressed,
-                Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
             };
 
             match fs::write(path, compressed) {
                 Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(error::CODE_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
             };
         }
     }
