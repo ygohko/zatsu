@@ -36,6 +36,9 @@ use crate::ZatsuError;
 pub const ERROR_ID: ErrorId = "get_command";
 
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+const ERROR_CODE_REVISION_NOT_FOUND: ErrorCode = 5;
+const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
+const ERROR_CODE_FILE_NOT_FOUND: ErrorCode = 7;
 
 pub struct GetCommand {
     revision_number: i32,
@@ -58,11 +61,11 @@ impl Command for GetCommand {
             }
         }
         if !found {
-            return Err(ZatsuError::new(ERROR_ID, error::CODE_REVISION_NOT_FOUND));
+            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_REVISION_NOT_FOUND));
         }
         let revision = match repository.load_revision(self.revision_number) {
             Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REVISION_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REVISION_FAILED)),
         };
         let mut hash = "".to_string();
         let mut file_found = false;
@@ -89,7 +92,7 @@ impl Command for GetCommand {
             return self.save_directory(&revision);
         }
 
-        Err(ZatsuError::new(ERROR_ID, error::CODE_FILE_NOT_FOUND))
+        Err(ZatsuError::new(ERROR_ID, ERROR_CODE_FILE_NOT_FOUND))
     }
 }
 

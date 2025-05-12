@@ -27,11 +27,14 @@ use std::path::Path;
 
 use crate::commons;
 use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
 use crate::Revision;
 
 pub const ERROR_ID: ErrorId = "repository";
+
+const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
@@ -65,7 +68,7 @@ impl Repository for RepositoryBase {
             revision_number
         )) {
             Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REVISION_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REVISION_FAILED)),
         };
 
         Ok(revision)
