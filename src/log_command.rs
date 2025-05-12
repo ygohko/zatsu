@@ -26,6 +26,7 @@ use chrono::Utc;
 use std::collections::HashMap;
 
 use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
@@ -33,6 +34,8 @@ use crate::Entry;
 use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "log_command";
+
+const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
 
 pub struct LogCommand {}
 
@@ -42,7 +45,7 @@ impl Command for LogCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REPOSITORY_FAILED));
             }
         };
 

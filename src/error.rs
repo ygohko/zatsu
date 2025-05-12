@@ -28,11 +28,11 @@ pub type ErrorId = &'static str;
 pub type ErrorCode = i32;
 
 #[allow(dead_code)]
-pub const CODE_GENERAL: ErrorCode = 0;
-pub const CODE_READING_META_DATA_FAILED: ErrorCode = 1;
-pub const CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
-pub const CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
-pub const CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+pub const ERROR_CODE_GENERAL: ErrorCode = 0;
+// pub const CODE_READING_META_DATA_FAILED: ErrorCode = 1;
+// pub const CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
+// pub const CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
+// pub const CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
 pub const CODE_REVISION_NOT_FOUND: ErrorCode = 5;
 pub const CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 pub const CODE_FILE_NOT_FOUND: ErrorCode = 7;

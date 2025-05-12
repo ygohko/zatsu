@@ -25,12 +25,15 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
 use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "init_command";
+
+const ERROR_CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
 
 pub struct InitCommand {
     version: i32,
@@ -45,19 +48,19 @@ impl Command for InitCommand {
 
         match fs::create_dir_all(".zatsu") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
         };
         match fs::write(".zatsu/version.txt", self.version.to_string()) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
         };
         match fs::create_dir_all(".zatsu/revisions") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
         };
         match fs::create_dir_all(".zatsu/objects") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
         };
         let repository = factory::new(self.version);
         match repository.save(&PathBuf::from(".zatsu")) {

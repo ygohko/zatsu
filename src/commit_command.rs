@@ -29,6 +29,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
@@ -40,6 +41,9 @@ use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "commit_command";
 
+const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
+const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+
 pub struct CommitCommand {}
 
 impl Command for CommitCommand {
@@ -48,7 +52,7 @@ impl Command for CommitCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REPOSITORY_FAILED));
             }
         };
         let latest_revision = repository.latest_revision();
@@ -107,7 +111,7 @@ impl CommitCommand {
 fn process_file(path: impl AsRef<Path>, repository: &Box<dyn Repository>) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(&path) {
         Ok(metadata) => metadata,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_META_DATA_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
     };
     let mut hex_string = String::new();
     if metadata.is_file() {

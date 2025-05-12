@@ -27,6 +27,7 @@ use std::path::PathBuf;
 
 use crate::commons;
 use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
@@ -37,18 +38,21 @@ pub struct UpgradeCommand {}
 
 pub const ERROR_ID: ErrorId = "upgrade_command";
 
+const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
+const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let repository = match factory::load(".zatsu") {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REPOSITORY_FAILED));
             }
         };
         if repository.version() != 1 {
             println!("Error: Repository is already up to date. Do nothing.");
-            return Err(ZatsuError::new(ERROR_ID, error::CODE_GENERAL));
+            return Err(ZatsuError::new(ERROR_ID, error::ERROR_CODE_GENERAL));
         }
 
         // Move objects directory.
@@ -98,7 +102,7 @@ impl UpgradeCommand {
 fn copy_objects() -> Result<(), ZatsuError> {
     let read_dir = match fs::read_dir(".zatsu/objects-v1") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_DIRECTORY_FAILED)),
     };
     let mut object_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -112,7 +116,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
         let directory_path = path;
         let read_dir = match fs::read_dir(directory_path.clone()) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_DIRECTORY_FAILED)),
         };
         for result in read_dir {
             if result.is_ok() {
