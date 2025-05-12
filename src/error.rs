@@ -26,7 +26,6 @@ use std::fmt;
 
 pub type ErrorId = &'static str;
 pub type ErrorCode = i32;
-pub type Result<T> = std::result::Result<T, dyn Error>;
 
 #[allow(dead_code)]
 pub const CODE_GENERAL: ErrorCode = 0;

@@ -166,7 +166,7 @@ fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
             println!("Updating: {}", entry.path);
             let new_hash = match fs::read_to_string(&path) {
                 Ok(new_hash) => new_hash,
-                Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
             };
 
             let new_entry = Entry {
