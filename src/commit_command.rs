@@ -43,6 +43,7 @@ pub const ERROR_ID: ErrorId = "commit_command";
 
 const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 
 pub struct CommitCommand {}
 
@@ -117,7 +118,7 @@ fn process_file(path: impl AsRef<Path>, repository: &Box<dyn Repository>) -> Res
     if metadata.is_file() {
         let values = match fs::read(path) {
             Ok(values) => values,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         hex_string = repository.object_hash(&values);
 

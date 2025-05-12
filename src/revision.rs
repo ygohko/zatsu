@@ -27,10 +27,13 @@ use std::path::Path;
 
 use crate::entry::Entry;
 use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "revision";
+
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
@@ -44,7 +47,7 @@ impl Revision {
     pub fn load(path: impl AsRef<Path>) -> Result<Revision, ZatsuError> {
         let serialized = match fs::read_to_string(path) {
             Ok(serialized) => serialized,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         let revision = match serde_json::from_str(&serialized) {
             Ok(revision) => revision,

@@ -36,6 +36,7 @@ pub const ERROR_ID: ErrorId = "forget_command";
 
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 
 pub struct ForgetCommand {
     revision_count: i32,
@@ -173,7 +174,7 @@ fn remove_unused_objects(
 
         let revision = match repository.load_revision(*revision_number) {
             Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
 
         for entry in revision.entries {

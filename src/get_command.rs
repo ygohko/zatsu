@@ -39,6 +39,7 @@ const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
 const ERROR_CODE_REVISION_NOT_FOUND: ErrorCode = 5;
 const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 const ERROR_CODE_FILE_NOT_FOUND: ErrorCode = 7;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 
 pub struct GetCommand {
     revision_number: i32,
@@ -113,16 +114,16 @@ impl GetCommand {
             directory_name, hash
         ))) {
             Ok(values) => values,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         let mut decoder = ZlibDecoder::new(Vec::new());
         match decoder.write_all(&values) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         let decoded = match decoder.finish() {
             Ok(decoded) => decoded,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         let split: Vec<_> = self.path.split("/").collect();
         let mut file_name = "out.dat".to_string();
@@ -168,16 +169,16 @@ impl GetCommand {
                     directory_name, hash
                 ))) {
                     Ok(values) => values,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
                 };
                 let mut decoder = ZlibDecoder::new(Vec::new());
                 match decoder.write_all(&values) {
                     Ok(()) => (),
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
                 };
                 let decoded = match decoder.finish() {
                     Ok(decoded) => decoded,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
                 };
 
                 let split: Vec<_> = entry.path.split("/").collect();

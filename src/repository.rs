@@ -35,6 +35,7 @@ use crate::Revision;
 pub const ERROR_ID: ErrorId = "repository";
 
 const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
@@ -250,7 +251,7 @@ pub mod factory {
         let version_path = path.as_ref().join("version.txt");
         let mut string = match fs::read_to_string(version_path) {
             Ok(string) => string,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         string = string.replace("\n", "");
 
@@ -316,7 +317,7 @@ impl SerializableRepositoryV1 {
         let json_path = path.as_ref().join("repository.json");
         let serialized = match fs::read_to_string(json_path) {
             Ok(serialized) => serialized,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         let repository: SerializableRepositoryV1 = match serde_json::from_str(&serialized) {
             Ok(repository) => repository,
