@@ -96,12 +96,14 @@ mod tests {
 
     #[test]
     fn is_creatable() {
-        let error = ZatsuError::new(123);
+        let error = ZatsuError::new("test", 123);
+        assert_eq!("test", error.id);
         assert_eq!(123, error.code);
         assert_eq!("disabled backtrace".to_string(), error.backtrace);
         assert_eq!("".to_string(), error.details);
 
-        let error = ZatsuError::with_details(456, "details".to_string());
+        let error = ZatsuError::with_details("test2", 456, "details".to_string());
+        assert_eq!("test2", error.id);
         assert_eq!(456, error.code);
         assert_eq!("disabled backtrace".to_string(), error.backtrace);
         assert_eq!("details".to_string(), error.details);
@@ -109,10 +111,10 @@ mod tests {
 
     #[test]
     fn is_formattable() {
-        let error = ZatsuError::with_details(789, "details".to_string());
+        let error = ZatsuError::with_details("test3", 789, "details".to_string());
         let formatted = format!("{}", error);
         assert_eq!(
-            "Zatsu error. code: 789, backtrace: disabled backtrace, details: details",
+            "Zatsu error. id: test3, code: 789, backtrace: disabled backtrace, details: details",
             formatted
         );
     }
