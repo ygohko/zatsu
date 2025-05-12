@@ -26,10 +26,13 @@ use chrono::Utc;
 use std::collections::HashMap;
 
 use crate::error;
+use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::ZatsuError;
+
+pub const ERROR_ID: ErrorId = "log_command";
 
 pub struct LogCommand {}
 
@@ -39,7 +42,7 @@ impl Command for LogCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REPOSITORY_FAILED));
             }
         };
 
@@ -49,7 +52,7 @@ impl Command for LogCommand {
             let revision_number = repository.revision_numbers()[i];
             let revision = match repository.load_revision(revision_number) {
                 Ok(revision) => revision,
-                Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
             };
             let entries = revision.entries;
             let mut previous_entries: Vec<Entry> = Vec::new();
@@ -57,7 +60,7 @@ impl Command for LogCommand {
                 let previous_revision_number = repository.revision_numbers()[i - 1];
                 let previous_revision = match repository.load_revision(previous_revision_number) {
                     Ok(revision) => revision,
-                    Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
                 };
                 previous_entries = previous_revision.entries;
             }

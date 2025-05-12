@@ -25,10 +25,13 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::error;
+use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
 use crate::Repository;
 use crate::ZatsuError;
+
+pub const ERROR_ID: ErrorId = "forget_command";
 
 pub struct ForgetCommand {
     revision_count: i32,
@@ -40,7 +43,7 @@ impl Command for ForgetCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REPOSITORY_FAILED));
             }
         };
         let mut revision_numbers = repository.revision_numbers();
@@ -68,12 +71,12 @@ impl ForgetCommand {
 fn process_garbage_collection() -> Result<(), ZatsuError> {
     let repository = match factory::load(".zatsu") {
         Ok(repository) => repository,
-        Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_REPOSITORY_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_REPOSITORY_FAILED)),
     };
 
     let read_dir = match fs::read_dir(".zatsu/revisions") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
     };
     let mut revision_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -86,7 +89,7 @@ fn process_garbage_collection() -> Result<(), ZatsuError> {
 
     let read_dir = match fs::read_dir(".zatsu/objects") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
     };
     let mut object_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -114,7 +117,7 @@ fn remove_unused_revisions(
     for path in revision_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
         };
         for result in read_dir {
             if result.is_ok() {
@@ -166,7 +169,7 @@ fn remove_unused_objects(
 
         let revision = match repository.load_revision(*revision_number) {
             Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
         };
 
         for entry in revision.entries {
@@ -188,7 +191,7 @@ fn remove_unused_objects(
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
         };
 
         for result in read_dir {
@@ -211,7 +214,7 @@ fn remove_unused_objects(
                             match fs::remove_file(&path) {
                                 Ok(_) => (),
                                 Err(_) => {
-                                    return Err(ZatsuError::new(error::CODE_REMOVING_FILE_FAILED))
+                                    return Err(ZatsuError::new(ERROR_ID, error::CODE_REMOVING_FILE_FAILED))
                                 }
                             };
                             removed_object_count += 1;
@@ -227,7 +230,7 @@ fn remove_unused_objects(
     for path in object_paths {
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new(error::CODE_READING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
         };
 
         for result in read_dir {
@@ -243,7 +246,7 @@ fn remove_unused_objects(
                         match fs::remove_file(&path) {
                             Ok(_) => (),
                             Err(_) => {
-                                return Err(ZatsuError::new(error::CODE_REMOVING_FILE_FAILED))
+                                return Err(ZatsuError::new(ERROR_ID, error::CODE_REMOVING_FILE_FAILED))
                             }
                         };
                     }
