@@ -28,9 +28,9 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
+use crate::file_path_producer;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
@@ -85,7 +85,7 @@ impl Command for CommitCommand {
                 revision.entries.push(entry);
             } else {
                 let error = result.unwrap_err();
-                if error.code == error::CODE_PRODUCING_FINISHED {
+                if error.id == file_path_producer::ERROR_ID && error.code == file_path_producer::ERROR_CODE_PRODUCING_FINISHED {
                     done = true;
                 }
             }

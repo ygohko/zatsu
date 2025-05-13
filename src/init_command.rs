@@ -24,7 +24,6 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -35,6 +34,7 @@ pub const ERROR_ID: ErrorId = "init_command";
 
 const ERROR_CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
 
 pub struct InitCommand {
     version: i32,
@@ -44,7 +44,7 @@ impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         if Path::new(".zatsu").exists() {
             println!("Error: This directory already has a repository.");
-            return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_DIRECTORY_FAILED));
+            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED));
         }
 
         match fs::create_dir_all(".zatsu") {

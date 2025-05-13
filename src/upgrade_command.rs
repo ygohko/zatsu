@@ -42,6 +42,7 @@ const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
 
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
@@ -61,13 +62,13 @@ impl Command for UpgradeCommand {
         println!("Moving current objects...");
         match fs::rename(".zatsu/objects", ".zatsu/objects-v1") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED)),
         };
 
         // Create new object direcrory.
         match fs::create_dir(".zatsu/objects") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED)),
         };
 
         // Copy objects into new new directory.

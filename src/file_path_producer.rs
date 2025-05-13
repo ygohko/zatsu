@@ -24,7 +24,6 @@ use std::env::consts;
 use std::fs;
 use std::path::Path;
 
-use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -33,6 +32,7 @@ pub const ERROR_ID: ErrorId = "file_path_producer";
 
 const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
+pub const ERROR_CODE_PRODUCING_FINISHED: ErrorCode = 10;
 
 pub struct FilePathProducer {
     file_paths: Vec<String>,
@@ -64,7 +64,7 @@ impl FilePathProducer {
             }
 
             if self.directory_paths.len() == 0 {
-                return Err(ZatsuError::new(ERROR_ID, error::CODE_PRODUCING_FINISHED));
+                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_PRODUCING_FINISHED));
             }
             let directory_path = self.directory_paths.pop().unwrap();
 
@@ -107,7 +107,7 @@ impl FilePathProducer {
             }
         }
 
-        Err(ZatsuError::new(ERROR_ID, error::CODE_PRODUCING_FINISHED))
+        Err(ZatsuError::new(ERROR_ID, ERROR_CODE_PRODUCING_FINISHED))
     }
 }
 

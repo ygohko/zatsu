@@ -35,6 +35,7 @@ pub const ERROR_ID: ErrorId = "revision";
 
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
@@ -52,7 +53,7 @@ impl Revision {
         };
         let revision = match serde_json::from_str(&serialized) {
             Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_DESERIALIZATION_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_DESERIALIZATION_FAILED)),
         };
 
         Ok(revision)

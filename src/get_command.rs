@@ -25,7 +25,6 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
-use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -41,6 +40,7 @@ const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 const ERROR_CODE_FILE_NOT_FOUND: ErrorCode = 7;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
 
 pub struct GetCommand {
     revision_number: i32,
@@ -155,7 +155,7 @@ impl GetCommand {
         }
         match fs::create_dir(&root_path) {
             Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED)),
         };
 
         let mut hash: String;
@@ -198,7 +198,7 @@ impl GetCommand {
                 }
                 match fs::create_dir_all(&path) {
                     Ok(_) => (),
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_CREATING_DIRECTORY_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED)),
                 };
 
                 path += &("/".to_string() + &file_name);

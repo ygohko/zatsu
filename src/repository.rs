@@ -37,6 +37,7 @@ pub const ERROR_ID: ErrorId = "repository";
 const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
@@ -322,7 +323,7 @@ impl SerializableRepositoryV1 {
         };
         let repository: SerializableRepositoryV1 = match serde_json::from_str(&serialized) {
             Ok(repository) => repository,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_DESERIALIZATION_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_DESERIALIZATION_FAILED)),
         };
 
         Ok(repository)
