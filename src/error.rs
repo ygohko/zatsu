@@ -29,21 +29,6 @@ pub type ErrorCode = i32;
 
 #[allow(dead_code)]
 pub const ERROR_CODE_GENERAL: ErrorCode = 0;
-// pub const CODE_READING_META_DATA_FAILED: ErrorCode = 1;
-// pub const CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
-// pub const CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
-// pub const CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
-// pub const CODE_REVISION_NOT_FOUND: ErrorCode = 5;
-// pub const CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
-// pub const CODE_FILE_NOT_FOUND: ErrorCode = 7;
-// pub const CODE_LOADING_FILE_FAILED: ErrorCode = 8;
-// pub const CODE_SAVING_FILE_FAILED: ErrorCode = 9;
-// pub const CODE_PRODUCING_FINISHED: ErrorCode = 10;
-// pub const CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
-// pub const CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
-// pub const CODE_SERIALIZATION_FAILED: ErrorCode = 13;
-// pub const CODE_REMOVING_FILE_FAILED: ErrorCode = 14;
-// pub const CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 15;
 
 #[derive(Debug)]
 pub struct ZatsuError {
