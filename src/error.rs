@@ -41,9 +41,9 @@ pub const ERROR_CODE_GENERAL: ErrorCode = 0;
 // pub const CODE_PRODUCING_FINISHED: ErrorCode = 10;
 // pub const CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
 // pub const CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
-pub const CODE_SERIALIZATION_FAILED: ErrorCode = 13;
-pub const CODE_REMOVING_FILE_FAILED: ErrorCode = 14;
-pub const CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 15;
+// pub const CODE_SERIALIZATION_FAILED: ErrorCode = 13;
+// pub const CODE_REMOVING_FILE_FAILED: ErrorCode = 14;
+// pub const CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 15;
 
 #[derive(Debug)]
 pub struct ZatsuError {

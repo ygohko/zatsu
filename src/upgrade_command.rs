@@ -43,6 +43,7 @@ const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
 const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
+const ERROR_CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 15;
 
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
@@ -86,7 +87,7 @@ impl Command for UpgradeCommand {
         // Remove V1 objects.
         match fs::remove_dir_all(".zatsu/objects-v1") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_REMOVING_DIRECTORY_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_REMOVING_DIRECTORY_FAILED)),
         };
 
         println!("");

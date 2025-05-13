@@ -26,7 +26,6 @@ use std::fs;
 use std::path::Path;
 
 use crate::commons;
-use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -38,6 +37,7 @@ const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
 const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
+const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 13;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
@@ -304,7 +304,7 @@ impl SerializableRepositoryV1 {
     fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SERIALIZATION_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),
         };
         let json_path = path.as_ref().join("repository.json");
         let _ = match fs::write(json_path, serialized) {

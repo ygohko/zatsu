@@ -24,7 +24,6 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -37,6 +36,7 @@ pub const ERROR_ID: ErrorId = "forget_command";
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
+const ERROR_CODE_REMOVING_FILE_FAILED: ErrorCode = 14;
 
 pub struct ForgetCommand {
     revision_count: i32,
@@ -219,7 +219,7 @@ fn remove_unused_objects(
                             match fs::remove_file(&path) {
                                 Ok(_) => (),
                                 Err(_) => {
-                                    return Err(ZatsuError::new(ERROR_ID, error::CODE_REMOVING_FILE_FAILED))
+                                    return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_REMOVING_FILE_FAILED))
                                 }
                             };
                             removed_object_count += 1;
@@ -251,7 +251,7 @@ fn remove_unused_objects(
                         match fs::remove_file(&path) {
                             Ok(_) => (),
                             Err(_) => {
-                                return Err(ZatsuError::new(ERROR_ID, error::CODE_REMOVING_FILE_FAILED))
+                                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_REMOVING_FILE_FAILED))
                             }
                         };
                     }
