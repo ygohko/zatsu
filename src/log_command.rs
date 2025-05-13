@@ -25,7 +25,6 @@ use chrono::Local;
 use chrono::Utc;
 use std::collections::HashMap;
 
-use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;

@@ -40,6 +40,7 @@ const ERROR_CODE_REVISION_NOT_FOUND: ErrorCode = 5;
 const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 const ERROR_CODE_FILE_NOT_FOUND: ErrorCode = 7;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
 
 pub struct GetCommand {
     revision_number: i32,
@@ -136,7 +137,7 @@ impl GetCommand {
         }
         match fs::write(&PathBuf::from(file_name), decoded) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         Ok(())
@@ -203,7 +204,7 @@ impl GetCommand {
                 path += &("/".to_string() + &file_name);
                 match fs::write(path, decoded) {
                     Ok(()) => (),
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
                 };
             }
         }

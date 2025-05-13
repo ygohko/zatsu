@@ -40,6 +40,8 @@ pub const ERROR_ID: ErrorId = "upgrade_command";
 
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
 
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
@@ -77,7 +79,7 @@ impl Command for UpgradeCommand {
         // Update version.txt.
         match fs::write(".zatsu/version.txt", "2") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         // Remove V1 objects.
@@ -125,16 +127,16 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 println!("Copying: {}", file_path.to_string_lossy());
                 let values = match fs::read(file_path.clone()) {
                     Ok(values) => values,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
                 };
                 let mut decoder = ZlibDecoder::new(Vec::new());
                 match decoder.write_all(&values) {
                     Ok(()) => (),
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
                 };
                 let decoded = match decoder.finish() {
                     Ok(decoded) => decoded,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
                 };
 
                 let hash = commons::object_hash(&decoded, 2);
@@ -145,7 +147,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 new_file_path.push_str(".new");
                 match fs::write(&new_file_path, hash) {
                     Ok(()) => (),
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
                 };
             }
         }
@@ -170,7 +172,7 @@ fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
             println!("Updating: {}", entry.path);
             let new_hash = match fs::read_to_string(&path) {
                 Ok(new_hash) => new_hash,
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
             };
 
             let new_entry = Entry {

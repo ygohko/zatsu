@@ -36,6 +36,7 @@ pub const ERROR_ID: ErrorId = "repository";
 
 const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
@@ -80,24 +81,24 @@ impl Repository for RepositoryBase {
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
             Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
         if !exists {
             match fs::create_dir(&path) {
                 Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
             };
         }
         match revision.save(format!("{}/{}.json", &path, revision_number)) {
             Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
         let mut revision_numbers = self.revision_numbers();
         revision_numbers.push(revision_number);
         self.set_revision_numbers(&revision_numbers);
         match self.save(&Path::new(".zatsu")) {
             Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         Ok(())
@@ -307,7 +308,7 @@ impl SerializableRepositoryV1 {
         let json_path = path.as_ref().join("repository.json");
         let _ = match fs::write(json_path, serialized) {
             Ok(result) => result,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         Ok(())

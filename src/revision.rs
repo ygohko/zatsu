@@ -34,6 +34,7 @@ use crate::error::ZatsuError;
 pub const ERROR_ID: ErrorId = "revision";
 
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
@@ -65,7 +66,7 @@ impl Revision {
 
         let _ = match std::fs::write(path, serialized) {
             Ok(result) => result,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         Ok(())

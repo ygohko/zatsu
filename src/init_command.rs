@@ -34,6 +34,7 @@ use crate::ZatsuError;
 pub const ERROR_ID: ErrorId = "init_command";
 
 const ERROR_CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
 
 pub struct InitCommand {
     version: i32,
@@ -65,7 +66,7 @@ impl Command for InitCommand {
         let repository = factory::new(self.version);
         match repository.save(&PathBuf::from(".zatsu")) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         println!("Repository initialized.");
