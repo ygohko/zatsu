@@ -32,9 +32,9 @@ use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "init_command";
 
-const ERROR_CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 3;
-const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
-const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
+const ERROR_CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 1;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 2;
+const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 3;
 
 pub struct InitCommand {
     version: i32,

@@ -33,11 +33,11 @@ use crate::Revision;
 
 pub const ERROR_ID: ErrorId = "repository";
 
-const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 6;
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
-const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
-const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
-const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 13;
+const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 1;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 3;
+const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 4;
+const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 5;
 
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;

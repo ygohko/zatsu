@@ -36,7 +36,7 @@ use crate::error::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "commons";
 
-pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 1;
 
 pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
     let directory_name = hash[0..2].to_string();

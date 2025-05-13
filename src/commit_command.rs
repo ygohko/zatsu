@@ -42,9 +42,9 @@ use crate::ZatsuError;
 pub const ERROR_ID: ErrorId = "commit_command";
 
 const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
-const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
-const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
+const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 
 pub struct CommitCommand {}
 

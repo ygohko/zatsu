@@ -32,7 +32,7 @@ pub const ERROR_ID: ErrorId = "file_path_producer";
 
 const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
-pub const ERROR_CODE_PRODUCING_FINISHED: ErrorCode = 10;
+pub const ERROR_CODE_PRODUCING_FINISHED: ErrorCode = 3;
 
 pub struct FilePathProducer {
     file_paths: Vec<String>,

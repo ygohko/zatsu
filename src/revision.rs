@@ -32,10 +32,10 @@ use crate::error::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "revision";
 
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
-const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
-const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 12;
-const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 13;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 1;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 2;
+const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 3;
+const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {

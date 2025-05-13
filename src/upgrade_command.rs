@@ -38,12 +38,12 @@ pub struct UpgradeCommand {}
 
 pub const ERROR_ID: ErrorId = "upgrade_command";
 
-const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
-const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 4;
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 8;
-const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 9;
-const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 11;
-const ERROR_CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 15;
+const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 1;
+const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
+const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 5;
+const ERROR_CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 6;
 
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
