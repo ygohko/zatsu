@@ -30,11 +30,13 @@ use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "commons";
+
+pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 1;
 
 pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
     let directory_name = hash[0..2].to_string();
@@ -42,12 +44,12 @@ pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
     let a_path = Path::new(&path);
     let exists = match a_path.try_exists() {
         Ok(exists) => exists,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
     };
     if !exists {
         match fs::create_dir(&path) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
     }
 
@@ -55,22 +57,22 @@ pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
     let a_path = Path::new(&path);
     let exists = match a_path.try_exists() {
         Ok(exists) => exists,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
     };
     if !exists {
         let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
         match encoder.write_all(&values) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         }
         let compressed = match encoder.finish() {
             Ok(compressed) => compressed,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         match fs::write(path, compressed) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
     }
 

@@ -24,11 +24,15 @@ use std::env::consts;
 use std::fs;
 use std::path::Path;
 
-use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "file_path_producer";
+
+const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
+const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
+pub const ERROR_CODE_PRODUCING_FINISHED: ErrorCode = 3;
 
 pub struct FilePathProducer {
     file_paths: Vec<String>,
@@ -60,7 +64,7 @@ impl FilePathProducer {
             }
 
             if self.directory_paths.len() == 0 {
-                return Err(ZatsuError::new(ERROR_ID, error::CODE_PRODUCING_FINISHED));
+                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_PRODUCING_FINISHED));
             }
             let directory_path = self.directory_paths.pop().unwrap();
 
@@ -79,7 +83,7 @@ impl FilePathProducer {
             if scan {
                 let read_dir = match fs::read_dir(directory_path) {
                     Ok(read_dir) => read_dir,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_DIRECTORY_FAILED)),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_DIRECTORY_FAILED)),
                 };
                 for result in read_dir {
                     if result.is_ok() {
@@ -88,7 +92,7 @@ impl FilePathProducer {
                         let metadata = match fs::metadata(entry.path()) {
                             Ok(metadata) => metadata,
                             Err(_) => {
-                                return Err(ZatsuError::new(ERROR_ID, error::CODE_READING_META_DATA_FAILED))
+                                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED))
                             }
                         };
                         let path = entry.path().to_string_lossy().to_string();
@@ -103,7 +107,7 @@ impl FilePathProducer {
             }
         }
 
-        Err(ZatsuError::new(ERROR_ID, error::CODE_PRODUCING_FINISHED))
+        Err(ZatsuError::new(ERROR_ID, ERROR_CODE_PRODUCING_FINISHED))
     }
 }
 

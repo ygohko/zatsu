@@ -26,11 +26,16 @@ use std::fs;
 use std::path::Path;
 
 use crate::entry::Entry;
-use crate::error;
+use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "revision";
+
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 1;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 2;
+const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 3;
+const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
@@ -44,11 +49,11 @@ impl Revision {
     pub fn load(path: impl AsRef<Path>) -> Result<Revision, ZatsuError> {
         let serialized = match fs::read_to_string(path) {
             Ok(serialized) => serialized,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_LOADING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
         let revision = match serde_json::from_str(&serialized) {
             Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_DESERIALIZATION_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_DESERIALIZATION_FAILED)),
         };
 
         Ok(revision)
@@ -57,12 +62,12 @@ impl Revision {
     pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SERIALIZATION_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),
         };
 
         let _ = match std::fs::write(path, serialized) {
             Ok(result) => result,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, error::CODE_SAVING_FILE_FAILED)),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         Ok(())
