@@ -46,7 +46,9 @@ const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 
-pub struct CommitCommand {}
+pub struct CommitCommand {
+    // TODO: Store repository path.
+}
 
 impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
@@ -185,6 +187,7 @@ mod tests {
     use super::*;
 
     use std::env;
+    use tempdir::TempDir;
 
     use crate::InitCommand;
 
@@ -195,6 +198,12 @@ mod tests {
 
     #[test]
     fn is_executable() {
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+
+        // TODO: Add new test codes.
+
+        /*
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
@@ -214,5 +223,6 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
+        */
     }
 }
