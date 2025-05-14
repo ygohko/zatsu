@@ -51,7 +51,10 @@ impl Command for UpgradeCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
+                ));
             }
         };
         if repository.version() != 1 {
@@ -63,13 +66,23 @@ impl Command for UpgradeCommand {
         println!("Moving current objects...");
         match fs::rename(".zatsu/objects", ".zatsu/objects-v1") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_CREATING_DIRECTORY_FAILED,
+                ))
+            }
         };
 
         // Create new object direcrory.
         match fs::create_dir(".zatsu/objects") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_CREATING_DIRECTORY_FAILED,
+                ))
+            }
         };
 
         // Copy objects into new new directory.
@@ -87,7 +100,12 @@ impl Command for UpgradeCommand {
         // Remove V1 objects.
         match fs::remove_dir_all(".zatsu/objects-v1") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_REMOVING_DIRECTORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_REMOVING_DIRECTORY_FAILED,
+                ))
+            }
         };
 
         println!("");
@@ -106,7 +124,12 @@ impl UpgradeCommand {
 fn copy_objects() -> Result<(), ZatsuError> {
     let read_dir = match fs::read_dir(".zatsu/objects-v1") {
         Ok(read_dir) => read_dir,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_DIRECTORY_FAILED)),
+        Err(_) => {
+            return Err(ZatsuError::new(
+                ERROR_ID,
+                ERROR_CODE_READING_DIRECTORY_FAILED,
+            ))
+        }
     };
     let mut object_paths: Vec<PathBuf> = Vec::new();
     for result in read_dir {
@@ -120,7 +143,12 @@ fn copy_objects() -> Result<(), ZatsuError> {
         let directory_path = path;
         let read_dir = match fs::read_dir(directory_path.clone()) {
             Ok(read_dir) => read_dir,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_DIRECTORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_READING_DIRECTORY_FAILED,
+                ))
+            }
         };
         for result in read_dir {
             if result.is_ok() {
@@ -129,16 +157,22 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 println!("Copying: {}", file_path.to_string_lossy());
                 let values = match fs::read(file_path.clone()) {
                     Ok(values) => values,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+                    Err(_) => {
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                    }
                 };
                 let mut decoder = ZlibDecoder::new(Vec::new());
                 match decoder.write_all(&values) {
                     Ok(()) => (),
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+                    Err(_) => {
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                    }
                 };
                 let decoded = match decoder.finish() {
                     Ok(decoded) => decoded,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+                    Err(_) => {
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                    }
                 };
 
                 let hash = commons::object_hash(&decoded, 2);

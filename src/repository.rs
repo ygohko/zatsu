@@ -42,7 +42,11 @@ const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 5;
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
-    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError>;
+    fn save_revision(
+        &mut self,
+        revision: &Revision,
+        revision_number: i32,
+    ) -> Result<(), ZatsuError>;
     fn revision_numbers(&self) -> Vec<i32>;
     fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
     fn version(&self) -> i32;
@@ -71,13 +75,22 @@ impl Repository for RepositoryBase {
             revision_number
         )) {
             Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REVISION_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_LOADING_REVISION_FAILED,
+                ))
+            }
         };
 
         Ok(revision)
     }
 
-    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+    fn save_revision(
+        &mut self,
+        revision: &Revision,
+        revision_number: i32,
+    ) -> Result<(), ZatsuError> {
         let path = format!(".zatsu/revisions/{:02x}", revision_number & 0xFF).to_string();
         let a_path = Path::new(&path);
         let exists = match a_path.try_exists() {
@@ -159,7 +172,11 @@ impl Repository for RepositoryV1 {
         self.base.load_revision(revision_number)
     }
 
-    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+    fn save_revision(
+        &mut self,
+        revision: &Revision,
+        revision_number: i32,
+    ) -> Result<(), ZatsuError> {
         self.base.save_revision(revision, revision_number)
     }
 
@@ -201,7 +218,11 @@ impl Repository for RepositoryV2 {
         self.base.load_revision(revision_number)
     }
 
-    fn save_revision(&mut self, revision: &Revision, revision_number: i32) -> Result<(), ZatsuError> {
+    fn save_revision(
+        &mut self,
+        revision: &Revision,
+        revision_number: i32,
+    ) -> Result<(), ZatsuError> {
         self.base.save_revision(revision, revision_number)
     }
 
@@ -239,13 +260,9 @@ pub mod factory {
             version: version,
         };
         if version == 1 {
-            Box::new(RepositoryV1 {
-                base: base,
-            })
+            Box::new(RepositoryV1 { base: base })
         } else {
-            Box::new(RepositoryV2 {
-                base: base,
-            })
+            Box::new(RepositoryV2 { base: base })
         }
     }
 
@@ -266,13 +283,9 @@ pub mod factory {
         let mut base = RepositoryBase::from_serializable_v1(&repository_v1);
         base.version = version;
         if version == 1 {
-            Ok(Box::new(RepositoryV1 {
-                base: base,
-            }))
+            Ok(Box::new(RepositoryV1 { base: base }))
         } else {
-            Ok(Box::new(RepositoryV2 {
-                base: base,
-            }))
+            Ok(Box::new(RepositoryV2 { base: base }))
         }
     }
 
@@ -284,13 +297,9 @@ pub mod factory {
         };
 
         if version == 1 {
-            Box::new(RepositoryV1 {
-                base: base,
-            })
+            Box::new(RepositoryV1 { base: base })
         } else {
-            Box::new(RepositoryV2 {
-                base: base,
-            })
+            Box::new(RepositoryV2 { base: base })
         }
     }
 }
@@ -343,10 +352,7 @@ mod tests {
 
     #[test]
     fn repository_is_savable() {
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            1,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let result = repository.save(&".");
@@ -354,10 +360,7 @@ mod tests {
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
 
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            2,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 2);
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let result = repository.save(&".");
@@ -368,27 +371,21 @@ mod tests {
 
     #[test]
     fn repository_is_gettable_latest_revision() {
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            1,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         assert_eq!(3, repository.latest_revision());
 
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            2,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 2);
         assert_eq!(3, repository.latest_revision());
     }
 
     #[test]
     fn repository_is_convertable_to_repository_v1() {
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            1,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let repository_v1 = repository.to_serializable_v1();
-        assert_eq!(repository.revision_numbers(), repository_v1.revision_numbers);
+        assert_eq!(
+            repository.revision_numbers(),
+            repository_v1.revision_numbers
+        );
     }
 
     #[test]
@@ -414,10 +411,7 @@ mod tests {
 
     #[test]
     fn repository_is_convertable_from_repository_v1() {
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            1,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let repository_v1 = repository.to_serializable_v1();
         let repository = RepositoryBase::from_serializable_v1(&repository_v1);
         assert_eq!(repository_v1.revision_numbers, repository.revision_numbers);
@@ -425,10 +419,7 @@ mod tests {
 
     #[test]
     fn repository_v1_is_savable() {
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            1,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let repository_v1 = repository.to_serializable_v1();
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
@@ -452,10 +443,7 @@ mod tests {
 
     #[test]
     fn repository_is_calculatable_object_hash() {
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            1,
-        );
+        let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let mut values: Vec<u8> = Vec::new();
         values.push(1);
         values.push(2);
@@ -463,11 +451,8 @@ mod tests {
         let hash1 = repository.object_hash(&values);
         let hash2 = commons::object_hash(&values, 1);
         assert_eq!(hash1, hash2);
-        
-        let repository = factory::with_arguments(
-            &vec![1, 2, 3],
-            2,
-        );
+
+        let repository = factory::with_arguments(&vec![1, 2, 3], 2);
         let mut values: Vec<u8> = Vec::new();
         values.push(1);
         values.push(2);

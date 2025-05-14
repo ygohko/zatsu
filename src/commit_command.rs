@@ -54,7 +54,10 @@ impl Command for CommitCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
+                ));
             }
         };
         let latest_revision = repository.latest_revision();
@@ -85,7 +88,9 @@ impl Command for CommitCommand {
                 revision.entries.push(entry);
             } else {
                 let error = result.unwrap_err();
-                if error.id == file_path_producer::ERROR_ID && error.code == file_path_producer::ERROR_CODE_PRODUCING_FINISHED {
+                if error.id == file_path_producer::ERROR_ID
+                    && error.code == file_path_producer::ERROR_CODE_PRODUCING_FINISHED
+                {
                     done = true;
                 }
             }
@@ -98,7 +103,10 @@ impl Command for CommitCommand {
 
         println!("");
         println!("Commited as revision {}.", revision_number);
-        println!("There are {} revision(s).", repository.revision_numbers().len());
+        println!(
+            "There are {} revision(s).",
+            repository.revision_numbers().len()
+        );
 
         Ok(())
     }
@@ -110,10 +118,18 @@ impl CommitCommand {
     }
 }
 
-fn process_file(path: impl AsRef<Path>, repository: &Box<dyn Repository>) -> Result<String, ZatsuError> {
+fn process_file(
+    path: impl AsRef<Path>,
+    repository: &Box<dyn Repository>,
+) -> Result<String, ZatsuError> {
     let metadata = match fs::metadata(&path) {
         Ok(metadata) => metadata,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
+        Err(_) => {
+            return Err(ZatsuError::new(
+                ERROR_ID,
+                ERROR_CODE_READING_META_DATA_FAILED,
+            ))
+        }
     };
     let mut hex_string = String::new();
     if metadata.is_file() {

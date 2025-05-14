@@ -45,7 +45,10 @@ impl Command for LogCommand {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_REPOSITORY_FAILED));
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
+                ));
             }
         };
 
@@ -63,7 +66,9 @@ impl Command for LogCommand {
                 let previous_revision_number = repository.revision_numbers()[i - 1];
                 let previous_revision = match repository.load_revision(previous_revision_number) {
                     Ok(revision) => revision,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+                    Err(_) => {
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                    }
                 };
                 previous_entries = previous_revision.entries;
             }

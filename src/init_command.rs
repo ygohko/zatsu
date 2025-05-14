@@ -44,24 +44,47 @@ impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         if Path::new(".zatsu").exists() {
             println!("Error: This directory already has a repository.");
-            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_DIRECTORY_FAILED));
+            return Err(ZatsuError::new(
+                ERROR_ID,
+                ERROR_CODE_CREATING_DIRECTORY_FAILED,
+            ));
         }
 
         match fs::create_dir_all(".zatsu") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         match fs::write(".zatsu/version.txt", self.version.to_string()) {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         match fs::create_dir_all(".zatsu/revisions") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         match fs::create_dir_all(".zatsu/objects") {
             Ok(()) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_CREATING_REPOSITORY_FAILED)),
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_CREATING_REPOSITORY_FAILED,
+                ))
+            }
         };
         let repository = factory::new(self.version);
         match repository.save(&PathBuf::from(".zatsu")) {
