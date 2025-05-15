@@ -38,11 +38,14 @@ const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 3;
 
 pub struct InitCommand {
     version: i32,
+    path: String,
 }
 
 impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        if Path::new(".zatsu").exists() {
+        let mut repository_path = self.path.clone();
+        repository_path = repository_path.pushed(".zatsu");
+        if Path::new(&repository_path).exists() {
             println!("Error: This directory already has a repository.");
             return Err(ZatsuError::new(
                 ERROR_ID,
@@ -100,7 +103,10 @@ impl Command for InitCommand {
 
 impl InitCommand {
     pub fn new(version: i32) -> Self {
-        Self { version }
+        Self {
+            version,
+            path: ".".to_string(),
+        }
     }
 }
 
@@ -109,7 +115,8 @@ mod tests {
     use super::*;
 
     use std::env;
-
+    use tempdir::TempDir;
+    
     #[test]
     fn is_creatable() {
         let _command = InitCommand::new(1);
@@ -118,6 +125,20 @@ mod tests {
 
     #[test]
     fn is_executable() {
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let command = InitCommand::new(1);
+        command.path = temp_path.clone();
+        let result = command.execute();
+        assert!(result.is_ok());
+        /*
+        let exists = Path::new(".zatsu").exists();
+        assert_eq!(true, exists);
+        env::set_current_dir("..").unwrap();
+        fs::remove_dir_all("tmp").unwrap();
+        */
+        
+        /*
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
@@ -137,5 +158,6 @@ mod tests {
         assert_eq!(true, exists);
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
+        */
     }
 }

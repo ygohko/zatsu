@@ -47,7 +47,7 @@ const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 
 pub struct CommitCommand {
-    // TODO: Store repository path.
+    path: String,
 }
 
 impl Command for CommitCommand {
@@ -65,7 +65,7 @@ impl Command for CommitCommand {
         let latest_revision = repository.latest_revision();
         let revision_number = latest_revision + 1;
 
-        let mut producer = FilePathProducer::new(".".to_string());
+        let mut producer = FilePathProducer::new(self.path.clone());
         let now = Utc::now();
         let mut revision = Revision {
             commited: now.timestamp_millis(),
@@ -116,7 +116,9 @@ impl Command for CommitCommand {
 
 impl CommitCommand {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            path: ".".to_string(),
+        }
     }
 }
 
@@ -198,9 +200,10 @@ mod tests {
 
     #[test]
     fn is_executable() {
+        /*
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-
+        */
         // TODO: Add new test codes.
 
         /*
