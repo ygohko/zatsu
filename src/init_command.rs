@@ -118,7 +118,6 @@ impl InitCommand {
 mod tests {
     use super::*;
 
-    use std::env;
     use tempdir::TempDir;
     
     #[test]
@@ -140,26 +139,15 @@ mod tests {
         let exists = Path::new(&repository_path).exists();
         assert_eq!(true, exists);
         
-        /*
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        let exists = Path::new(".zatsu").exists();
+        let mut repository_path = temp_path.clone();
+        repository_path.push(".zatsu");
+        let exists = Path::new(&repository_path).exists();
         assert_eq!(true, exists);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
-
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
-        let result = command.execute();
-        assert!(result.is_ok());
-        let exists = Path::new(".zatsu").exists();
-        assert_eq!(true, exists);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
-        */
     }
 }
