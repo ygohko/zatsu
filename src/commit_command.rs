@@ -46,9 +46,7 @@ const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 
-pub struct CommitCommand {
-    path: String,
-}
+pub struct CommitCommand {}
 
 impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
@@ -65,7 +63,7 @@ impl Command for CommitCommand {
         let latest_revision = repository.latest_revision();
         let revision_number = latest_revision + 1;
 
-        let mut producer = FilePathProducer::new(self.path.clone());
+        let mut producer = FilePathProducer::new(".".to_string());
         let now = Utc::now();
         let mut revision = Revision {
             commited: now.timestamp_millis(),
@@ -116,9 +114,7 @@ impl Command for CommitCommand {
 
 impl CommitCommand {
     pub fn new() -> Self {
-        Self {
-            path: ".".to_string(),
-        }
+        Self {}
     }
 }
 
@@ -189,7 +185,6 @@ mod tests {
     use super::*;
 
     use std::env;
-    use tempdir::TempDir;
 
     use crate::InitCommand;
 
@@ -200,13 +195,6 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        /*
-        let temp_dir = TempDir::new("test").unwrap();
-        let temp_path = temp_dir.path().to_path_buf();
-        */
-        // TODO: Add new test codes.
-
-        /*
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
@@ -226,6 +214,5 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
-        */
     }
 }
