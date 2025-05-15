@@ -43,8 +43,8 @@ pub struct InitCommand {
 
 impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = self.path.clone();
-        repository_path = repository_path.pushed(".zatsu");
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
         if Path::new(&repository_path).exists() {
             println!("Error: This directory already has a repository.");
             return Err(ZatsuError::new(
@@ -53,7 +53,7 @@ impl Command for InitCommand {
             ));
         }
 
-        match fs::create_dir_all(".zatsu") {
+        match fs::create_dir_all(&repository_path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -62,7 +62,9 @@ impl Command for InitCommand {
                 ))
             }
         };
-        match fs::write(".zatsu/version.txt", self.version.to_string()) {
+        let mut path = repository_path.clone();
+        path.push("version.txt");
+        match fs::write(&path, self.version.to_string()) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -71,7 +73,9 @@ impl Command for InitCommand {
                 ))
             }
         };
-        match fs::create_dir_all(".zatsu/revisions") {
+        let mut path = repository_path.clone();
+        path.push("revisions");
+        match fs::create_dir_all(&path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -90,7 +94,7 @@ impl Command for InitCommand {
             }
         };
         let repository = factory::new(self.version);
-        match repository.save(&PathBuf::from(".zatsu")) {
+        match repository.save(&repository_path) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -127,8 +131,8 @@ mod tests {
     fn is_executable() {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let command = InitCommand::new(1);
-        command.path = temp_path.clone();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
         /*
