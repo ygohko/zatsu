@@ -135,12 +135,10 @@ mod tests {
         command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        /*
-        let exists = Path::new(".zatsu").exists();
+        let mut repository_path = temp_path.clone();
+        repository_path.push(".zatsu");
+        let exists = Path::new(&repository_path).exists();
         assert_eq!(true, exists);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
-        */
         
         /*
         fs::create_dir("tmp").unwrap();
