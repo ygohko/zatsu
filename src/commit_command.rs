@@ -46,11 +46,15 @@ const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 
-pub struct CommitCommand {}
+pub struct CommitCommand {
+    path: String,
+}
 
 impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let mut repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -63,7 +67,7 @@ impl Command for CommitCommand {
         let latest_revision = repository.latest_revision();
         let revision_number = latest_revision + 1;
 
-        let mut producer = FilePathProducer::new(".".to_string());
+        let mut producer = FilePathProducer::new(self.path.clone());
         let now = Utc::now();
         let mut revision = Revision {
             commited: now.timestamp_millis(),
@@ -114,7 +118,9 @@ impl Command for CommitCommand {
 
 impl CommitCommand {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            path: ".".to_string(),
+        }
     }
 }
 
