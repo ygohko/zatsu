@@ -38,11 +38,14 @@ const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 3;
 
 pub struct InitCommand {
     version: i32,
+    path: String,
 }
 
 impl Command for InitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        if Path::new(".zatsu").exists() {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        if Path::new(&repository_path).exists() {
             println!("Error: This directory already has a repository.");
             return Err(ZatsuError::new(
                 ERROR_ID,
@@ -50,7 +53,7 @@ impl Command for InitCommand {
             ));
         }
 
-        match fs::create_dir_all(".zatsu") {
+        match fs::create_dir_all(&repository_path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -59,7 +62,9 @@ impl Command for InitCommand {
                 ))
             }
         };
-        match fs::write(".zatsu/version.txt", self.version.to_string()) {
+        let mut path = repository_path.clone();
+        path.push("version.txt");
+        match fs::write(&path, self.version.to_string()) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -68,7 +73,9 @@ impl Command for InitCommand {
                 ))
             }
         };
-        match fs::create_dir_all(".zatsu/revisions") {
+        let mut path = repository_path.clone();
+        path.push("revisions");
+        match fs::create_dir_all(&path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -87,7 +94,7 @@ impl Command for InitCommand {
             }
         };
         let repository = factory::new(self.version);
-        match repository.save(&PathBuf::from(".zatsu")) {
+        match repository.save(&repository_path) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -100,7 +107,10 @@ impl Command for InitCommand {
 
 impl InitCommand {
     pub fn new(version: i32) -> Self {
-        Self { version }
+        Self {
+            version,
+            path: ".".to_string(),
+        }
     }
 }
 
@@ -108,8 +118,8 @@ impl InitCommand {
 mod tests {
     use super::*;
 
-    use std::env;
-
+    use tempdir::TempDir;
+    
     #[test]
     fn is_creatable() {
         let _command = InitCommand::new(1);
@@ -118,24 +128,26 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        let exists = Path::new(".zatsu").exists();
+        let mut repository_path = temp_path.clone();
+        repository_path.push(".zatsu");
+        let exists = Path::new(&repository_path).exists();
         assert_eq!(true, exists);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
-
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        let exists = Path::new(".zatsu").exists();
+        let mut repository_path = temp_path.clone();
+        repository_path.push(".zatsu");
+        let exists = Path::new(&repository_path).exists();
         assert_eq!(true, exists);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 }
