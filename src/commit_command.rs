@@ -46,11 +46,15 @@ const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 
-pub struct CommitCommand {}
+pub struct CommitCommand {
+    path: String,
+}
 
 impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let mut repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -63,7 +67,7 @@ impl Command for CommitCommand {
         let latest_revision = repository.latest_revision();
         let revision_number = latest_revision + 1;
 
-        let mut producer = FilePathProducer::new(".".to_string());
+        let mut producer = FilePathProducer::new(self.path.clone());
         let now = Utc::now();
         let mut revision = Revision {
             commited: now.timestamp_millis(),
@@ -76,7 +80,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match process_file(&PathBuf::from(path.clone()), &repository) {
+                let hash = match self.process_file(&PathBuf::from(path.clone()), &repository) {
                     Ok(hash) => hash,
                     Err(error) => return Err(error),
                 };
@@ -96,7 +100,7 @@ impl Command for CommitCommand {
             }
         }
 
-        match repository.save_revision(&revision, revision_number) {
+        match repository.save_revision(&revision, revision_number, &self.path) {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -114,77 +118,83 @@ impl Command for CommitCommand {
 
 impl CommitCommand {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            path: ".".to_string(),
+        }
     }
-}
 
-fn process_file(
-    path: impl AsRef<Path>,
-    repository: &Box<dyn Repository>,
-) -> Result<String, ZatsuError> {
-    let metadata = match fs::metadata(&path) {
-        Ok(metadata) => metadata,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                ERROR_ID,
-                ERROR_CODE_READING_META_DATA_FAILED,
-            ))
-        }
-    };
-    let mut hex_string = String::new();
-    if metadata.is_file() {
-        let values = match fs::read(path) {
-            Ok(values) => values,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
-        };
-        hex_string = repository.object_hash(&values);
-
-        let directory_name = hex_string[0..2].to_string();
-        let path = format!(".zatsu/objects/{}", directory_name).to_string();
-        let a_path = Path::new(&path);
-        let exists = match a_path.try_exists() {
-            Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-        };
-        if !exists {
-            match fs::create_dir(&path) {
-                Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            };
-        }
-
-        let path = format!("{}/{}", &path, hex_string);
-        let a_path = Path::new(&path);
-        let exists = match a_path.try_exists() {
-            Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-        };
-        if !exists {
-            let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-            match encoder.write_all(&values) {
-                Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+    fn process_file(
+        &self,
+        path: impl AsRef<Path>,
+        repository: &Box<dyn Repository>,
+    ) -> Result<String, ZatsuError> {
+        let metadata = match fs::metadata(&path) {
+            Ok(metadata) => metadata,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_READING_META_DATA_FAILED,
+                ))
             }
-            let compressed = match encoder.finish() {
-                Ok(compressed) => compressed,
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+        };
+        let mut hex_string = String::new();
+        if metadata.is_file() {
+            let values = match fs::read(path) {
+                Ok(values) => values,
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
             };
+            hex_string = repository.object_hash(&values);
 
-            match fs::write(path, compressed) {
-                Ok(()) => (),
+            let directory_name = hex_string[0..2].to_string();
+            let mut path = PathBuf::from(&self.path);
+            path.push(".zatsu");
+            path.push("objects");
+            path.push(&directory_name);
+            let exists = match path.try_exists() {
+                Ok(exists) => exists,
                 Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
             };
+            if !exists {
+                match fs::create_dir(&path) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                };
+            }
+
+            path.push(&hex_string);
+            let exists = match path.try_exists() {
+                Ok(exists) => exists,
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+            };
+            if !exists {
+                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+                match encoder.write_all(&values) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                }
+                let compressed = match encoder.finish() {
+                    Ok(compressed) => compressed,
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                };
+
+                match fs::write(path, compressed) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                };
+            }
         }
-    }
 
-    Ok(hex_string)
+        Ok(hex_string)
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    // TODO: Test whether what storing files works.
+
     use super::*;
 
-    use std::env;
+    use tempdir::TempDir;
 
     use crate::InitCommand;
 
@@ -195,24 +205,23 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_path = PathBuf::from("test");
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string_lossy().to_string();
         command.execute().unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string_lossy().to_string();
         command.execute().unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 }
