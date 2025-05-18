@@ -27,6 +27,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::commons;
+use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -43,12 +44,10 @@ const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 5;
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
-    // ADHOC: Use given repository path.
     fn save_revision(
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError>;
     fn revision_numbers(&self) -> Vec<i32>;
     fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
@@ -59,9 +58,9 @@ pub trait Repository {
 }
 
 struct RepositoryBase {
-    // TODO: Store repository path.
     revision_numbers: Vec<i32>,
     version: i32,
+    path: String,
 }
 
 impl Repository for RepositoryBase {
@@ -94,11 +93,8 @@ impl Repository for RepositoryBase {
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError> {
-        // TODO: Use path stored in Repository.
-        let mut revision_path = PathBuf::from(&path);
-        revision_path.push(".zatsu");
+        let mut revision_path = PathBuf::from(&self.path);
         revision_path.push("revisions");
         revision_path.push(format!("{:02x}", revision_number & 0xFF));
         let exists = match revision_path.try_exists() {
@@ -160,10 +156,11 @@ impl Repository for RepositoryBase {
 }
 
 impl RepositoryBase {
-    fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
+    fn from_serializable_v1(repository_v1: &SerializableRepositoryV1, path: &str) -> Self {
         RepositoryBase {
             revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
+            path: path.to_string(),
         }
     }
 }
@@ -185,9 +182,8 @@ impl Repository for RepositoryV1 {
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError> {
-        self.base.save_revision(revision, revision_number, path)
+        self.base.save_revision(revision, revision_number)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
@@ -232,9 +228,8 @@ impl Repository for RepositoryV2 {
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError> {
-        self.base.save_revision(revision, revision_number, path)
+        self.base.save_revision(revision, revision_number)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
@@ -269,6 +264,7 @@ pub mod factory {
         let base = RepositoryBase {
             revision_numbers: Vec::new(),
             version: version,
+            path: ".zatsu".to_string(),
         };
         if version == 1 {
             Box::new(RepositoryV1 { base: base })
@@ -290,8 +286,8 @@ pub mod factory {
             Err(_) => 1,
         };
 
-        let repository_v1 = SerializableRepositoryV1::load(path)?;
-        let mut base = RepositoryBase::from_serializable_v1(&repository_v1);
+        let repository_v1 = SerializableRepositoryV1::load(&path)?;
+        let mut base = RepositoryBase::from_serializable_v1(&repository_v1, &path.as_ref().to_string());
         base.version = version;
         if version == 1 {
             Ok(Box::new(RepositoryV1 { base: base }))
@@ -305,6 +301,7 @@ pub mod factory {
         let base = RepositoryBase {
             revision_numbers: revision_numbers.to_vec(),
             version: version,
+            path: ".zatsu".to_string(),
         };
 
         if version == 1 {
@@ -424,7 +421,7 @@ mod tests {
     fn repository_is_convertable_from_repository_v1() {
         let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let repository_v1 = repository.to_serializable_v1();
-        let repository = RepositoryBase::from_serializable_v1(&repository_v1);
+        let repository = RepositoryBase::from_serializable_v1(&repository_v1, ".zatsu");
         assert_eq!(repository_v1.revision_numbers, repository.revision_numbers);
     }
 

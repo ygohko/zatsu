@@ -50,6 +50,12 @@ impl ToString for OsStr {
     }
 }
 
+impl ToString for Path {
+    fn to_string(&self) -> String {
+        self.to_string_lossy().to_string()
+    }
+}
+
 impl ToString for PathBuf {
     fn to_string(&self) -> String {
         self.to_string_lossy().to_string()
