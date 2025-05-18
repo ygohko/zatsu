@@ -27,6 +27,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::commons;
+use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -59,9 +60,9 @@ pub trait Repository {
 }
 
 struct RepositoryBase {
-    // TODO: Store repository path.
     revision_numbers: Vec<i32>,
     version: i32,
+    path: String,
 }
 
 impl Repository for RepositoryBase {
@@ -160,10 +161,11 @@ impl Repository for RepositoryBase {
 }
 
 impl RepositoryBase {
-    fn from_serializable_v1(repository_v1: &SerializableRepositoryV1) -> Self {
+    fn from_serializable_v1(repository_v1: &SerializableRepositoryV1, path: &str) -> Self {
         RepositoryBase {
             revision_numbers: repository_v1.revision_numbers.clone(),
             version: 1,
+            path: path.to_string(),
         }
     }
 }
@@ -269,6 +271,7 @@ pub mod factory {
         let base = RepositoryBase {
             revision_numbers: Vec::new(),
             version: version,
+            path: ".zatsu".to_string(),
         };
         if version == 1 {
             Box::new(RepositoryV1 { base: base })
@@ -290,8 +293,8 @@ pub mod factory {
             Err(_) => 1,
         };
 
-        let repository_v1 = SerializableRepositoryV1::load(path)?;
-        let mut base = RepositoryBase::from_serializable_v1(&repository_v1);
+        let repository_v1 = SerializableRepositoryV1::load(&path)?;
+        let mut base = RepositoryBase::from_serializable_v1(&repository_v1, &path.as_ref().to_string());
         base.version = version;
         if version == 1 {
             Ok(Box::new(RepositoryV1 { base: base }))
@@ -305,6 +308,7 @@ pub mod factory {
         let base = RepositoryBase {
             revision_numbers: revision_numbers.to_vec(),
             version: version,
+            path: ".zatsu".to_string(),
         };
 
         if version == 1 {
