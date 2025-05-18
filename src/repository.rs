@@ -97,9 +97,6 @@ impl Repository for RepositoryBase {
         let mut revision_path = PathBuf::from(&self.path);
         revision_path.push("revisions");
         revision_path.push(format!("{:02x}", revision_number & 0xFF));
-
-        println!("revision_path: {}", revision_path.to_string());
-        
         let exists = match revision_path.try_exists() {
             Ok(exists) => exists,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),

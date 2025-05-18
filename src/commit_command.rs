@@ -102,8 +102,7 @@ impl Command for CommitCommand {
 
         match repository.save_revision(&revision, revision_number) {
             Ok(_) => (),
-            // Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            Err(error) => return Err(error),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         println!("");
