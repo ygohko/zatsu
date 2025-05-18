@@ -213,6 +213,7 @@ mod tests {
         let mut command = CommitCommand::new();
         command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
+        println!("result: {}", result);
         assert!(result.is_ok());
 
         let temp_dir = TempDir::new("test").unwrap();
@@ -223,6 +224,7 @@ mod tests {
         let mut command = CommitCommand::new();
         command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
+        println!("result: {}", result);
         assert!(result.is_ok());
     }
 }
