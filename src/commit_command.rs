@@ -100,9 +100,10 @@ impl Command for CommitCommand {
             }
         }
 
-        match repository.save_revision(&revision, revision_number) {
+        match repository.save_revision(&revision, revision_number, &self.path) {
             Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+            // Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+            Err(error) => return Err(error),
         };
 
         println!("");
@@ -205,8 +206,7 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        let temp_dir = TempDir::new("test").unwrap();
-        let temp_path = temp_dir.path().to_path_buf();
+        let temp_path = PathBuf::from("test");
         let mut command = InitCommand::new(1);
         command.path = temp_path.to_string_lossy().to_string();
         command.execute().unwrap();
