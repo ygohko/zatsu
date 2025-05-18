@@ -101,9 +101,6 @@ impl Repository for RepositoryBase {
         revision_path.push(".zatsu");
         revision_path.push("revisions");
         revision_path.push(format!("{:02x}", revision_number & 0xFF));
-
-        println!("revision_path: {}", revision_path.display());
-        
         let exists = match revision_path.try_exists() {
             Ok(exists) => exists,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
@@ -115,12 +112,8 @@ impl Repository for RepositoryBase {
             };
         }
         revision_path.push(format!("{}.json", revision_number));
-
-        println!("revision_path: {}", revision_path.display());
-        
         match revision.save(revision_path) {
             Ok(_) => (),
-            // Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
             Err(error) => return Err(error),
         };
         let mut revision_numbers = self.revision_numbers();

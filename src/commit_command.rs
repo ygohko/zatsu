@@ -102,8 +102,7 @@ impl Command for CommitCommand {
 
         match repository.save_revision(&revision, revision_number, &self.path) {
             Ok(_) => (),
-            // Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            Err(error) => return Err(error),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         println!("");
@@ -213,12 +212,7 @@ mod tests {
         let mut command = CommitCommand::new();
         command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
-        if result.is_err() {
-            println!("result: {}", result.unwrap_err());
-            panic!();
-        } else {
-            assert!(result.is_ok());
-        }
+        assert!(result.is_ok());
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -228,11 +222,6 @@ mod tests {
         let mut command = CommitCommand::new();
         command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
-        if result.is_err() {
-            println!("result: {}", result.unwrap_err());
-            panic!();
-        } else {
-            assert!(result.is_ok());
-        }
+        assert!(result.is_ok());
     }
 }
