@@ -190,9 +190,10 @@ impl CommitCommand {
 
 #[cfg(test)]
 mod tests {
+    // TODO: Test whether what storing files works.
+
     use super::*;
 
-    use std::env;
     use tempdir::TempDir;
 
     use crate::InitCommand;
@@ -214,28 +215,14 @@ mod tests {
         let result = command.execute();
         assert!(result.is_ok());
 
-
-        
-        /*
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string_lossy().to_string();
         command.execute().unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string_lossy().to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
-
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
-        command.execute().unwrap();
-        let command = CommitCommand::new();
-        let result = command.execute();
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
-        */
     }
 }
