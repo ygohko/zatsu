@@ -215,6 +215,7 @@ mod tests {
         let result = command.execute();
         if result.is_err() {
             println!("result: {}", result.unwrap_err());
+            panic!();
         } else {
             assert!(result.is_ok());
         }
@@ -229,6 +230,7 @@ mod tests {
         let result = command.execute();
         if result.is_err() {
             println!("result: {}", result.unwrap_err());
+            panic!();
         } else {
             assert!(result.is_ok());
         }
