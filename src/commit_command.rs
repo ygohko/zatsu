@@ -80,7 +80,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match process_file(&PathBuf::from(path.clone()), &repository) {
+                let hash = match self.process_file(&PathBuf::from(path.clone()), &repository) {
                     Ok(hash) => hash,
                     Err(error) => return Err(error),
                 };
@@ -122,8 +122,73 @@ impl CommitCommand {
             path: ".".to_string(),
         }
     }
+
+    fn process_file(
+        &self,
+        path: impl AsRef<Path>,
+        repository: &Box<dyn Repository>,
+    ) -> Result<String, ZatsuError> {
+        let metadata = match fs::metadata(&path) {
+            Ok(metadata) => metadata,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_READING_META_DATA_FAILED,
+                ))
+            }
+        };
+        let mut hex_string = String::new();
+        if metadata.is_file() {
+            let values = match fs::read(path) {
+                Ok(values) => values,
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+            };
+            hex_string = repository.object_hash(&values);
+
+            let directory_name = hex_string[0..2].to_string();
+            let mut path = PathBuf::from(&self.path);
+            path.push(".zatsu");
+            path.push("objects");
+            path.push(&directory_name);
+            let exists = match path.try_exists() {
+                Ok(exists) => exists,
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+            };
+            if !exists {
+                match fs::create_dir(&path) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                };
+            }
+
+            path.push(&hex_string);
+            let exists = match path.try_exists() {
+                Ok(exists) => exists,
+                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+            };
+            if !exists {
+                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+                match encoder.write_all(&values) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                }
+                let compressed = match encoder.finish() {
+                    Ok(compressed) => compressed,
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                };
+
+                match fs::write(path, compressed) {
+                    Ok(()) => (),
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                };
+            }
+        }
+
+        Ok(hex_string)
+    }
 }
 
+/*
 fn process_file(
     path: impl AsRef<Path>,
     repository: &Box<dyn Repository>,
@@ -185,6 +250,7 @@ fn process_file(
 
     Ok(hex_string)
 }
+*/
 
 #[cfg(test)]
 mod tests {
