@@ -29,6 +29,7 @@ use sha2::Sha256;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
@@ -37,6 +38,16 @@ use crate::error::ZatsuError;
 pub const ERROR_ID: ErrorId = "commons";
 
 pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 1;
+
+pub trait ConvertToString {
+    fn to_string(&self) -> String;
+}
+
+impl ConvertToString for PathBuf {
+    fn to_string(&self) -> String {
+        self.to_string_lossy().to_string()
+    }
+}
 
 pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
     let directory_name = hash[0..2].to_string();
