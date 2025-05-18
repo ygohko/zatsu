@@ -428,7 +428,7 @@ mod tests {
     fn repository_is_convertable_from_repository_v1() {
         let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let repository_v1 = repository.to_serializable_v1();
-        let repository = RepositoryBase::from_serializable_v1(&repository_v1);
+        let repository = RepositoryBase::from_serializable_v1(&repository_v1, ".zatsu");
         assert_eq!(repository_v1.revision_numbers, repository.revision_numbers);
     }
 
