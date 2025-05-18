@@ -215,8 +215,9 @@ mod tests {
         let result = command.execute();
         if result.is_err() {
             println!("result: {}", result.unwrap_err());
+        } else {
+            assert!(result.is_ok());
         }
-        // assert!(result.is_ok());
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -228,7 +229,8 @@ mod tests {
         let result = command.execute();
         if result.is_err() {
             println!("result: {}", result.unwrap_err());
+        } else {
+            assert!(result.is_ok());
         }
-        // assert!(result.is_ok());
     }
 }
