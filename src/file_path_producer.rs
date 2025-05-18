@@ -24,6 +24,7 @@ use std::env::consts;
 use std::fs;
 use std::path::Path;
 
+use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -103,7 +104,7 @@ impl FilePathProducer {
                                 ))
                             }
                         };
-                        let path = entry.path().to_string_lossy().to_string();
+                        let path = entry.path().to_string();
                         if metadata.is_file() {
                             let path = path[self.prefix_length..].to_string();
                             self.file_paths.push(path);

@@ -180,7 +180,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 commons::save_object(&decoded, &hash)?;
 
                 // Write new object hash.
-                let mut new_file_path = file_path.to_string_lossy().to_mut().clone();
+                let mut new_file_path = file_path.to_string();
                 new_file_path.push_str(".new");
                 match fs::write(&new_file_path, hash) {
                     Ok(()) => (),
