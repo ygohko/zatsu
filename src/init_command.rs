@@ -38,7 +38,7 @@ const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 3;
 
 pub struct InitCommand {
     version: i32,
-    path: String,
+    pub path: String,
 }
 
 impl Command for InitCommand {

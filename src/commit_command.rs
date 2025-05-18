@@ -188,75 +188,12 @@ impl CommitCommand {
     }
 }
 
-/*
-fn process_file(
-    path: impl AsRef<Path>,
-    repository: &Box<dyn Repository>,
-) -> Result<String, ZatsuError> {
-    let metadata = match fs::metadata(&path) {
-        Ok(metadata) => metadata,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                ERROR_ID,
-                ERROR_CODE_READING_META_DATA_FAILED,
-            ))
-        }
-    };
-    let mut hex_string = String::new();
-    if metadata.is_file() {
-        let values = match fs::read(path) {
-            Ok(values) => values,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
-        };
-        hex_string = repository.object_hash(&values);
-
-        let directory_name = hex_string[0..2].to_string();
-        let path = format!(".zatsu/objects/{}", directory_name).to_string();
-        let a_path = Path::new(&path);
-        let exists = match a_path.try_exists() {
-            Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-        };
-        if !exists {
-            match fs::create_dir(&path) {
-                Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            };
-        }
-
-        let path = format!("{}/{}", &path, hex_string);
-        let a_path = Path::new(&path);
-        let exists = match a_path.try_exists() {
-            Ok(exists) => exists,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-        };
-        if !exists {
-            let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-            match encoder.write_all(&values) {
-                Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            }
-            let compressed = match encoder.finish() {
-                Ok(compressed) => compressed,
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            };
-
-            match fs::write(path, compressed) {
-                Ok(()) => (),
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            };
-        }
-    }
-
-    Ok(hex_string)
-}
-*/
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     use std::env;
+    use tempdir::TempDir;
 
     use crate::InitCommand;
 
@@ -267,6 +204,19 @@ mod tests {
 
     #[test]
     fn is_executable() {
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string_lossy().to_string();
+        command.execute().unwrap();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string_lossy().to_string();
+        let result = command.execute();
+        assert!(result.is_ok());
+
+
+        
+        /*
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
         let command = InitCommand::new(1);
@@ -286,5 +236,6 @@ mod tests {
         assert!(result.is_ok());
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
+        */
     }
 }
