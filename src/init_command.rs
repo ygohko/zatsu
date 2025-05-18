@@ -119,7 +119,9 @@ mod tests {
     use super::*;
 
     use tempdir::TempDir;
-    
+
+    use crate::commons::ToString;
+
     #[test]
     fn is_creatable() {
         let _command = InitCommand::new(1);
@@ -131,7 +133,7 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string_lossy().to_string();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
         let mut repository_path = temp_path.clone();
@@ -142,7 +144,7 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string_lossy().to_string();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
         let mut repository_path = temp_path.clone();
