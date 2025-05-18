@@ -44,12 +44,10 @@ const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 5;
 pub trait Repository {
     fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
-    // ADHOC: Use given repository path.
     fn save_revision(
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError>;
     fn revision_numbers(&self) -> Vec<i32>;
     fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
@@ -95,10 +93,8 @@ impl Repository for RepositoryBase {
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError> {
-        // TODO: Use path stored in Repository.
-        let mut revision_path = PathBuf::from(&path);
+        let mut revision_path = PathBuf::from(&self.path);
         revision_path.push(".zatsu");
         revision_path.push("revisions");
         revision_path.push(format!("{:02x}", revision_number & 0xFF));
@@ -187,9 +183,8 @@ impl Repository for RepositoryV1 {
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError> {
-        self.base.save_revision(revision, revision_number, path)
+        self.base.save_revision(revision, revision_number)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
@@ -234,9 +229,8 @@ impl Repository for RepositoryV2 {
         &mut self,
         revision: &Revision,
         revision_number: i32,
-        path: &str,
     ) -> Result<(), ZatsuError> {
-        self.base.save_revision(revision, revision_number, path)
+        self.base.save_revision(revision, revision_number)
     }
 
     fn revision_numbers(&self) -> Vec<i32> {
