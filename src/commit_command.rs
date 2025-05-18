@@ -197,6 +197,7 @@ mod tests {
     use tempdir::TempDir;
 
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_creatable() {
@@ -208,20 +209,20 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string_lossy().to_string();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string_lossy().to_string();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string_lossy().to_string();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string_lossy().to_string();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
     }

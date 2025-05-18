@@ -26,6 +26,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use crate::commons;
+use crate::commons::ToString;
 use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
@@ -154,7 +155,7 @@ fn copy_objects() -> Result<(), ZatsuError> {
             if result.is_ok() {
                 let entry = result.unwrap();
                 let file_path = entry.path();
-                println!("Copying: {}", file_path.to_string_lossy());
+                println!("Copying: {}", file_path.to_string());
                 let values = match fs::read(file_path.clone()) {
                     Ok(values) => values,
                     Err(_) => {
