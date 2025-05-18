@@ -39,11 +39,11 @@ pub const ERROR_ID: ErrorId = "commons";
 
 pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 1;
 
-pub trait ConvertToString {
+pub trait ToString {
     fn to_string(&self) -> String;
 }
 
-impl ConvertToString for PathBuf {
+impl ToString for PathBuf {
     fn to_string(&self) -> String {
         self.to_string_lossy().to_string()
     }

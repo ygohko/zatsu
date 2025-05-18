@@ -205,7 +205,8 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        let temp_path = PathBuf::from("test");
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
         command.path = temp_path.to_string_lossy().to_string();
         command.execute().unwrap();
