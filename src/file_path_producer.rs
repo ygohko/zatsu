@@ -72,7 +72,7 @@ impl FilePathProducer {
             let mut scan = true;
             let option = Path::new(&directory_path).file_name();
             if option.is_some() {
-                let file_name = option.unwrap().to_string_lossy().to_string();
+                let file_name = option.unwrap().to_string();
                 if file_name == ".zatsu".to_string()
                     || file_name == ".jj".to_string()
                     || file_name == ".git".to_string()

@@ -20,6 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use std::ffi::OsStr;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use hex_string::HexString;
@@ -41,6 +42,12 @@ pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 1;
 
 pub trait ToString {
     fn to_string(&self) -> String;
+}
+
+impl ToString for OsStr {
+    fn to_string(&self) -> String {
+        self.to_string_lossy().to_string()
+    }
 }
 
 impl ToString for PathBuf {

@@ -24,6 +24,7 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -155,7 +156,7 @@ fn remove_unused_revisions(
 
                 let option = path.file_stem();
                 if option.is_some() {
-                    let file_stem = option.unwrap().to_string_lossy();
+                    let file_stem = option.unwrap().to_string();
                     println!("Checking: revision {}", file_stem);
 
                     let result = file_stem.parse();
@@ -233,7 +234,7 @@ fn remove_unused_objects(
                 let path = entry.path();
                 let option = path.file_name();
                 if option.is_some() {
-                    let file_name = option.unwrap().to_string_lossy();
+                    let file_name = option.unwrap().to_string();
                     if !file_name.ends_with(".mark") {
                         let hash = file_name.clone();
                         println!("Checking: object {}", hash);
@@ -280,7 +281,7 @@ fn remove_unused_objects(
                 let path = entry.path();
                 let option = path.file_name();
                 if option.is_some() {
-                    let file_name = option.unwrap().to_string_lossy();
+                    let file_name = option.unwrap().to_string();
                     if file_name.ends_with(".mark") {
                         let directory_name = file_name[0..2].to_string();
                         let path = format!(".zatsu/objects/{}/{}", directory_name, file_name);
