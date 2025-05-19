@@ -208,8 +208,10 @@ mod tests {
 
     use std::env;
     use std::fs;
+    use tempdir::TempDir;
 
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_creatable() {
@@ -218,24 +220,24 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = LogCommand::new();
+        let mut command = LogCommand::new();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = LogCommand::new();
+        let mut command = LogCommand::new();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 }
