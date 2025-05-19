@@ -72,11 +72,11 @@ impl Repository for RepositoryBase {
     }
 
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
-        let revision = match Revision::load(format!(
-            ".zatsu/revisions/{:02x}/{}.json",
-            revision_number & 0xFF,
-            revision_number
-        )) {
+        let mut path = PathBuf::from(&self.path);
+        path.push("revisions");
+        path.push(format!("{:02x}", revision_number & 0xFF));
+        path.push(format!("{}.json", revision_number));
+        let revision = match Revision::load(&path) {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
