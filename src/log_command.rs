@@ -24,6 +24,7 @@ use chrono::DateTime;
 use chrono::Local;
 use chrono::Utc;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
@@ -37,11 +38,15 @@ pub const ERROR_ID: ErrorId = "log_command";
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 1;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
 
-pub struct LogCommand {}
+pub struct LogCommand {
+    path: String,
+}
 
 impl Command for LogCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -127,7 +132,9 @@ impl Command for LogCommand {
 
 impl LogCommand {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            path: ".".to_string(),
+        }
     }
 }
 
@@ -199,10 +206,10 @@ fn update_changes(changes: &mut Vec<String>, entries: &Vec<Entry>, previous_entr
 mod tests {
     use super::*;
 
-    use std::env;
-    use std::fs;
+    use tempdir::TempDir;
 
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_creatable() {
@@ -211,24 +218,24 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = LogCommand::new();
+        let mut command = LogCommand::new();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = LogCommand::new();
+        let mut command = LogCommand::new();
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 }
