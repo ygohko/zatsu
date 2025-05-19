@@ -206,8 +206,6 @@ fn update_changes(changes: &mut Vec<String>, entries: &Vec<Entry>, previous_entr
 mod tests {
     use super::*;
 
-    use std::env;
-    use std::fs;
     use tempdir::TempDir;
 
     use crate::InitCommand;
