@@ -37,11 +37,15 @@ pub const ERROR_ID: ErrorId = "log_command";
 const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 1;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
 
-pub struct LogCommand {}
+pub struct LogCommand {
+    path: String,
+}
 
 impl Command for LogCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -127,7 +131,9 @@ impl Command for LogCommand {
 
 impl LogCommand {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            path: ".".to_string(),
+        }
     }
 }
 
