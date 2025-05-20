@@ -45,11 +45,14 @@ const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 7;
 pub struct GetCommand {
     revision_number: i32,
     getting_path: String,
+    path: String,
 }
 
 impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -111,6 +114,7 @@ impl GetCommand {
         Self {
             revision_number,
             getting_path: path.to_string(),
+            path: ".".to_string(),
         }
     }
 
