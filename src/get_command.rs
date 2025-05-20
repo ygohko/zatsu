@@ -44,7 +44,7 @@ const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 7;
 
 pub struct GetCommand {
     revision_number: i32,
-    path: String,
+    getting_path: String,
 }
 
 impl Command for GetCommand {
@@ -81,14 +81,14 @@ impl Command for GetCommand {
         let mut file_found = false;
         let mut directory_found = false;
         for entry in &revision.entries {
-            if entry.path == *self.path {
+            if entry.path == *self.getting_path {
                 file_found = true;
                 hash = entry.hash.clone();
             }
 
             if entry.path.contains("/") {
-                if let Some(index) = entry.path.find(&self.path) {
-                    if index == 0 && self.path.len() <= entry.path.len() - 2 {
+                if let Some(index) = entry.path.find(&self.getting_path) {
+                    if index == 0 && self.getting_path.len() <= entry.path.len() - 2 {
                         directory_found = true;
                     }
                 }
@@ -110,12 +110,12 @@ impl GetCommand {
     pub fn new(revision_number: i32, path: &str) -> Self {
         Self {
             revision_number,
-            path: path.to_string(),
+            getting_path: path.to_string(),
         }
     }
 
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
-        println!("Processing: {}", self.path);
+        println!("Processing: {}", self.getting_path);
 
         let directory_name = hash[0..2].to_string();
         let values = match fs::read(&PathBuf::from(format!(
@@ -134,7 +134,7 @@ impl GetCommand {
             Ok(decoded) => decoded,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
-        let split: Vec<_> = self.path.split("/").collect();
+        let split: Vec<_> = self.getting_path.split("/").collect();
         let mut file_name = "out.dat".to_string();
         if split.len() >= 1 {
             let original_file_name = split[split.len() - 1].to_string();
@@ -154,12 +154,12 @@ impl GetCommand {
     fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
         // Make root directory.
         let root_path: String;
-        let split: Vec<_> = self.path.split("/").collect();
+        let split: Vec<_> = self.getting_path.split("/").collect();
         let count = split.len();
         if count >= 1 {
             root_path = format!("{}-r{}", split[count - 1], self.revision_number);
         } else {
-            root_path = format!("{}-r{}", self.path, self.revision_number);
+            root_path = format!("{}-r{}", self.getting_path, self.revision_number);
         }
         match fs::create_dir(&root_path) {
             Ok(_) => (),
@@ -173,7 +173,7 @@ impl GetCommand {
 
         let mut hash: String;
         for entry in &revision.entries {
-            if let Some(_) = entry.path.find(&self.path) {
+            if let Some(_) = entry.path.find(&self.getting_path) {
                 println!("Processing: {}", entry.path);
 
                 hash = entry.hash.clone();
