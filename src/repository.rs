@@ -115,7 +115,9 @@ impl Repository for RepositoryBase {
         let mut revision_numbers = self.revision_numbers();
         revision_numbers.push(revision_number);
         self.set_revision_numbers(&revision_numbers);
-        match self.save(&Path::new(".zatsu")) {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        match self.save(&repository_path) {
             Ok(_) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -323,7 +325,11 @@ impl SerializableRepositoryV1 {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),
         };
-        let json_path = path.as_ref().join("repository.json");
+
+        let mut json_path = PathBuf::from(path.as_ref());
+        json_path.push("repository.json");
+        println!("json_path: {}", json_path.to_string());
+                
         let _ = match fs::write(json_path, serialized) {
             Ok(result) => result,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),

@@ -52,6 +52,9 @@ impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
+
+        println!("repository_path: {}", repository_path.to_string_lossy());
+        
         let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
@@ -62,8 +65,14 @@ impl Command for GetCommand {
                 ));
             }
         };
+
+        println!("len: {}", repository.revision_numbers().len());
+        
         let mut found = false;
         for a_revision_number in repository.revision_numbers() {
+
+            println!("a_revision_number: {}", a_revision_number);
+            
             if a_revision_number == self.revision_number {
                 found = true;
             }
@@ -247,9 +256,11 @@ mod tests {
 
     use std::env;
     use std::fs;
+    use tempdir::TempDir;
 
     use crate::CommitCommand;
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_creatable() {
@@ -258,20 +269,23 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        // let temp_path = PathBuf::from("tmp");
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         fs::write("a.txt", "Hello, World!").unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = GetCommand::new(1, "a.txt");
+        let mut command = GetCommand::new(1, "a.txt");
+        command.path = temp_path.to_string();
         let result = command.execute();
-        assert!(result.is_ok());
+        result.unwrap();
+        // assert!(result.is_ok());
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
 
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();

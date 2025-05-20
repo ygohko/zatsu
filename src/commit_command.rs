@@ -47,7 +47,7 @@ const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 
 pub struct CommitCommand {
-    path: String,
+    pub path: String,
 }
 
 impl Command for CommitCommand {
