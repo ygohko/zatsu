@@ -134,6 +134,8 @@ impl GetCommand {
     }
 
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
+        // TODO: Save file in path directory.
+
         println!("Processing: {}", self.getting_path);
 
         let directory_name = hash[0..2].to_string();
@@ -173,6 +175,8 @@ impl GetCommand {
     }
 
     fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
+        // TODO: Save directory in path directory.
+
         // Make root directory.
         let root_path: String;
         let split: Vec<_> = self.getting_path.split("/").collect();
