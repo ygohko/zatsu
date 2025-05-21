@@ -129,6 +129,8 @@ impl CommitCommand {
         path: impl AsRef<Path>,
         repository: &Box<dyn Repository>,
     ) -> Result<String, ZatsuError> {
+        println!("path: {}", path.to_string_lossy());
+
         let metadata = match fs::metadata(&path) {
             Ok(metadata) => metadata,
             Err(_) => {
