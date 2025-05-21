@@ -137,10 +137,12 @@ impl GetCommand {
         println!("Processing: {}", self.getting_path);
 
         let directory_name = hash[0..2].to_string();
-        let values = match fs::read(&PathBuf::from(format!(
-            ".zatsu/objects/{}/{}",
-            directory_name, hash
-        ))) {
+        let mut path = PathBuf::from(&self.path);
+        path.push(".zatsu");
+        path.push("objects");
+        path.push(&directory_name);
+        path.push(&hash);
+        let values = match fs::read(&path) {
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
@@ -288,8 +290,7 @@ mod tests {
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
-        let result = command.execute();
-        assert!(result.is_ok());
+        let result = command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
 
@@ -306,8 +307,7 @@ mod tests {
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
-        let result = command.execute();
-        assert!(result.is_ok());
+        let result = command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
     }
