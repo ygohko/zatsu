@@ -52,9 +52,6 @@ impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-
-        println!("repository_path: {}", repository_path.to_string_lossy());
-        
         let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
@@ -66,13 +63,8 @@ impl Command for GetCommand {
             }
         };
 
-        println!("len: {}", repository.revision_numbers().len());
-        
         let mut found = false;
         for a_revision_number in repository.revision_numbers() {
-
-            println!("a_revision_number: {}", a_revision_number);
-            
             if a_revision_number == self.revision_number {
                 found = true;
             }
@@ -92,13 +84,7 @@ impl Command for GetCommand {
         let mut hash = "".to_string();
         let mut file_found = false;
         let mut directory_found = false;
-
-        println!("revision.entries.len(): {}", revision.entries.len());
-
         for entry in &revision.entries {
-
-            println!("entry.path: {}, self.getting_path: {}", entry.path, self.getting_path);
-
             if entry.path == *self.getting_path {
                 file_found = true;
                 hash = entry.hash.clone();
@@ -135,8 +121,6 @@ impl GetCommand {
 
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
         // TODO: Save file in path directory.
-
-        println!("Processing: {}", self.getting_path);
 
         let directory_name = hash[0..2].to_string();
         let mut path = PathBuf::from(&self.path);

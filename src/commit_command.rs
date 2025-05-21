@@ -102,8 +102,7 @@ impl Command for CommitCommand {
 
         match repository.save_revision(&revision, revision_number) {
             Ok(_) => (),
-            // Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-            Err(error) => return Err(error),
+            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         println!("");
@@ -153,9 +152,6 @@ impl CommitCommand {
             path.push(".zatsu");
             path.push("objects");
             path.push(&directory_name);
-
-            println!("path: {}", path.to_string_lossy());
-            
             let exists = match path.try_exists() {
                 Ok(exists) => exists,
                 Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
