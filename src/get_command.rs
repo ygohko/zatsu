@@ -62,7 +62,6 @@ impl Command for GetCommand {
                 ));
             }
         };
-
         let mut found = false;
         for a_revision_number in repository.revision_numbers() {
             if a_revision_number == self.revision_number {
