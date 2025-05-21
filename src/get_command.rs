@@ -92,7 +92,13 @@ impl Command for GetCommand {
         let mut hash = "".to_string();
         let mut file_found = false;
         let mut directory_found = false;
+
+        println!("revision.entries.len(): {}", revision.entries.len());
+
         for entry in &revision.entries {
+
+            println!("entry.path: {}, self.getting_path: {}", entry.path, self.getting_path);
+
             if entry.path == *self.getting_path {
                 file_found = true;
                 hash = entry.hash.clone();
