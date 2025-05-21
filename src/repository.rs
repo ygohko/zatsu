@@ -115,9 +115,7 @@ impl Repository for RepositoryBase {
         let mut revision_numbers = self.revision_numbers();
         revision_numbers.push(revision_number);
         self.set_revision_numbers(&revision_numbers);
-        let mut repository_path = PathBuf::from(&self.path);
-        // repository_path.push(".zatsu");
-        match self.save(&repository_path) {
+        match self.save(&self.path) {
             Ok(_) => (),
             // Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
             Err(error) => return Err(error),

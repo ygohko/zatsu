@@ -277,7 +277,6 @@ mod tests {
     fn is_executable() {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        // let temp_path = PathBuf::from("tmp");
         let mut command = InitCommand::new(1);
         command.path = temp_path.to_string();
         command.execute().unwrap();
@@ -290,24 +289,26 @@ mod tests {
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
         let result = command.execute();
-        result.unwrap();
-        // assert!(result.is_ok());
+        assert!(result.is_ok());
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        fs::write("a.txt", "Hello, World!").unwrap();
-        let command = CommitCommand::new();
+        let mut path = temp_path.clone();
+        path.push("a.txt");
+        fs::write(&path, "Hello, World!").unwrap();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = GetCommand::new(1, "a.txt");
+        let mut command = GetCommand::new(1, "a.txt");
+        command.path = temp_path.to_string();
         let result = command.execute();
         assert!(result.is_ok());
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 }
