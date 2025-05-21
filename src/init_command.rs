@@ -84,7 +84,9 @@ impl Command for InitCommand {
                 ))
             }
         };
-        match fs::create_dir_all(".zatsu/objects") {
+        let mut path = repository_path.clone();
+        path.push("objects");
+        match fs::create_dir_all(&path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(

@@ -281,7 +281,9 @@ mod tests {
         let mut command = InitCommand::new(1);
         command.path = temp_path.to_string();
         command.execute().unwrap();
-        fs::write("a.txt", "Hello, World!").unwrap();
+        let mut path = temp_path.clone();
+        path.push("a.txt");
+        fs::write(&path, "Hello, World!").unwrap();
         let mut command = CommitCommand::new();
         command.path = temp_path.to_string();
         command.execute().unwrap();
