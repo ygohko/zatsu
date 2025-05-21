@@ -129,9 +129,9 @@ impl CommitCommand {
         path: impl AsRef<Path>,
         repository: &Box<dyn Repository>,
     ) -> Result<String, ZatsuError> {
-        println!("path: {}", path.to_string_lossy());
-
-        let metadata = match fs::metadata(&path) {
+        let mut file_path = PathBuf::from(&self.path);
+        file_path.push(&path);
+        let metadata = match fs::metadata(&file_path) {
             Ok(metadata) => metadata,
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -142,7 +142,7 @@ impl CommitCommand {
         };
         let mut hex_string = String::new();
         if metadata.is_file() {
-            let values = match fs::read(path) {
+            let values = match fs::read(&file_path) {
                 Ok(values) => values,
                 Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
             };
