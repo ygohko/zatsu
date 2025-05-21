@@ -44,12 +44,15 @@ const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 7;
 
 pub struct GetCommand {
     revision_number: i32,
+    getting_path: String,
     path: String,
 }
 
 impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -81,14 +84,14 @@ impl Command for GetCommand {
         let mut file_found = false;
         let mut directory_found = false;
         for entry in &revision.entries {
-            if entry.path == *self.path {
+            if entry.path == *self.getting_path {
                 file_found = true;
                 hash = entry.hash.clone();
             }
 
             if entry.path.contains("/") {
-                if let Some(index) = entry.path.find(&self.path) {
-                    if index == 0 && self.path.len() <= entry.path.len() - 2 {
+                if let Some(index) = entry.path.find(&self.getting_path) {
+                    if index == 0 && self.getting_path.len() <= entry.path.len() - 2 {
                         directory_found = true;
                     }
                 }
@@ -110,18 +113,21 @@ impl GetCommand {
     pub fn new(revision_number: i32, path: &str) -> Self {
         Self {
             revision_number,
-            path: path.to_string(),
+            getting_path: path.to_string(),
+            path: ".".to_string(),
         }
     }
 
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
-        println!("Processing: {}", self.path);
+        // TODO: Save file in path directory.
 
         let directory_name = hash[0..2].to_string();
-        let values = match fs::read(&PathBuf::from(format!(
-            ".zatsu/objects/{}/{}",
-            directory_name, hash
-        ))) {
+        let mut path = PathBuf::from(&self.path);
+        path.push(".zatsu");
+        path.push("objects");
+        path.push(&directory_name);
+        path.push(&hash);
+        let values = match fs::read(&path) {
             Ok(values) => values,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
@@ -134,7 +140,7 @@ impl GetCommand {
             Ok(decoded) => decoded,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
-        let split: Vec<_> = self.path.split("/").collect();
+        let split: Vec<_> = self.getting_path.split("/").collect();
         let mut file_name = "out.dat".to_string();
         if split.len() >= 1 {
             let original_file_name = split[split.len() - 1].to_string();
@@ -152,14 +158,16 @@ impl GetCommand {
     }
 
     fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
+        // TODO: Save directory in path directory.
+
         // Make root directory.
         let root_path: String;
-        let split: Vec<_> = self.path.split("/").collect();
+        let split: Vec<_> = self.getting_path.split("/").collect();
         let count = split.len();
         if count >= 1 {
             root_path = format!("{}-r{}", split[count - 1], self.revision_number);
         } else {
-            root_path = format!("{}-r{}", self.path, self.revision_number);
+            root_path = format!("{}-r{}", self.getting_path, self.revision_number);
         }
         match fs::create_dir(&root_path) {
             Ok(_) => (),
@@ -173,7 +181,7 @@ impl GetCommand {
 
         let mut hash: String;
         for entry in &revision.entries {
-            if let Some(_) = entry.path.find(&self.path) {
+            if let Some(_) = entry.path.find(&self.getting_path) {
                 println!("Processing: {}", entry.path);
 
                 hash = entry.hash.clone();
@@ -243,9 +251,11 @@ mod tests {
 
     use std::env;
     use std::fs;
+    use tempdir::TempDir;
 
     use crate::CommitCommand;
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_creatable() {
@@ -254,34 +264,38 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        fs::write("a.txt", "Hello, World!").unwrap();
-        let command = CommitCommand::new();
+        let mut path = temp_path.clone();
+        path.push("a.txt");
+        fs::write(&path, "Hello, World!").unwrap();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = GetCommand::new(1, "a.txt");
-        let result = command.execute();
-        assert!(result.is_ok());
+        let mut command = GetCommand::new(1, "a.txt");
+        command.path = temp_path.to_string();
+        let result = command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        fs::write("a.txt", "Hello, World!").unwrap();
-        let command = CommitCommand::new();
+        let mut path = temp_path.clone();
+        path.push("a.txt");
+        fs::write(&path, "Hello, World!").unwrap();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = GetCommand::new(1, "a.txt");
-        let result = command.execute();
-        assert!(result.is_ok());
+        let mut command = GetCommand::new(1, "a.txt");
+        command.path = temp_path.to_string();
+        let result = command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 }
