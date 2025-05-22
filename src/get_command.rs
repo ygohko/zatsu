@@ -276,9 +276,10 @@ mod tests {
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
-        let result = command.execute().unwrap();
+        command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
+        // TODO: Remove this if it is not needed.
         if Path::new("a-r1.txt").exists() {
             fs::remove_file("a-r1.txt").unwrap();
         }
@@ -296,9 +297,10 @@ mod tests {
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
-        let result = command.execute().unwrap();
+        command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
+        // TODO: Remove this if it is not needed.
         if  Path::new("a-r1.txt").exists() {
             fs::remove_file("a-r1.txt").unwrap();
         }
