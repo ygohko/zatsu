@@ -149,7 +149,9 @@ impl GetCommand {
                 file_name = format!("{}-r{}.{}", split[0], self.revision_number, split[1]);
             }
         }
-        match fs::write(&PathBuf::from(file_name), decoded) {
+        let mut path = PathBuf::from(&self.path);
+        path.push(&file_name);
+        match fs::write(&PathBuf::from(&path), decoded) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -276,14 +278,10 @@ mod tests {
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
         command.execute().unwrap();
-        let string = fs::read_to_string("a-r1.txt").unwrap();
+        let mut path = temp_path.clone();
+        path.push("a-r1.txt");
+        let string = fs::read_to_string(&path).unwrap();
         assert_eq!("Hello, World!", string);
-        // TODO: Remove this if it is not needed.
-        if let Ok(exists) = fs::exists("a-r1.txt") {
-            if exists {
-                fs::remove_file("a-r1.txt").unwrap();
-            }
-        }
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -299,13 +297,9 @@ mod tests {
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
         command.execute().unwrap();
-        let string = fs::read_to_string("a-r1.txt").unwrap();
+        let mut path = temp_path.clone();
+        path.push("a-r1.txt");
+        let string = fs::read_to_string(&path).unwrap();
         assert_eq!("Hello, World!", string);
-        // TODO: Remove this if it is not needed.
-        if let Ok(exists) = fs::exists("a-r1.txt") {
-            if exists {
-                fs::remove_file("a-r1.txt").unwrap();
-            }
-        }
     }
 }
