@@ -249,8 +249,7 @@ impl GetCommand {
 mod tests {
     use super::*;
 
-    use std::env;
-    use std::fs;
+    use std::path::Path;
     use tempdir::TempDir;
 
     use crate::CommitCommand;
@@ -277,9 +276,13 @@ mod tests {
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
-        let result = command.execute().unwrap();
+        command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
+        // TODO: Remove this if it is not needed.
+        if Path::new("a-r1.txt").exists() {
+            fs::remove_file("a-r1.txt").unwrap();
+        }
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -294,8 +297,12 @@ mod tests {
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
-        let result = command.execute().unwrap();
+        command.execute().unwrap();
         let string = fs::read_to_string("a-r1.txt").unwrap();
         assert_eq!("Hello, World!", string);
+        // TODO: Remove this if it is not needed.
+        if  Path::new("a-r1.txt").exists() {
+            fs::remove_file("a-r1.txt").unwrap();
+        }
     }
 }
