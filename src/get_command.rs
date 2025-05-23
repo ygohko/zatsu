@@ -158,8 +158,6 @@ impl GetCommand {
     }
 
     fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
-        // TODO: Save directory in path directory.
-
         // Make root directory.
         let root_path: String;
         let split: Vec<_> = self.getting_path.split("/").collect();
