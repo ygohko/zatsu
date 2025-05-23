@@ -119,8 +119,6 @@ impl GetCommand {
     }
 
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
-        // TODO: Save file in path directory.
-
         let directory_name = hash[0..2].to_string();
         let mut path = PathBuf::from(&self.path);
         path.push(".zatsu");
@@ -167,9 +165,9 @@ impl GetCommand {
         let split: Vec<_> = self.getting_path.split("/").collect();
         let count = split.len();
         if count >= 1 {
-            root_path = format!("{}-r{}", split[count - 1], self.revision_number);
+            root_path = format!("{}/{}-r{}", self.path, split[count - 1], self.revision_number);
         } else {
-            root_path = format!("{}-r{}", self.getting_path, self.revision_number);
+            root_path = format!("{}/{}-r{}", self.path, self.getting_path, self.revision_number);
         }
         match fs::create_dir(&root_path) {
             Ok(_) => (),
