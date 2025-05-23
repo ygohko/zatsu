@@ -119,8 +119,6 @@ impl GetCommand {
     }
 
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
-        // TODO: Save file in path directory.
-
         let directory_name = hash[0..2].to_string();
         let mut path = PathBuf::from(&self.path);
         path.push(".zatsu");
@@ -149,7 +147,9 @@ impl GetCommand {
                 file_name = format!("{}-r{}.{}", split[0], self.revision_number, split[1]);
             }
         }
-        match fs::write(&PathBuf::from(file_name), decoded) {
+        let mut path = PathBuf::from(&self.path);
+        path.push(&file_name);
+        match fs::write(&PathBuf::from(&path), decoded) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -158,16 +158,14 @@ impl GetCommand {
     }
 
     fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
-        // TODO: Save directory in path directory.
-
         // Make root directory.
         let root_path: String;
         let split: Vec<_> = self.getting_path.split("/").collect();
         let count = split.len();
         if count >= 1 {
-            root_path = format!("{}-r{}", split[count - 1], self.revision_number);
+            root_path = format!("{}/{}-r{}", self.path, split[count - 1], self.revision_number);
         } else {
-            root_path = format!("{}-r{}", self.getting_path, self.revision_number);
+            root_path = format!("{}/{}-r{}", self.path, self.getting_path, self.revision_number);
         }
         match fs::create_dir(&root_path) {
             Ok(_) => (),
@@ -276,14 +274,10 @@ mod tests {
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
         command.execute().unwrap();
-        let string = fs::read_to_string("a-r1.txt").unwrap();
+        let mut path = temp_path.clone();
+        path.push("a-r1.txt");
+        let string = fs::read_to_string(&path).unwrap();
         assert_eq!("Hello, World!", string);
-        // TODO: Remove this if it is not needed.
-        if let Ok(exists) = fs::exists("a-r1.txt") {
-            if exists {
-                fs::remove_file("a-r1.txt").unwrap();
-            }
-        }
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -299,13 +293,9 @@ mod tests {
         let mut command = GetCommand::new(1, "a.txt");
         command.path = temp_path.to_string();
         command.execute().unwrap();
-        let string = fs::read_to_string("a-r1.txt").unwrap();
+        let mut path = temp_path.clone();
+        path.push("a-r1.txt");
+        let string = fs::read_to_string(&path).unwrap();
         assert_eq!("Hello, World!", string);
-        // TODO: Remove this if it is not needed.
-        if let Ok(exists) = fs::exists("a-r1.txt") {
-            if exists {
-                fs::remove_file("a-r1.txt").unwrap();
-            }
-        }
     }
 }
