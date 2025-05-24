@@ -321,7 +321,9 @@ mod tests {
 
     use std::env;
     use std::fs;
+    use tempdir::TempDir;
 
+    use crate::commons::ToString;
     use crate::CommitCommand;
     use crate::InitCommand;
 
@@ -332,20 +334,21 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         fs::write("a.txt", "Hello, World!").unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = ForgetCommand::new(1);
-        let result = command.execute();
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
+        let mut command = ForgetCommand::new(1);
+        command.path = temp_path.to_string();
+        command.execute().unwrap();
 
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
