@@ -121,19 +121,22 @@ mod tests {
 
     #[test]
     fn is_savable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        fs::create_dir_all(".zatsu/revisions/01").unwrap();
+        let mut path = temp_path.clone();
+        path.push(".zatsu");
+        path.push("revisions");
+        path.push("01");
+        fs::create_dir_all(&path).unwrap();
         let revision = Revision {
             commited: 123,
             entries: vec![],
             description: "".to_string(),
         };
-        let result = revision.save(".zatsu/revisions/01/1.json");
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
+        path.push("1.json");
+        revision.save(&path).unwrap();
     }
 }
