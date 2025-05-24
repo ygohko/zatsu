@@ -41,11 +41,14 @@ const ERROR_CODE_REMOVING_FILE_FAILED: ErrorCode = 4;
 
 pub struct ForgetCommand {
     revision_count: i32,
+    path: String,
 }
 
 impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let mut repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -64,8 +67,8 @@ impl Command for ForgetCommand {
         let index: usize = removed_count as usize;
         revision_numbers = revision_numbers.drain(index..).collect();
         repository.set_revision_numbers(&revision_numbers);
-        repository.save(&Path::new(".zatsu"))?;
-        process_garbage_collection()?;
+        repository.save(&repository_path)?;
+        self.process_garbage_collection()?;
 
         Ok(())
     }
@@ -73,64 +76,73 @@ impl Command for ForgetCommand {
 
 impl ForgetCommand {
     pub fn new(revision_count: i32) -> Self {
-        Self { revision_count }
-    }
-}
-
-fn process_garbage_collection() -> Result<(), ZatsuError> {
-    let repository = match factory::load(".zatsu") {
-        Ok(repository) => repository,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                ERROR_ID,
-                ERROR_CODE_LOADING_REPOSITORY_FAILED,
-            ))
-        }
-    };
-
-    let read_dir = match fs::read_dir(".zatsu/revisions") {
-        Ok(read_dir) => read_dir,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                ERROR_ID,
-                ERROR_CODE_READING_DIRECTORY_FAILED,
-            ))
-        }
-    };
-    let mut revision_paths: Vec<PathBuf> = Vec::new();
-    for result in read_dir {
-        if result.is_ok() {
-            let entry = result.unwrap();
-            revision_paths.push(entry.path());
+        Self {
+            revision_count,
+            path: ".".to_string(),
         }
     }
-    let removed_revision_count = remove_unused_revisions(&repository, &revision_paths)?;
 
-    let read_dir = match fs::read_dir(".zatsu/objects") {
-        Ok(read_dir) => read_dir,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                ERROR_ID,
-                ERROR_CODE_READING_DIRECTORY_FAILED,
-            ))
+    fn process_garbage_collection(&self) -> Result<(), ZatsuError> {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let repository = match factory::load(&repository_path) {
+            Ok(repository) => repository,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
+                ))
+            }
+        };
+
+        let mut revisions_path = repository_path.clone();
+        revisions_path.push("revisions");
+        let read_dir = match fs::read_dir(&revisions_path) {
+            Ok(read_dir) => read_dir,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_READING_DIRECTORY_FAILED,
+                ))
+            }
+        };
+        let mut revision_paths: Vec<PathBuf> = Vec::new();
+        for result in read_dir {
+            if result.is_ok() {
+                let entry = result.unwrap();
+                revision_paths.push(entry.path());
+            }
         }
-    };
-    let mut object_paths: Vec<PathBuf> = Vec::new();
-    for result in read_dir {
-        if result.is_ok() {
-            let entry = result.unwrap();
-            object_paths.push(entry.path());
+        let removed_revision_count = remove_unused_revisions(&repository, &revision_paths)?;
+
+        let mut objects_path = repository_path.clone();
+        objects_path.push("objects");
+        let read_dir = match fs::read_dir(&objects_path) {
+            Ok(read_dir) => read_dir,
+            Err(_) => {
+                return Err(ZatsuError::new(
+                    ERROR_ID,
+                    ERROR_CODE_READING_DIRECTORY_FAILED,
+                ))
+            }
+        };
+        let mut object_paths: Vec<PathBuf> = Vec::new();
+        for result in read_dir {
+            if result.is_ok() {
+                let entry = result.unwrap();
+                object_paths.push(entry.path());
+            }
         }
+        let removed_object_count = remove_unused_objects(&repository, &object_paths)?;
+
+        println!("");
+        println!(
+            "{} revision(s) and {} object(s) removed.",
+            removed_revision_count, removed_object_count
+        );
+
+        Ok(())
     }
-    let removed_object_count = remove_unused_objects(&repository, &object_paths)?;
-
-    println!("");
-    println!(
-        "{} revision(s) and {} object(s) removed.",
-        removed_revision_count, removed_object_count
-    );
-
-    Ok(())
 }
 
 fn remove_unused_revisions(
@@ -204,7 +216,7 @@ fn remove_unused_objects(
         for entry in revision.entries {
             let hash = entry.hash;
             let directory_name = hash[0..2].to_string();
-            let mut path = format!(".zatsu/objects/{}/{}", directory_name, hash);
+            let mut path = format!("{}/objects/{}/{}", repository.path(), directory_name, hash);
             let exists = Path::new(&path).exists();
             if exists {
                 path += ".mark";
@@ -240,11 +252,11 @@ fn remove_unused_objects(
                         println!("Checking: object {}", hash);
                         let directory_name = hash[0..2].to_string();
                         let mark_file_path =
-                            format!(".zatsu/objects/{}/{}.mark", directory_name, hash);
+                            format!("{}/objects/{}/{}.mark", repository.path(), directory_name, hash);
                         let marked = Path::new(&mark_file_path).exists();
                         if !marked {
                             println!("Removing: object {}", hash);
-                            let path = format!(".zatsu/objects/{}/{}", directory_name, hash);
+                            let path = format!("{}/objects/{}/{}", repository.path(), directory_name, hash);
                             match fs::remove_file(&path) {
                                 Ok(_) => (),
                                 Err(_) => {
@@ -284,7 +296,7 @@ fn remove_unused_objects(
                     let file_name = option.unwrap().to_string();
                     if file_name.ends_with(".mark") {
                         let directory_name = file_name[0..2].to_string();
-                        let path = format!(".zatsu/objects/{}/{}", directory_name, file_name);
+                        let path = format!("{}/objects/{}/{}", repository.path(), directory_name, file_name);
                         match fs::remove_file(&path) {
                             Ok(_) => (),
                             Err(_) => {
@@ -309,7 +321,9 @@ mod tests {
 
     use std::env;
     use std::fs;
+    use tempdir::TempDir;
 
+    use crate::commons::ToString;
     use crate::CommitCommand;
     use crate::InitCommand;
 
@@ -320,34 +334,36 @@ mod tests {
 
     #[test]
     fn is_executable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         fs::write("a.txt", "Hello, World!").unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = ForgetCommand::new(1);
-        let result = command.execute();
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
+        let mut command = ForgetCommand::new(1);
+        command.path = temp_path.to_string();
+        command.execute().unwrap();
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         fs::write("a.txt", "Hello, World!").unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = ForgetCommand::new(1);
-        let result = command.execute();
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
+        let mut command = ForgetCommand::new(1);
+        command.path = temp_path.to_string();
+        command.execute().unwrap()
     }
 }
