@@ -52,6 +52,7 @@ pub trait Repository {
     fn revision_numbers(&self) -> Vec<i32>;
     fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
     fn version(&self) -> i32;
+    fn path(&self) -> String;
     fn latest_revision(&self) -> i32;
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
     fn object_hash(&self, values: &Vec<u8>) -> String;
@@ -135,6 +136,10 @@ impl Repository for RepositoryBase {
         self.version
     }
 
+    fn path(&self) -> String {
+        self.path.clone()
+    }
+
     fn latest_revision(&self) -> i32 {
         let count = self.revision_numbers.len();
         if count == 0 {
@@ -198,6 +203,10 @@ impl Repository for RepositoryV1 {
         self.base.version()
     }
 
+    fn path(&self) -> String {
+        self.base.path()
+    }
+
     fn latest_revision(&self) -> i32 {
         self.base.latest_revision()
     }
@@ -242,6 +251,10 @@ impl Repository for RepositoryV2 {
 
     fn version(&self) -> i32 {
         self.base.version()
+    }
+
+    fn path(&self) -> String {
+        self.base.path()
     }
 
     fn latest_revision(&self) -> i32 {
