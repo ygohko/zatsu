@@ -62,9 +62,11 @@ impl ToString for PathBuf {
     }
 }
 
-pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
+pub fn save_object(values: &Vec<u8>, hash: &str, repository_path: &str) -> Result<(), ZatsuError> {
+    // TODO: Move to repository.rs?
+
     let directory_name = hash[0..2].to_string();
-    let path = format!(".zatsu/objects/{}", directory_name).to_string();
+    let path = format!("{}/objects/{}", repository_path, directory_name).to_string();
     let a_path = Path::new(&path);
     let exists = match a_path.try_exists() {
         Ok(exists) => exists,
@@ -128,34 +130,35 @@ pub fn object_hash(values: &Vec<u8>, version: i32) -> String {
 mod tests {
     use super::*;
 
-    use std::env;
+    use tempdir::TempDir;
 
+    use crate::commons::ToString;
     use crate::Command;
     use crate::InitCommand;
 
     #[test]
     fn object_is_savable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         let string = "Hello, World!".to_string();
         let values = string.into_bytes();
-        let result = save_object(&values, "12345678");
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
+        let mut path = temp_path.clone();
+        path.push(".zatsu");
+        save_object(&values, "12345678", &path.to_string()).unwrap();
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
         let string = "Hello, World!".to_string();
         let values = string.into_bytes();
-        let result = save_object(&values, "12345678");
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
+        let mut path = temp_path.clone();
+        path.push(".zatsu");
+        save_object(&values, "12345678", &path.to_string()).unwrap();
     }
 
     #[test]
