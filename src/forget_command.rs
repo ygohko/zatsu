@@ -319,7 +319,6 @@ fn remove_unused_objects(
 mod tests {
     use super::*;
 
-    use std::env;
     use std::fs;
     use tempdir::TempDir;
 
