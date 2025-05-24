@@ -35,7 +35,6 @@ use crate::Command;
 use crate::Entry;
 use crate::Revision;
 use crate::ZatsuError;
-pub struct UpgradeCommand {}
 
 pub const ERROR_ID: ErrorId = "upgrade_command";
 
@@ -46,9 +45,15 @@ const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 5;
 const ERROR_CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 6;
 
+pub struct UpgradeCommand {
+    path: String,
+}
+
 impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
-        let repository = match factory::load(".zatsu") {
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
             Err(_) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
@@ -65,7 +70,11 @@ impl Command for UpgradeCommand {
 
         // Move objects directory.
         println!("Moving current objects...");
-        match fs::rename(".zatsu/objects", ".zatsu/objects-v1") {
+        let mut from_path = repository_path.clone();
+        from_path.push("objects");
+        let mut to_path = repository_path.clone();
+        to_path.push("objects-v1");
+        match fs::rename(&from_path, &to_path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -76,7 +85,9 @@ impl Command for UpgradeCommand {
         };
 
         // Create new object direcrory.
-        match fs::create_dir(".zatsu/objects") {
+        let mut object_path = repository_path.clone();
+        object_path.push("objects");
+        match fs::create_dir(&object_path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -93,13 +104,17 @@ impl Command for UpgradeCommand {
         update_entries(&repository.revision_numbers())?;
 
         // Update version.txt.
-        match fs::write(".zatsu/version.txt", "2") {
+        let mut path = repository_path.clone();
+        path.push("version.txt");
+        match fs::write(&path, "2") {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
 
         // Remove V1 objects.
-        match fs::remove_dir_all(".zatsu/objects-v1") {
+        let mut path = repository_path.clone();
+        path.push("objects-v1");
+        match fs::remove_dir_all(&path) {
             Ok(()) => (),
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -118,7 +133,9 @@ impl Command for UpgradeCommand {
 
 impl UpgradeCommand {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            path: ".".to_string(),
+        }
     }
 }
 
