@@ -78,7 +78,6 @@ impl Revision {
 mod tests {
     use super::*;
 
-    use std::env;
     use tempdir::TempDir;
 
     use crate::commons::ToString;

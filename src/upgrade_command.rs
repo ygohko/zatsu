@@ -139,8 +139,9 @@ impl UpgradeCommand {
     }
 
     fn copy_objects(&self) -> Result<(), ZatsuError> {
-        let mut path = PathBuf::from(&self.path);
-        path.push(".zatsu");
+        let mut repository_path = PathBuf::from(&self.path);
+        repository_path.push(".zatsu");
+        let mut path = repository_path.clone();
         path.push("objects-v1");
         let read_dir = match fs::read_dir(&path) {
             Ok(read_dir) => read_dir,
@@ -196,7 +197,7 @@ impl UpgradeCommand {
                     };
 
                     let hash = commons::object_hash(&decoded, 2);
-                    commons::save_object(&decoded, &hash)?;
+                    commons::save_object(&decoded, &hash, &repository_path.to_string())?;
 
                     // Write new object hash.
                     let mut new_file_path = file_path.to_string();

@@ -62,9 +62,11 @@ impl ToString for PathBuf {
     }
 }
 
-pub fn save_object(values: &Vec<u8>, hash: &str) -> Result<(), ZatsuError> {
+pub fn save_object(values: &Vec<u8>, hash: &str, repository_path: &str) -> Result<(), ZatsuError> {
+    // TODO: Move to repository.rs?
+
     let directory_name = hash[0..2].to_string();
-    let path = format!(".zatsu/objects/{}", directory_name).to_string();
+    let path = format!("{}/objects/{}", repository_path, directory_name).to_string();
     let a_path = Path::new(&path);
     let exists = match a_path.try_exists() {
         Ok(exists) => exists,
@@ -143,7 +145,9 @@ mod tests {
         command.execute().unwrap();
         let string = "Hello, World!".to_string();
         let values = string.into_bytes();
-        save_object(&values, "12345678").unwrap();
+        let mut path = temp_path.clone();
+        path.push(".zatsu");
+        save_object(&values, "12345678", &path.to_string()).unwrap();
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -152,7 +156,9 @@ mod tests {
         command.execute().unwrap();
         let string = "Hello, World!".to_string();
         let values = string.into_bytes();
-        save_object(&values, "12345678").unwrap();
+        let mut path = temp_path.clone();
+        path.push(".zatsu");
+        save_object(&values, "12345678", &path.to_string()).unwrap();
     }
 
     #[test]
