@@ -98,10 +98,10 @@ impl Command for UpgradeCommand {
         };
 
         // Copy objects into new new directory.
-        copy_objects()?;
+        self.copy_objects()?;
 
         // Update hashes of entries.
-        update_entries(&repository.revision_numbers())?;
+        self.update_entries(&repository.revision_numbers())?;
 
         // Update version.txt.
         let mut path = repository_path.clone();
@@ -137,29 +137,12 @@ impl UpgradeCommand {
             path: ".".to_string(),
         }
     }
-}
 
-fn copy_objects() -> Result<(), ZatsuError> {
-    let read_dir = match fs::read_dir(".zatsu/objects-v1") {
-        Ok(read_dir) => read_dir,
-        Err(_) => {
-            return Err(ZatsuError::new(
-                ERROR_ID,
-                ERROR_CODE_READING_DIRECTORY_FAILED,
-            ))
-        }
-    };
-    let mut object_paths: Vec<PathBuf> = Vec::new();
-    for result in read_dir {
-        if result.is_ok() {
-            let entry = result.unwrap();
-            object_paths.push(entry.path());
-        }
-    }
-
-    for path in object_paths {
-        let directory_path = path;
-        let read_dir = match fs::read_dir(directory_path.clone()) {
+    fn copy_objects(&self) -> Result<(), ZatsuError> {
+        let mut path = PathBuf::from(&self.path);
+        path.push(".zatsu");
+        path.push("objects-v1");
+        let read_dir = match fs::read_dir(&path) {
             Ok(read_dir) => read_dir,
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -168,80 +151,101 @@ fn copy_objects() -> Result<(), ZatsuError> {
                 ))
             }
         };
+        let mut object_paths: Vec<PathBuf> = Vec::new();
         for result in read_dir {
             if result.is_ok() {
                 let entry = result.unwrap();
-                let file_path = entry.path();
-                println!("Copying: {}", file_path.to_string());
-                let values = match fs::read(file_path.clone()) {
-                    Ok(values) => values,
-                    Err(_) => {
-                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
-                    }
-                };
-                let mut decoder = ZlibDecoder::new(Vec::new());
-                match decoder.write_all(&values) {
-                    Ok(()) => (),
-                    Err(_) => {
-                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
-                    }
-                };
-                let decoded = match decoder.finish() {
-                    Ok(decoded) => decoded,
-                    Err(_) => {
-                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
-                    }
-                };
-
-                let hash = commons::object_hash(&decoded, 2);
-                commons::save_object(&decoded, &hash)?;
-
-                // Write new object hash.
-                let mut new_file_path = file_path.to_string();
-                new_file_path.push_str(".new");
-                match fs::write(&new_file_path, hash) {
-                    Ok(()) => (),
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-                };
+                object_paths.push(entry.path());
             }
         }
-    }
 
-    Ok(())
-}
-
-fn update_entries(revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
-    for revision_number in revision_numbers {
-        println!("Updating: Revision {}", revision_number);
-        let path = format!(
-            ".zatsu/revisions/{:02x}/{}.json",
-            (revision_number & 0xFF),
-            revision_number
-        );
-        let mut revision = Revision::load(&path)?;
-        let mut new_entries: Vec<Entry> = Vec::new();
-        for entry in revision.entries {
-            let directory_name = entry.hash[0..2].to_string();
-            let path = format!(".zatsu/objects-v1/{}/{}.new", directory_name, entry.hash);
-            println!("Updating: {}", entry.path);
-            let new_hash = match fs::read_to_string(&path) {
-                Ok(new_hash) => new_hash,
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+        for path in object_paths {
+            let directory_path = path;
+            let read_dir = match fs::read_dir(directory_path.clone()) {
+                Ok(read_dir) => read_dir,
+                Err(_) => {
+                    return Err(ZatsuError::new(
+                        ERROR_ID,
+                        ERROR_CODE_READING_DIRECTORY_FAILED,
+                    ))
+                }
             };
+            for result in read_dir {
+                if result.is_ok() {
+                    let entry = result.unwrap();
+                    let file_path = entry.path();
+                    println!("Copying: {}", file_path.to_string());
+                    let values = match fs::read(file_path.clone()) {
+                        Ok(values) => values,
+                        Err(_) => {
+                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                        }
+                    };
+                    let mut decoder = ZlibDecoder::new(Vec::new());
+                    match decoder.write_all(&values) {
+                        Ok(()) => (),
+                        Err(_) => {
+                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                        }
+                    };
+                    let decoded = match decoder.finish() {
+                        Ok(decoded) => decoded,
+                        Err(_) => {
+                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                        }
+                    };
 
-            let new_entry = Entry {
-                path: entry.path,
-                hash: new_hash,
-                permission: entry.permission,
-            };
-            new_entries.push(new_entry);
+                    let hash = commons::object_hash(&decoded, 2);
+                    commons::save_object(&decoded, &hash)?;
+
+                    // Write new object hash.
+                    let mut new_file_path = file_path.to_string();
+                    new_file_path.push_str(".new");
+                    match fs::write(&new_file_path, hash) {
+                        Ok(()) => (),
+                        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                    };
+                }
+            }
         }
 
-        revision.entries = new_entries;
-        revision.save(path)?;
+        Ok(())
     }
 
-    Ok(())
+    fn update_entries(&self, revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
+        for revision_number in revision_numbers {
+            println!("Updating: Revision {}", revision_number);
+            let path = format!(
+                "{}/.zatsu/revisions/{:02x}/{}.json",
+                self.path,
+                (revision_number & 0xFF),
+                revision_number
+            );
+            let mut revision = Revision::load(&path)?;
+            let mut new_entries: Vec<Entry> = Vec::new();
+            for entry in revision.entries {
+                let directory_name = entry.hash[0..2].to_string();
+                let path = format!("{}/.zatsu/objects-v1/{}/{}.new", self.path, directory_name, entry.hash);
+                println!("Updating: {}", entry.path);
+                let new_hash = match fs::read_to_string(&path) {
+                    Ok(new_hash) => new_hash,
+                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+                };
+
+                let new_entry = Entry {
+                    path: entry.path,
+                    hash: new_hash,
+                    permission: entry.permission,
+                };
+                new_entries.push(new_entry);
+            }
+
+            revision.entries = new_entries;
+            revision.save(path)?;
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -269,8 +273,7 @@ mod test {
         let command = CommitCommand::new();
         command.execute().unwrap();
         let command = UpgradeCommand::new();
-        let result = command.execute();
-        assert!(result.is_ok());
+        command.execute().unwrap();
         env::set_current_dir("..").unwrap();
         fs::remove_dir_all("tmp").unwrap();
     }
