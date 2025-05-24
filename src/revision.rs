@@ -79,23 +79,29 @@ mod tests {
     use super::*;
 
     use std::env;
+    use tempdir::TempDir;
 
+    use crate::commons::ToString;
     use crate::Command;
     use crate::CommitCommand;
     use crate::InitCommand;
 
     #[test]
     fn is_loadable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let command = CommitCommand::new();
+        let mut command = CommitCommand::new();
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let result = Revision::load(".zatsu/revisions/01/1.json");
-        assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
+        let mut path = temp_path.clone();
+        path.push(".zatsu");
+        path.push("revisions");
+        path.push("01");
+        path.push("1.json");
+        Revision::load(&path).unwrap();
 
         fs::create_dir("tmp").unwrap();
         env::set_current_dir("tmp").unwrap();
