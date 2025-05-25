@@ -54,12 +54,9 @@ impl Command for GetCommand {
         repository_path.push(".zatsu");
         let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
-            Err(_) => {
+            Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ));
+                return Err(error);
             }
         };
         let mut found = false;
@@ -71,15 +68,7 @@ impl Command for GetCommand {
         if !found {
             return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_REVISION_NOT_FOUND));
         }
-        let revision = match repository.load_revision(self.revision_number) {
-            Ok(revision) => revision,
-            Err(_) => {
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REVISION_FAILED,
-                ))
-            }
-        };
+        let revision = repository.load_revision(self.revision_number)?;
         let mut hash = "".to_string();
         let mut file_found = false;
         let mut directory_found = false;
