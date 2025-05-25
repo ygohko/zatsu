@@ -366,8 +366,6 @@ impl SerializableRepositoryV1 {
 mod tests {
     use super::*;
 
-    use std::env;
-    use std::fs;
     use tempdir::TempDir;
 
     use crate::commons;
