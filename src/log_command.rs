@@ -26,17 +26,14 @@ use chrono::Utc;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::ZatsuError;
 
+#[allow(dead_code)]
 pub const ERROR_ID: ErrorId = "log_command";
-
-const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 1;
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
 
 pub struct LogCommand {
     path: String,

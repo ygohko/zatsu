@@ -34,9 +34,7 @@ use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "get_command";
 
-const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 1;
 const ERROR_CODE_REVISION_NOT_FOUND: ErrorCode = 2;
-const ERROR_CODE_LOADING_REVISION_FAILED: ErrorCode = 3;
 const ERROR_CODE_FILE_NOT_FOUND: ErrorCode = 4;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 5;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 6;
