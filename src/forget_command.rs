@@ -50,12 +50,9 @@ impl Command for ForgetCommand {
         repository_path.push(".zatsu");
         let mut repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
-            Err(_) => {
+            Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ));
+                return Err(error);
             }
         };
         let mut revision_numbers = repository.revision_numbers();
@@ -85,15 +82,7 @@ impl ForgetCommand {
     fn process_garbage_collection(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path) {
-            Ok(repository) => repository,
-            Err(_) => {
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ))
-            }
-        };
+        let repository = factory::load(&repository_path)?;
 
         let mut revisions_path = repository_path.clone();
         revisions_path.push("revisions");
@@ -208,10 +197,7 @@ fn remove_unused_objects(
     for revision_number in &repository.revision_numbers() {
         println!("Checking: revision {}", revision_number);
 
-        let revision = match repository.load_revision(*revision_number) {
-            Ok(revision) => revision,
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
-        };
+        let revision = repository.load_revision(*revision_number)?;
 
         for entry in revision.entries {
             let hash = entry.hash;
