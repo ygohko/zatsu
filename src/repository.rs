@@ -368,28 +368,26 @@ mod tests {
 
     use std::env;
     use std::fs;
+    use tempdir::TempDir;
 
     use crate::commons;
+    use crate::commons::ToString;
     use crate::Command;
     use crate::InitCommand;
 
     #[test]
     fn repository_is_savable() {
         let repository = factory::with_arguments(&vec![1, 2, 3], 1);
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let result = repository.save(&".");
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let result = repository.save(&temp_path);
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
 
         let repository = factory::with_arguments(&vec![1, 2, 3], 2);
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let result = repository.save(&".");
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let result = repository.save(&temp_path);
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 
     #[test]
@@ -413,23 +411,25 @@ mod tests {
 
     #[test]
     fn repository_is_loadable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let result = factory::load(".zatsu");
+        let mut repository_path = temp_path.clone();
+        repository_path.push(".zatsu");
+        let result = factory::load(&repository_path.to_string());
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
 
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(2);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(2);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let result = factory::load(".zatsu");
+        let mut repository_path = temp_path.clone();
+        repository_path.push(".zatsu");
+        let result = factory::load(&repository_path.to_string());
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 
     #[test]
@@ -444,24 +444,23 @@ mod tests {
     fn repository_v1_is_savable() {
         let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let repository_v1 = repository.to_serializable_v1();
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let result = repository_v1.save(".");
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let result = repository_v1.save(&temp_path.to_string());
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 
     #[test]
     fn repository_v1_is_loadable() {
-        fs::create_dir("tmp").unwrap();
-        env::set_current_dir("tmp").unwrap();
-        let command = InitCommand::new(1);
+        let temp_dir = TempDir::new("test").unwrap();
+        let temp_path = temp_dir.path().to_path_buf();
+        let mut command = InitCommand::new(1);
+        command.path = temp_path.to_string();
         command.execute().unwrap();
-        let result = SerializableRepositoryV1::load(".zatsu");
+        let mut repository_path = temp_path.clone();
+        repository_path.push(".zatsu");
+        let result = SerializableRepositoryV1::load(&repository_path);
         assert!(result.is_ok());
-        env::set_current_dir("..").unwrap();
-        fs::remove_dir_all("tmp").unwrap();
     }
 
     #[test]
