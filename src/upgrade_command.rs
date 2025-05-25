@@ -55,12 +55,9 @@ impl Command for UpgradeCommand {
         repository_path.push(".zatsu");
         let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
-            Err(_) => {
+            Err(error) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ));
+                return Err(error);
             }
         };
         if repository.version() != 1 {
