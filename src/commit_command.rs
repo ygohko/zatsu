@@ -56,12 +56,9 @@ impl Command for CommitCommand {
         repository_path.push(".zatsu");
         let mut repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
-            Err(_) => {
+            Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ));
+                return Err(error);
             }
         };
         let latest_revision = repository.latest_revision();
@@ -100,10 +97,7 @@ impl Command for CommitCommand {
             }
         }
 
-        match repository.save_revision(&revision, revision_number) {
-            Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-        };
+        repository.save_revision(&revision, revision_number)?;
 
         println!("");
         println!("Commited as revision {}.", revision_number);
