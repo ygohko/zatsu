@@ -42,7 +42,7 @@ const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 4;
 const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 5;
 
 pub trait Repository {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
+    fn save(&self, path: &str) -> Result<(), ZatsuError>;
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
     fn save_revision(
         &mut self,
@@ -65,7 +65,7 @@ struct RepositoryBase {
 }
 
 impl Repository for RepositoryBase {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
 
@@ -175,7 +175,7 @@ struct RepositoryV1 {
 }
 
 impl Repository for RepositoryV1 {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         self.base.save(path)
     }
 
@@ -225,7 +225,7 @@ struct RepositoryV2 {
 }
 
 impl Repository for RepositoryV2 {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         self.base.save(path)
     }
 

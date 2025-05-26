@@ -62,7 +62,7 @@ impl Command for ForgetCommand {
         let index: usize = removed_count as usize;
         revision_numbers = revision_numbers.drain(index..).collect();
         repository.set_revision_numbers(&revision_numbers);
-        repository.save(&repository_path)?;
+        repository.save(&&repository_path.to_string())?;
         self.process_garbage_collection()?;
 
         Ok(())
