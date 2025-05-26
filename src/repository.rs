@@ -286,8 +286,9 @@ pub mod factory {
         }
     }
 
-    pub fn load(path: impl AsRef<Path>) -> Result<Box<dyn Repository>, ZatsuError> {
-        let version_path = path.as_ref().join("version.txt");
+    pub fn load(path: &str) -> Result<Box<dyn Repository>, ZatsuError> {
+        let mut version_path = PathBuf::from(path);
+        version_path.push("version.txt");
         let mut string = match fs::read_to_string(version_path) {
             Ok(string) => string,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
@@ -300,7 +301,7 @@ pub mod factory {
         };
 
         let repository_v1 = SerializableRepositoryV1::load(&path)?;
-        let mut base = RepositoryBase::from_serializable_v1(&repository_v1, &path.as_ref().to_string());
+        let mut base = RepositoryBase::from_serializable_v1(&repository_v1, path);
         base.version = version;
         if version == 1 {
             Ok(Box::new(RepositoryV1 { base: base }))

@@ -52,7 +52,7 @@ impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path) {
+        let repository = match factory::load(&repository_path.to_string()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
