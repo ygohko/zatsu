@@ -379,13 +379,13 @@ mod tests {
         let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let result = repository.save(&temp_path);
+        let result = repository.save(&temp_path.to_string());
         assert!(result.is_ok());
 
         let repository = factory::with_arguments(&vec![1, 2, 3], 2);
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let result = repository.save(&temp_path);
+        let result = repository.save(&temp_path.to_string());
         assert!(result.is_ok());
     }
 
@@ -458,7 +458,7 @@ mod tests {
         command.execute().unwrap();
         let mut repository_path = temp_path.clone();
         repository_path.push(".zatsu");
-        let result = SerializableRepositoryV1::load(&repository_path);
+        let result = SerializableRepositoryV1::load(&repository_path.to_string());
         assert!(result.is_ok());
     }
 

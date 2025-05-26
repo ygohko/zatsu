@@ -99,7 +99,7 @@ mod tests {
         path.push("revisions");
         path.push("01");
         path.push("1.json");
-        Revision::load(&path).unwrap();
+        Revision::load(&path.to_string()).unwrap();
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -114,7 +114,7 @@ mod tests {
         path.push("revisions");
         path.push("01");
         path.push("1.json");
-        Revision::load(&path).unwrap();
+        Revision::load(&path.to_string()).unwrap();
     }
 
     #[test]
@@ -135,6 +135,6 @@ mod tests {
             description: "".to_string(),
         };
         path.push("1.json");
-        revision.save(&path).unwrap();
+        revision.save(&path.to_string()).unwrap();
     }
 }
