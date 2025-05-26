@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Yasuaki Gohko
+ * Copyright (c) 2024 - 2025 Yasuaki Gohko
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,7 +35,7 @@ use crate::ZatsuError;
 pub const ERROR_ID: ErrorId = "forget_command";
 
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 1;
-const ERROR_CODE_REMOVING_FILE_FAILED: ErrorCode = 4;
+const ERROR_CODE_REMOVING_FILE_FAILED: ErrorCode = 2;
 
 pub struct ForgetCommand {
     revision_count: i32,
