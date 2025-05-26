@@ -23,7 +23,6 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
-use std::path::Path;
 use std::path::PathBuf;
 
 use crate::commons;
@@ -42,7 +41,7 @@ const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 4;
 const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 5;
 
 pub trait Repository {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError>;
+    fn save(&self, path: &str) -> Result<(), ZatsuError>;
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
     fn save_revision(
         &mut self,
@@ -65,7 +64,7 @@ struct RepositoryBase {
 }
 
 impl Repository for RepositoryBase {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let repository_v1 = self.to_serializable_v1();
         repository_v1.save(path)?;
 
@@ -77,7 +76,7 @@ impl Repository for RepositoryBase {
         path.push("revisions");
         path.push(format!("{:02x}", revision_number & 0xFF));
         path.push(format!("{}.json", revision_number));
-        let revision = match Revision::load(&path) {
+        let revision = match Revision::load(&path.to_string()) {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -109,7 +108,7 @@ impl Repository for RepositoryBase {
             };
         }
         revision_path.push(format!("{}.json", revision_number));
-        match revision.save(revision_path) {
+        match revision.save(&revision_path.to_string()) {
             Ok(_) => (),
             Err(error) => return Err(error),
         };
@@ -175,7 +174,7 @@ struct RepositoryV1 {
 }
 
 impl Repository for RepositoryV1 {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         self.base.save(path)
     }
 
@@ -225,7 +224,7 @@ struct RepositoryV2 {
 }
 
 impl Repository for RepositoryV2 {
-    fn save(&self, path: &dyn AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         self.base.save(path)
     }
 
@@ -286,8 +285,9 @@ pub mod factory {
         }
     }
 
-    pub fn load(path: impl AsRef<Path>) -> Result<Box<dyn Repository>, ZatsuError> {
-        let version_path = path.as_ref().join("version.txt");
+    pub fn load(path: &str) -> Result<Box<dyn Repository>, ZatsuError> {
+        let mut version_path = PathBuf::from(path);
+        version_path.push("version.txt");
         let mut string = match fs::read_to_string(version_path) {
             Ok(string) => string,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
@@ -300,7 +300,7 @@ pub mod factory {
         };
 
         let repository_v1 = SerializableRepositoryV1::load(&path)?;
-        let mut base = RepositoryBase::from_serializable_v1(&repository_v1, &path.as_ref().to_string());
+        let mut base = RepositoryBase::from_serializable_v1(&repository_v1, path);
         base.version = version;
         if version == 1 {
             Ok(Box::new(RepositoryV1 { base: base }))
@@ -331,13 +331,13 @@ pub struct SerializableRepositoryV1 {
 }
 
 impl SerializableRepositoryV1 {
-    fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),
         };
 
-        let mut json_path = PathBuf::from(path.as_ref());
+        let mut json_path = PathBuf::from(path);
         json_path.push("repository.json");
         let _ = match fs::write(json_path, serialized) {
             Ok(result) => result,
@@ -347,8 +347,9 @@ impl SerializableRepositoryV1 {
         Ok(())
     }
 
-    fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
-        let json_path = path.as_ref().join("repository.json");
+    fn load(path: &str) -> Result<Self, ZatsuError> {
+        let mut json_path = PathBuf::from(path);
+        json_path.push("repository.json");
         let serialized = match fs::read_to_string(json_path) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
@@ -378,13 +379,13 @@ mod tests {
         let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let result = repository.save(&temp_path);
+        let result = repository.save(&temp_path.to_string());
         assert!(result.is_ok());
 
         let repository = factory::with_arguments(&vec![1, 2, 3], 2);
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let result = repository.save(&temp_path);
+        let result = repository.save(&temp_path.to_string());
         assert!(result.is_ok());
     }
 
@@ -457,7 +458,7 @@ mod tests {
         command.execute().unwrap();
         let mut repository_path = temp_path.clone();
         repository_path.push(".zatsu");
-        let result = SerializableRepositoryV1::load(&repository_path);
+        let result = SerializableRepositoryV1::load(&repository_path.to_string());
         assert!(result.is_ok());
     }
 

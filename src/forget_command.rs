@@ -46,7 +46,7 @@ impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let mut repository = match factory::load(&repository_path) {
+        let mut repository = match factory::load(&repository_path.to_string()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -62,7 +62,7 @@ impl Command for ForgetCommand {
         let index: usize = removed_count as usize;
         revision_numbers = revision_numbers.drain(index..).collect();
         repository.set_revision_numbers(&revision_numbers);
-        repository.save(&repository_path)?;
+        repository.save(&&repository_path.to_string())?;
         self.process_garbage_collection()?;
 
         Ok(())
@@ -80,7 +80,7 @@ impl ForgetCommand {
     fn process_garbage_collection(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = factory::load(&repository_path)?;
+        let repository = factory::load(&repository_path.to_string())?;
 
         let mut revisions_path = repository_path.clone();
         revisions_path.push("revisions");

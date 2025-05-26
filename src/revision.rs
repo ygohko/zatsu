@@ -23,7 +23,6 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
-use std::path::Path;
 
 use crate::entry::Entry;
 use crate::error::ErrorCode;
@@ -46,7 +45,7 @@ pub struct Revision {
 }
 
 impl Revision {
-    pub fn load(path: impl AsRef<Path>) -> Result<Revision, ZatsuError> {
+    pub fn load(path: &str) -> Result<Revision, ZatsuError> {
         let serialized = match fs::read_to_string(path) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
@@ -59,7 +58,7 @@ impl Revision {
         Ok(revision)
     }
 
-    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+    pub fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),
@@ -100,7 +99,7 @@ mod tests {
         path.push("revisions");
         path.push("01");
         path.push("1.json");
-        Revision::load(&path).unwrap();
+        Revision::load(&path.to_string()).unwrap();
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
@@ -115,7 +114,7 @@ mod tests {
         path.push("revisions");
         path.push("01");
         path.push("1.json");
-        Revision::load(&path).unwrap();
+        Revision::load(&path.to_string()).unwrap();
     }
 
     #[test]
@@ -136,6 +135,6 @@ mod tests {
             description: "".to_string(),
         };
         path.push("1.json");
-        revision.save(&path).unwrap();
+        revision.save(&path.to_string()).unwrap();
     }
 }

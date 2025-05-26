@@ -25,6 +25,7 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
+use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -50,7 +51,7 @@ impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path) {
+        let repository = match factory::load(&repository_path.to_string()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");

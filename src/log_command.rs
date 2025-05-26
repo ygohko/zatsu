@@ -26,6 +26,7 @@ use chrono::Utc;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use crate::commons::ToString;
 use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
@@ -43,7 +44,7 @@ impl Command for LogCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path) {
+        let repository = match factory::load(&repository_path.to_string()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
