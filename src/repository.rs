@@ -23,7 +23,6 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
-use std::path::Path;
 use std::path::PathBuf;
 
 use crate::commons;
@@ -332,13 +331,13 @@ pub struct SerializableRepositoryV1 {
 }
 
 impl SerializableRepositoryV1 {
-    fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+    fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),
         };
 
-        let mut json_path = PathBuf::from(path.as_ref());
+        let mut json_path = PathBuf::from(path);
         json_path.push("repository.json");
         let _ = match fs::write(json_path, serialized) {
             Ok(result) => result,
