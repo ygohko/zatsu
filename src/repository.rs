@@ -348,8 +348,9 @@ impl SerializableRepositoryV1 {
         Ok(())
     }
 
-    fn load(path: impl AsRef<Path>) -> Result<Self, ZatsuError> {
-        let json_path = path.as_ref().join("repository.json");
+    fn load(path: &str) -> Result<Self, ZatsuError> {
+        let mut json_path = PathBuf::from(path);
+        json_path.push("repository.json");
         let serialized = match fs::read_to_string(json_path) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
