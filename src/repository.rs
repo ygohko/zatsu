@@ -77,7 +77,7 @@ impl Repository for RepositoryBase {
         path.push("revisions");
         path.push(format!("{:02x}", revision_number & 0xFF));
         path.push(format!("{}.json", revision_number));
-        let revision = match Revision::load(&path) {
+        let revision = match Revision::load(&path.to_string()) {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(

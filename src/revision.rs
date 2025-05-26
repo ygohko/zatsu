@@ -46,7 +46,7 @@ pub struct Revision {
 }
 
 impl Revision {
-    pub fn load(path: impl AsRef<Path>) -> Result<Revision, ZatsuError> {
+    pub fn load(path: &str) -> Result<Revision, ZatsuError> {
         let serialized = match fs::read_to_string(path) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),

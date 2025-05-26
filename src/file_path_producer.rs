@@ -42,7 +42,6 @@ pub struct FilePathProducer {
 }
 
 impl FilePathProducer {
-    // TODO: This argument should be AsRef<Path>?
     pub fn new(path: String) -> FilePathProducer {
         let prefix_length = path.len() + 1;
         return FilePathProducer {
