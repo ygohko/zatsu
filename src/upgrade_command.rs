@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Yasuaki Gohko
+ * Copyright (c) 2024 - 2025 Yasuaki Gohko
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -39,11 +39,10 @@ use crate::ZatsuError;
 pub const ERROR_ID: ErrorId = "upgrade_command";
 
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 1;
-const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
-const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
-const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 5;
-const ERROR_CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 6;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 3;
+const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 4;
+const ERROR_CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 5;
 
 pub struct UpgradeCommand {
     path: String,
@@ -55,12 +54,9 @@ impl Command for UpgradeCommand {
         repository_path.push(".zatsu");
         let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
-            Err(_) => {
+            Err(error) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ));
+                return Err(error);
             }
         };
         if repository.version() != 1 {

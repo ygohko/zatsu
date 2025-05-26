@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Yasuaki Gohko
+ * Copyright (c) 2024 - 2025 Yasuaki Gohko
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -42,9 +42,8 @@ use crate::ZatsuError;
 pub const ERROR_ID: ErrorId = "commit_command";
 
 const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
-const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 2;
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
-const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
+const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
+const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 3;
 
 pub struct CommitCommand {
     pub path: String,
@@ -56,12 +55,9 @@ impl Command for CommitCommand {
         repository_path.push(".zatsu");
         let mut repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
-            Err(_) => {
+            Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ));
+                return Err(error);
             }
         };
         let latest_revision = repository.latest_revision();
@@ -100,10 +96,7 @@ impl Command for CommitCommand {
             }
         }
 
-        match repository.save_revision(&revision, revision_number) {
-            Ok(_) => (),
-            Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
-        };
+        repository.save_revision(&revision, revision_number)?;
 
         println!("");
         println!("Commited as revision {}.", revision_number);

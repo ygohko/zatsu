@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Yasuaki Gohko
+ * Copyright (c) 2024 - 2025 Yasuaki Gohko
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -26,17 +26,14 @@ use chrono::Utc;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::ZatsuError;
 
+#[allow(dead_code)]
 pub const ERROR_ID: ErrorId = "log_command";
-
-const ERROR_CODE_LOADING_REPOSITORY_FAILED: ErrorCode = 1;
-const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
 
 pub struct LogCommand {
     path: String,
@@ -48,12 +45,9 @@ impl Command for LogCommand {
         repository_path.push(".zatsu");
         let repository = match factory::load(&repository_path) {
             Ok(repository) => repository,
-            Err(_) => {
+            Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
-                return Err(ZatsuError::new(
-                    ERROR_ID,
-                    ERROR_CODE_LOADING_REPOSITORY_FAILED,
-                ));
+                return Err(error);
             }
         };
 
@@ -61,20 +55,12 @@ impl Command for LogCommand {
         let count = repository.revision_numbers().len();
         for i in (0..count).rev() {
             let revision_number = repository.revision_numbers()[i];
-            let revision = match repository.load_revision(revision_number) {
-                Ok(revision) => revision,
-                Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
-            };
+            let revision = repository.load_revision(revision_number)?;
             let entries = revision.entries;
             let mut previous_entries: Vec<Entry> = Vec::new();
             if i > 0 {
                 let previous_revision_number = repository.revision_numbers()[i - 1];
-                let previous_revision = match repository.load_revision(previous_revision_number) {
-                    Ok(revision) => revision,
-                    Err(_) => {
-                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
-                    }
-                };
+                let previous_revision = repository.load_revision(previous_revision_number)?;
                 previous_entries = previous_revision.entries;
             }
 
