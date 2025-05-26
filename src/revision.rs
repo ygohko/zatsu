@@ -23,7 +23,6 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
-use std::path::Path;
 
 use crate::entry::Entry;
 use crate::error::ErrorCode;
@@ -59,7 +58,7 @@ impl Revision {
         Ok(revision)
     }
 
-    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), ZatsuError> {
+    pub fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),

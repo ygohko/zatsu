@@ -238,7 +238,7 @@ impl UpgradeCommand {
             }
 
             revision.entries = new_entries;
-            revision.save(path)?;
+            revision.save(&path)?;
         }
 
         Ok(())

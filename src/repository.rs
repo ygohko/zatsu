@@ -109,7 +109,7 @@ impl Repository for RepositoryBase {
             };
         }
         revision_path.push(format!("{}.json", revision_number));
-        match revision.save(revision_path) {
+        match revision.save(&revision_path.to_string()) {
             Ok(_) => (),
             Err(error) => return Err(error),
         };
