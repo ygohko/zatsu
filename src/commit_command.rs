@@ -115,6 +115,7 @@ impl CommitCommand {
     ) -> Result<Entry, ZatsuError> {
 
         // TODO: Return permissions.
+        // TODO: Check whether only file path is provided.
         
         let mut file_path = PathBuf::from(&self.path);
         file_path.push(&path);
@@ -128,6 +129,7 @@ impl CommitCommand {
             }
         };
         let mut hex_string = String::new();
+        let mut permission: i32 = 0o644;
         if metadata.is_file() {
             let values = match fs::read(&file_path) {
                 Ok(values) => values,
@@ -135,6 +137,8 @@ impl CommitCommand {
             };
             hex_string = repository.object_hash(&values);
 
+            // TODO: Get the permission.
+            
             let directory_name = hex_string[0..2].to_string();
             let mut path = PathBuf::from(&self.path);
             path.push(".zatsu");
@@ -173,6 +177,8 @@ impl CommitCommand {
                 };
             }
         }
+
+        // TODO: Return error if directory path is provided?
 
         let entry = Entry {
             path: path.to_string(),
