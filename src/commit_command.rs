@@ -24,7 +24,9 @@ use chrono::Utc;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use std::fs;
+use std::fs::Metadata;
 use std::io::Write;
+use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
 use crate::commons::ToString;
@@ -136,8 +138,7 @@ impl CommitCommand {
                 Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
             };
             hex_string = repository.object_hash(&values);
-
-            // TODO: Get the permission.
+            permission = permission_from_metadata(metadata);
             
             let directory_name = hex_string[0..2].to_string();
             let mut path = PathBuf::from(&self.path);
@@ -183,10 +184,24 @@ impl CommitCommand {
         let entry = Entry {
             path: path.to_string(),
             hash: hex_string,
-            permission: 0o644,
+            permission: permission,
         };
         Ok(entry)
     }
+}
+
+#[cfg (not(target_os = "windows"))]
+fn permission_from_metadata(metadata: Metadata) -> i32{
+    metadata.permissions().mode() as i32
+}
+
+#[cfg (target_os = "windows")]
+fn permission_from_metadata(metadata: Metadata) -> i32{
+    if metadata.permissions.readonly() {
+        return 0o444;
+    }
+
+    0o644
 }
 
 #[cfg(test)]
