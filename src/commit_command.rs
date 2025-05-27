@@ -189,7 +189,7 @@ impl CommitCommand {
 
 #[cfg (not(target_os = "windows"))]
 fn permission_from_metadata(metadata: Metadata) -> i32{
-    metadata.permissions().mode() as i32
+    (metadata.permissions().mode() as i32) & 0o777
 }
 
 #[cfg (target_os = "windows")]
