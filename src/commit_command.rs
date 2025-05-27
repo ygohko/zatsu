@@ -24,7 +24,9 @@ use chrono::Utc;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use std::fs;
+use std::fs::Metadata;
 use std::io::Write;
+use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
 use crate::commons::ToString;
@@ -76,15 +78,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match self.process_file(&path, &repository) {
-                    Ok(hash) => hash,
-                    Err(error) => return Err(error),
-                };
-                let entry = Entry {
-                    path: path,
-                    hash: hash,
-                    permission: 0o644,
-                };
+                let entry = self.process_file(&path, &repository)?;
                 revision.entries.push(entry);
             } else {
                 let error = result.unwrap_err();
@@ -120,7 +114,7 @@ impl CommitCommand {
         &self,
         path: &str,
         repository: &Box<dyn Repository>,
-    ) -> Result<String, ZatsuError> {
+    ) -> Result<Entry, ZatsuError> {
         let mut file_path = PathBuf::from(&self.path);
         file_path.push(&path);
         let metadata = match fs::metadata(&file_path) {
@@ -132,14 +126,16 @@ impl CommitCommand {
                 ))
             }
         };
-        let mut hex_string = String::new();
+        let hex_string: String;
+        let permission: i32;
         if metadata.is_file() {
             let values = match fs::read(&file_path) {
                 Ok(values) => values,
                 Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
             };
             hex_string = repository.object_hash(&values);
-
+            permission = permission_from_metadata(metadata);
+            
             let directory_name = hex_string[0..2].to_string();
             let mut path = PathBuf::from(&self.path);
             path.push(".zatsu");
@@ -178,9 +174,31 @@ impl CommitCommand {
                 };
             }
         }
+        else {
+            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
+        }
 
-        Ok(hex_string)
+        let entry = Entry {
+            path: path.to_string(),
+            hash: hex_string,
+            permission: permission,
+        };
+        Ok(entry)
     }
+}
+
+#[cfg (not(target_os = "windows"))]
+fn permission_from_metadata(metadata: Metadata) -> i32{
+    (metadata.permissions().mode() as i32) & 0o777
+}
+
+#[cfg (target_os = "windows")]
+fn permission_from_metadata(metadata: Metadata) -> i32{
+    if metadata.permissions.readonly() {
+        return 0o444;
+    }
+
+    0o644
 }
 
 #[cfg(test)]
