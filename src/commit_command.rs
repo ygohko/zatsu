@@ -76,15 +76,7 @@ impl Command for CommitCommand {
             if result.is_ok() {
                 let path = result.unwrap();
                 println!("Processing: {}", path);
-                let hash = match self.process_file(&path, &repository) {
-                    Ok(hash) => hash,
-                    Err(error) => return Err(error),
-                };
-                let entry = Entry {
-                    path: path,
-                    hash: hash,
-                    permission: 0o644,
-                };
+                let entry = self.process_file(&path, &repository)?;
                 revision.entries.push(entry);
             } else {
                 let error = result.unwrap_err();
@@ -120,7 +112,10 @@ impl CommitCommand {
         &self,
         path: &str,
         repository: &Box<dyn Repository>,
-    ) -> Result<String, ZatsuError> {
+    ) -> Result<Entry, ZatsuError> {
+
+        // TODO: Return permissions.
+        
         let mut file_path = PathBuf::from(&self.path);
         file_path.push(&path);
         let metadata = match fs::metadata(&file_path) {
@@ -179,7 +174,12 @@ impl CommitCommand {
             }
         }
 
-        Ok(hex_string)
+        let entry = Entry {
+            path: path.to_string(),
+            hash: hex_string,
+            permission: 0o644,
+        };
+        Ok(entry)
     }
 }
 
