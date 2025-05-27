@@ -115,10 +115,6 @@ impl CommitCommand {
         path: &str,
         repository: &Box<dyn Repository>,
     ) -> Result<Entry, ZatsuError> {
-
-        // TODO: Return permissions.
-        // TODO: Check whether only file path is provided.
-        
         let mut file_path = PathBuf::from(&self.path);
         file_path.push(&path);
         let metadata = match fs::metadata(&file_path) {
@@ -178,8 +174,9 @@ impl CommitCommand {
                 };
             }
         }
-
-        // TODO: Return error if directory path is provided?
+        else {
+            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
+        }
 
         let entry = Entry {
             path: path.to_string(),
