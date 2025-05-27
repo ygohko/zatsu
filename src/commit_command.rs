@@ -126,8 +126,8 @@ impl CommitCommand {
                 ))
             }
         };
-        let mut hex_string = String::new();
-        let mut permission: i32 = 0o644;
+        let hex_string: String;
+        let permission: i32;
         if metadata.is_file() {
             let values = match fs::read(&file_path) {
                 Ok(values) => values,
