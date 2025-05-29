@@ -23,6 +23,7 @@
 use flate2::write::ZlibDecoder;
 use std::fs;
 use std::io::Write;
+use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
 use crate::commons::ToString;
@@ -224,11 +225,28 @@ impl GetCommand {
                     Ok(()) => (),
                     Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
                 };
+
+                // TODO: Update permission.
+                
             }
         }
 
         Ok(())
     }
+}
+
+#[cfg (not(target_os = "windows"))]
+fn set_permission(path: &str, permission: i32) -> Result<(), ZatsuError> {
+    // kokokara-
+
+    let metadata = fs::metadata(path);
+    let permissions = metadata.permissions();
+    let mut mode = permissions.mode();
+    mode = mode & (0x1FFFFFF ^ 0o777);
+    mode |= permission;
+    permissions.set_mode(mode);
+
+    Ok()
 }
 
 #[cfg(test)]
