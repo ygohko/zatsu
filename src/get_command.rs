@@ -236,14 +236,14 @@ impl GetCommand {
 }
 
 #[cfg (not(target_os = "windows"))]
-fn set_permission(path: &str, permission: i32) -> Result<(), ZatsuError> {
+fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
     let metadata = match fs::metadata(path) {
         Ok(metadata) => metadata,
         Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
     };
     let mut permissions = metadata.permissions();
     let mut mode = permissions.mode();
-    mode = mode & 0x1FFFFFF ^ 0o777;
+    mode = mode & (0xFFFFFFFF ^ 0o777);
     mode |= permission as u32;
     permissions.set_mode(mode);
     if let Err(_) = fs::set_permissions(path, permissions) {
@@ -254,7 +254,7 @@ fn set_permission(path: &str, permission: i32) -> Result<(), ZatsuError> {
 }
 
 #[cfg (target_os = "windows")]
-fn set_permission(path: &str, permission: i32) -> Result<(), ZatsuError> {
+fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
     let metadata = match fs::metadata(path) {
         Ok(metadata) => metadata,
         Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
