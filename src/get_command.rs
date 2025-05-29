@@ -222,13 +222,11 @@ impl GetCommand {
                 };
 
                 path += &("/".to_string() + &file_name);
-                match fs::write(path, decoded) {
+                match fs::write(&path, decoded) {
                     Ok(()) => (),
                     Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
                 };
-
-                // TODO: Update permission.
-                
+                set_permission(&path, entry.permission)?;
             }
         }
 
