@@ -23,6 +23,7 @@
 use flate2::write::ZlibDecoder;
 use std::fs;
 use std::io::Write;
+use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
 use crate::commons::ToString;
@@ -40,6 +41,8 @@ const ERROR_CODE_FILE_NOT_FOUND: ErrorCode = 2;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 5;
+const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 6;
+const ERROR_CODE_WRITING_META_DATA_FAILED: ErrorCode = 7;
 
 pub struct GetCommand {
     revision_number: i32,
@@ -220,15 +223,53 @@ impl GetCommand {
                 };
 
                 path += &("/".to_string() + &file_name);
-                match fs::write(path, decoded) {
+                match fs::write(&path, decoded) {
                     Ok(()) => (),
                     Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
                 };
+                set_permission(&path, entry.permission)?;
             }
         }
 
         Ok(())
     }
+}
+
+#[cfg (not(target_os = "windows"))]
+fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
+    let metadata = match fs::metadata(path) {
+        Ok(metadata) => metadata,
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
+    };
+    let mut permissions = metadata.permissions();
+    let mut mode = permissions.mode();
+    mode = mode & (0xFFFFFFFF ^ 0o777);
+    mode |= permission as u32;
+    permissions.set_mode(mode);
+    if let Err(_) = fs::set_permissions(path, permissions) {
+        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_WRITING_META_DATA_FAILED));
+    }
+
+    Ok(())
+}
+
+#[cfg (target_os = "windows")]
+fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
+    let metadata = match fs::metadata(path) {
+        Ok(metadata) => metadata,
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
+    };
+    let mut permissions = metadata.permissions();
+    if (permission as u32 & 0o200) == 0 {
+        permissions.set_readonly(true);
+    } else {
+        permissions.set_readonly(false);
+    }
+    if let Err(_) = fs::set_permissions(path, permissions) {
+        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_WRITING_META_DATA_FAILED));
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

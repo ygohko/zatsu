@@ -127,7 +127,7 @@ impl CommitCommand {
             }
         };
         let hex_string: String;
-        let permission: i32;
+        let permission: u32;
         if metadata.is_file() {
             let values = match fs::read(&file_path) {
                 Ok(values) => values,
@@ -188,12 +188,12 @@ impl CommitCommand {
 }
 
 #[cfg (not(target_os = "windows"))]
-fn permission_from_metadata(metadata: Metadata) -> i32{
-    (metadata.permissions().mode() as i32) & 0o777
+fn permission_from_metadata(metadata: Metadata) -> u32{
+    metadata.permissions().mode() & 0o777
 }
 
 #[cfg (target_os = "windows")]
-fn permission_from_metadata(metadata: Metadata) -> i32{
+fn permission_from_metadata(metadata: Metadata) -> u32{
     if metadata.permissions.readonly() {
         return 0o444;
     }
