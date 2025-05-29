@@ -41,6 +41,7 @@ const ERROR_CODE_FILE_NOT_FOUND: ErrorCode = 2;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 4;
 const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 5;
+const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 6;
 
 pub struct GetCommand {
     revision_number: i32,
@@ -237,16 +238,17 @@ impl GetCommand {
 
 #[cfg (not(target_os = "windows"))]
 fn set_permission(path: &str, permission: i32) -> Result<(), ZatsuError> {
-    // kokokara-
-
-    let metadata = fs::metadata(path);
-    let permissions = metadata.permissions();
+    let metadata = match fs::metadata(path) {
+        Ok(metadata) => metadata,
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
+    };
+    let mut permissions = metadata.permissions();
     let mut mode = permissions.mode();
-    mode = mode & (0x1FFFFFF ^ 0o777);
-    mode |= permission;
+    mode = mode & 0x1FFFFFF ^ 0o777;
+    mode |= permission as u32;
     permissions.set_mode(mode);
 
-    Ok()
+    Ok(())
 }
 
 #[cfg(test)]
