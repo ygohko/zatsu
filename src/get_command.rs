@@ -253,6 +253,25 @@ fn set_permission(path: &str, permission: i32) -> Result<(), ZatsuError> {
     Ok(())
 }
 
+#[cfg (target_os = "windows")]
+fn set_permission(path: &str, permission: i32) -> Result<(), ZatsuError> {
+    let metadata = match fs::metadata(path) {
+        Ok(metadata) => metadata,
+        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
+    };
+    let mut permissions = metadata.permissions();
+    if (permission as u32 & 0o200) == 0 {
+        permissions.set_readonly(true);
+    } else {
+        permissions.set_readonly(false);
+    }
+    if let Err(_) = fs::set_permissions(path, permissions) {
+        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_WRITING_META_DATA_FAILED));
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
