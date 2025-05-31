@@ -66,7 +66,7 @@ struct InitArguments {
 
 #[derive(Parser, PartialEq)]
 struct CommitArguments {
-    /// Description for this revition..
+    /// Description for this revision.
     #[arg(short, long)]
     description: Option<String>,
 }
