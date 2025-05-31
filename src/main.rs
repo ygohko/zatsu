@@ -65,6 +65,13 @@ struct InitArguments {
 }
 
 #[derive(Parser, PartialEq)]
+struct CommitArguments {
+    /// Description for this revition..
+    #[arg(short, long)]
+    description: Option<String>,
+}
+
+#[derive(Parser, PartialEq)]
 struct GetArguments {
     /// Revision to get a file or directory
     revision: i32,
@@ -83,7 +90,7 @@ enum CommandKind {
     /// Initialize a repository into this directory
     Init(InitArguments),
     /// Commit current files into this directory's repository
-    Commit,
+    Commit(CommitArguments),
     /// Show logs of this directory's repository
     Log,
     /// Get a file or directory that is specified
@@ -96,13 +103,20 @@ enum CommandKind {
 
 fn main() -> Result<(), ZatsuError> {
     let arguments = Arguments::parse();
-    let mut command = CommandKind::Commit;
+    let mut command = CommandKind::Commit(
+        CommitArguments{
+            description: None,
+        }
+    );
     if arguments.command.is_some() {
         command = arguments.command.unwrap();
     }
 
-    if command == CommandKind::Commit {
-        let command = CommitCommand::new();
+    if let CommandKind::Commit(arguments) = command {
+        let mut command = CommitCommand::new();
+        if arguments.description.is_some() {
+            command.set_description(&arguments.description.unwrap());
+        }
         match command.execute() {
             Ok(()) => (),
             Err(error) => return Err(error),
