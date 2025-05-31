@@ -23,6 +23,7 @@
 use flate2::write::ZlibDecoder;
 use std::fs;
 use std::io::Write;
+#[cfg (not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 

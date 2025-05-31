@@ -26,6 +26,7 @@ use flate2::Compression;
 use std::fs;
 use std::fs::Metadata;
 use std::io::Write;
+#[cfg (not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
@@ -200,7 +201,7 @@ fn permission_from_metadata(metadata: Metadata) -> u32{
 
 #[cfg (target_os = "windows")]
 fn permission_from_metadata(metadata: Metadata) -> u32{
-    if metadata.permissions.readonly() {
+    if metadata.permissions().readonly() {
         return 0o444;
     }
 
