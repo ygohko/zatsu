@@ -78,7 +78,7 @@ impl Command for LogCommand {
                 revision_number,
                 commited.format("%Y/%m/%d %H:%M")
             );
-            if  revision.description != "".to_string() {
+            if  !revision.description.is_empty() {
                 println!("{}", revision.description);
             }
 
