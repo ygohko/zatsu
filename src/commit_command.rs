@@ -48,6 +48,7 @@ const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 3;
 
 pub struct CommitCommand {
+    description: String,
     pub path: String,
 }
 
@@ -70,7 +71,7 @@ impl Command for CommitCommand {
         let mut revision = Revision {
             commited: now.timestamp_millis(),
             entries: Vec::new(),
-            description: "".to_string(),
+            description: self.description.clone(),
         };
         let mut done = false;
         while !done {
@@ -106,8 +107,13 @@ impl Command for CommitCommand {
 impl CommitCommand {
     pub fn new() -> Self {
         Self {
+            description: "".to_string(),
             path: ".".to_string(),
         }
+    }
+
+    pub fn set_description(&mut self, description: &str) {
+        self.description = description.to_string();
     }
 
     fn process_file(
