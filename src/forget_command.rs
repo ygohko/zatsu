@@ -24,13 +24,13 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::Command;
+use crate::Repository;
+use crate::ZatsuError;
 use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
-use crate::Command;
-use crate::Repository;
-use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "forget_command";
 
@@ -90,7 +90,7 @@ impl ForgetCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_READING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
         let mut revision_paths: Vec<PathBuf> = Vec::new();
@@ -110,7 +110,7 @@ impl ForgetCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_READING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
         let mut object_paths: Vec<PathBuf> = Vec::new();
@@ -144,7 +144,7 @@ fn remove_unused_revisions(
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_READING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
         for result in read_dir {
@@ -220,7 +220,7 @@ fn remove_unused_objects(
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_READING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
 
@@ -235,19 +235,28 @@ fn remove_unused_objects(
                         let hash = file_name.clone();
                         println!("Checking: object {}", hash);
                         let directory_name = hash[0..2].to_string();
-                        let mark_file_path =
-                            format!("{}/objects/{}/{}.mark", repository.path(), directory_name, hash);
+                        let mark_file_path = format!(
+                            "{}/objects/{}/{}.mark",
+                            repository.path(),
+                            directory_name,
+                            hash
+                        );
                         let marked = Path::new(&mark_file_path).exists();
                         if !marked {
                             println!("Removing: object {}", hash);
-                            let path = format!("{}/objects/{}/{}", repository.path(), directory_name, hash);
+                            let path = format!(
+                                "{}/objects/{}/{}",
+                                repository.path(),
+                                directory_name,
+                                hash
+                            );
                             match fs::remove_file(&path) {
                                 Ok(_) => (),
                                 Err(_) => {
                                     return Err(ZatsuError::new(
                                         ERROR_ID,
                                         ERROR_CODE_REMOVING_FILE_FAILED,
-                                    ))
+                                    ));
                                 }
                             };
                             removed_object_count += 1;
@@ -267,7 +276,7 @@ fn remove_unused_objects(
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_READING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
 
@@ -280,14 +289,19 @@ fn remove_unused_objects(
                     let file_name = option.unwrap().to_string();
                     if file_name.ends_with(".mark") {
                         let directory_name = file_name[0..2].to_string();
-                        let path = format!("{}/objects/{}/{}", repository.path(), directory_name, file_name);
+                        let path = format!(
+                            "{}/objects/{}/{}",
+                            repository.path(),
+                            directory_name,
+                            file_name
+                        );
                         match fs::remove_file(&path) {
                             Ok(_) => (),
                             Err(_) => {
                                 return Err(ZatsuError::new(
                                     ERROR_ID,
                                     ERROR_CODE_REMOVING_FILE_FAILED,
-                                ))
+                                ));
                             }
                         };
                     }
@@ -306,9 +320,9 @@ mod tests {
     use std::fs;
     use tempdir::TempDir;
 
-    use crate::commons::ToString;
     use crate::CommitCommand;
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_creatable() {

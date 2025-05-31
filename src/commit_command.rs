@@ -21,26 +21,26 @@
  */
 
 use chrono::Utc;
-use flate2::write::ZlibEncoder;
 use flate2::Compression;
+use flate2::write::ZlibEncoder;
 use std::fs;
 use std::fs::Metadata;
 use std::io::Write;
-#[cfg (not(target_os = "windows"))]
+#[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
-use crate::commons::ToString;
-use crate::error::ErrorCode;
-use crate::error::ErrorId;
-use crate::file_path_producer;
-use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::FilePathProducer;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
+use crate::commons::ToString;
+use crate::error::ErrorCode;
+use crate::error::ErrorId;
+use crate::file_path_producer;
+use crate::repository::factory;
 
 pub const ERROR_ID: ErrorId = "commit_command";
 
@@ -130,7 +130,7 @@ impl CommitCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_READING_META_DATA_FAILED,
-                ))
+                ));
             }
         };
         let hex_string: String;
@@ -142,7 +142,7 @@ impl CommitCommand {
             };
             hex_string = repository.object_hash(&values);
             permission = permission_from_metadata(metadata);
-            
+
             let directory_name = hex_string[0..2].to_string();
             let mut path = PathBuf::from(&self.path);
             path.push(".zatsu");
@@ -180,8 +180,7 @@ impl CommitCommand {
                     Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
                 };
             }
-        }
-        else {
+        } else {
             return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
         }
 
@@ -194,13 +193,13 @@ impl CommitCommand {
     }
 }
 
-#[cfg (not(target_os = "windows"))]
-fn permission_from_metadata(metadata: Metadata) -> u32{
+#[cfg(not(target_os = "windows"))]
+fn permission_from_metadata(metadata: Metadata) -> u32 {
     metadata.permissions().mode() & 0o777
 }
 
-#[cfg (target_os = "windows")]
-fn permission_from_metadata(metadata: Metadata) -> u32{
+#[cfg(target_os = "windows")]
+fn permission_from_metadata(metadata: Metadata) -> u32 {
     if metadata.permissions().readonly() {
         return 0o444;
     }

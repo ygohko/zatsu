@@ -23,17 +23,17 @@
 use flate2::write::ZlibDecoder;
 use std::fs;
 use std::io::Write;
-#[cfg (not(target_os = "windows"))]
+#[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
+use crate::Command;
+use crate::Revision;
+use crate::ZatsuError;
 use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
-use crate::Command;
-use crate::Revision;
-use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "get_command";
 
@@ -155,9 +155,17 @@ impl GetCommand {
         let split: Vec<_> = self.getting_path.split("/").collect();
         let count = split.len();
         if count >= 1 {
-            root_path = format!("{}/{}-r{}", self.path, split[count - 1], self.revision_number);
+            root_path = format!(
+                "{}/{}-r{}",
+                self.path,
+                split[count - 1],
+                self.revision_number
+            );
         } else {
-            root_path = format!("{}/{}-r{}", self.path, self.getting_path, self.revision_number);
+            root_path = format!(
+                "{}/{}-r{}",
+                self.path, self.getting_path, self.revision_number
+            );
         }
         match fs::create_dir(&root_path) {
             Ok(_) => (),
@@ -165,7 +173,7 @@ impl GetCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_CREATING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
 
@@ -182,20 +190,20 @@ impl GetCommand {
                 ))) {
                     Ok(values) => values,
                     Err(_) => {
-                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
                     }
                 };
                 let mut decoder = ZlibDecoder::new(Vec::new());
                 match decoder.write_all(&values) {
                     Ok(()) => (),
                     Err(_) => {
-                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
                     }
                 };
                 let decoded = match decoder.finish() {
                     Ok(decoded) => decoded,
                     Err(_) => {
-                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
                     }
                 };
 
@@ -219,7 +227,7 @@ impl GetCommand {
                         return Err(ZatsuError::new(
                             ERROR_ID,
                             ERROR_CODE_CREATING_DIRECTORY_FAILED,
-                        ))
+                        ));
                     }
                 };
 
@@ -236,11 +244,16 @@ impl GetCommand {
     }
 }
 
-#[cfg (not(target_os = "windows"))]
+#[cfg(not(target_os = "windows"))]
 fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
     let metadata = match fs::metadata(path) {
         Ok(metadata) => metadata,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
+        Err(_) => {
+            return Err(ZatsuError::new(
+                ERROR_ID,
+                ERROR_CODE_READING_META_DATA_FAILED,
+            ));
+        }
     };
     let mut permissions = metadata.permissions();
     let mut mode = permissions.mode();
@@ -248,17 +261,25 @@ fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
     mode |= permission as u32;
     permissions.set_mode(mode);
     if let Err(_) = fs::set_permissions(path, permissions) {
-        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_WRITING_META_DATA_FAILED));
+        return Err(ZatsuError::new(
+            ERROR_ID,
+            ERROR_CODE_WRITING_META_DATA_FAILED,
+        ));
     }
 
     Ok(())
 }
 
-#[cfg (target_os = "windows")]
+#[cfg(target_os = "windows")]
 fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
     let metadata = match fs::metadata(path) {
         Ok(metadata) => metadata,
-        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_READING_META_DATA_FAILED)),
+        Err(_) => {
+            return Err(ZatsuError::new(
+                ERROR_ID,
+                ERROR_CODE_READING_META_DATA_FAILED,
+            ));
+        }
     };
     let mut permissions = metadata.permissions();
     if (permission as u32 & 0o200) == 0 {
@@ -267,7 +288,10 @@ fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
         permissions.set_readonly(false);
     }
     if let Err(_) = fs::set_permissions(path, permissions) {
-        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_WRITING_META_DATA_FAILED));
+        return Err(ZatsuError::new(
+            ERROR_ID,
+            ERROR_CODE_WRITING_META_DATA_FAILED,
+        ));
     }
 
     Ok(())

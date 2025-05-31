@@ -26,12 +26,12 @@ use chrono::Utc;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::commons::ToString;
-use crate::error::ErrorId;
-use crate::repository::factory;
 use crate::Command;
 use crate::Entry;
 use crate::ZatsuError;
+use crate::commons::ToString;
+use crate::error::ErrorId;
+use crate::repository::factory;
 
 #[allow(dead_code)]
 pub const ERROR_ID: ErrorId = "log_command";
@@ -78,7 +78,7 @@ impl Command for LogCommand {
                 revision_number,
                 commited.format("%Y/%m/%d %H:%M")
             );
-            if  !revision.description.is_empty() {
+            if !revision.description.is_empty() {
                 println!("{}", revision.description);
             }
 

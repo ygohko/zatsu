@@ -87,7 +87,7 @@ impl FilePathProducer {
                         return Err(ZatsuError::new(
                             ERROR_ID,
                             ERROR_CODE_READING_DIRECTORY_FAILED,
-                        ))
+                        ));
                     }
                 };
                 for result in read_dir {
@@ -100,7 +100,7 @@ impl FilePathProducer {
                                 return Err(ZatsuError::new(
                                     ERROR_ID,
                                     ERROR_CODE_READING_META_DATA_FAILED,
-                                ))
+                                ));
                             }
                         };
                         let path = entry.path().to_string();

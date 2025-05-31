@@ -25,12 +25,12 @@ use serde_derive::Serialize;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::Revision;
 use crate::commons;
 use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
-use crate::Revision;
 
 pub const ERROR_ID: ErrorId = "repository";
 
@@ -82,7 +82,7 @@ impl Repository for RepositoryBase {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_LOADING_REVISION_FAILED,
-                ))
+                ));
             }
         };
 
@@ -369,10 +369,10 @@ mod tests {
 
     use tempdir::TempDir;
 
-    use crate::commons;
-    use crate::commons::ToString;
     use crate::Command;
     use crate::InitCommand;
+    use crate::commons;
+    use crate::commons::ToString;
 
     #[test]
     fn repository_is_savable() {
