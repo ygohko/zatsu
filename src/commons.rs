@@ -20,13 +20,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-use std::ffi::OsStr;
-use flate2::write::ZlibEncoder;
 use flate2::Compression;
+use flate2::write::ZlibEncoder;
 use hex_string::HexString;
 use sha1::Digest;
 use sha1::Sha1;
 use sha2::Sha256;
+use std::ffi::OsStr;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -132,9 +132,9 @@ mod tests {
 
     use tempdir::TempDir;
 
-    use crate::commons::ToString;
     use crate::Command;
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn object_is_savable() {

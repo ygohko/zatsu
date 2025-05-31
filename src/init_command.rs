@@ -24,12 +24,12 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::Command;
+use crate::ZatsuError;
 use crate::commons::ToString;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
-use crate::Command;
-use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "init_command";
 
@@ -60,7 +60,7 @@ impl Command for InitCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_CREATING_REPOSITORY_FAILED,
-                ))
+                ));
             }
         };
         let mut path = repository_path.clone();
@@ -71,7 +71,7 @@ impl Command for InitCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_CREATING_REPOSITORY_FAILED,
-                ))
+                ));
             }
         };
         let mut path = repository_path.clone();
@@ -82,7 +82,7 @@ impl Command for InitCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_CREATING_REPOSITORY_FAILED,
-                ))
+                ));
             }
         };
         let mut path = repository_path.clone();
@@ -93,7 +93,7 @@ impl Command for InitCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_CREATING_REPOSITORY_FAILED,
-                ))
+                ));
             }
         };
         let repository = factory::new(self.version);
@@ -143,7 +143,7 @@ mod tests {
         repository_path.push(".zatsu");
         let exists = Path::new(&repository_path).exists();
         assert_eq!(true, exists);
-        
+
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);

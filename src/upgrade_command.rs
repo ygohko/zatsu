@@ -25,16 +25,16 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
+use crate::Command;
+use crate::Entry;
+use crate::Revision;
+use crate::ZatsuError;
 use crate::commons;
 use crate::commons::ToString;
 use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
-use crate::Command;
-use crate::Entry;
-use crate::Revision;
-use crate::ZatsuError;
 
 pub const ERROR_ID: ErrorId = "upgrade_command";
 
@@ -76,7 +76,7 @@ impl Command for UpgradeCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_CREATING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
 
@@ -89,7 +89,7 @@ impl Command for UpgradeCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_CREATING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
 
@@ -116,7 +116,7 @@ impl Command for UpgradeCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_REMOVING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
 
@@ -145,7 +145,7 @@ impl UpgradeCommand {
                 return Err(ZatsuError::new(
                     ERROR_ID,
                     ERROR_CODE_READING_DIRECTORY_FAILED,
-                ))
+                ));
             }
         };
         let mut object_paths: Vec<PathBuf> = Vec::new();
@@ -164,7 +164,7 @@ impl UpgradeCommand {
                     return Err(ZatsuError::new(
                         ERROR_ID,
                         ERROR_CODE_READING_DIRECTORY_FAILED,
-                    ))
+                    ));
                 }
             };
             for result in read_dir {
@@ -175,20 +175,20 @@ impl UpgradeCommand {
                     let values = match fs::read(file_path.clone()) {
                         Ok(values) => values,
                         Err(_) => {
-                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
                         }
                     };
                     let mut decoder = ZlibDecoder::new(Vec::new());
                     match decoder.write_all(&values) {
                         Ok(()) => (),
                         Err(_) => {
-                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
                         }
                     };
                     let decoded = match decoder.finish() {
                         Ok(decoded) => decoded,
                         Err(_) => {
-                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED))
+                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
                         }
                     };
 
@@ -200,7 +200,9 @@ impl UpgradeCommand {
                     new_file_path.push_str(".new");
                     match fs::write(&new_file_path, hash) {
                         Ok(()) => (),
-                        Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
+                        Err(_) => {
+                            return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED));
+                        }
                     };
                 }
             }
@@ -222,11 +224,16 @@ impl UpgradeCommand {
             let mut new_entries: Vec<Entry> = Vec::new();
             for entry in revision.entries {
                 let directory_name = entry.hash[0..2].to_string();
-                let path = format!("{}/.zatsu/objects-v1/{}/{}.new", self.path, directory_name, entry.hash);
+                let path = format!(
+                    "{}/.zatsu/objects-v1/{}/{}.new",
+                    self.path, directory_name, entry.hash
+                );
                 println!("Updating: {}", entry.path);
                 let new_hash = match fs::read_to_string(&path) {
                     Ok(new_hash) => new_hash,
-                    Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
+                    Err(_) => {
+                        return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED));
+                    }
                 };
 
                 let new_entry = Entry {
@@ -252,9 +259,9 @@ mod test {
     use std::fs;
     use tempdir::TempDir;
 
-    use crate::commons::ToString;
     use crate::CommitCommand;
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_creatable() {

@@ -103,11 +103,7 @@ enum CommandKind {
 
 fn main() -> Result<(), ZatsuError> {
     let arguments = Arguments::parse();
-    let mut command = CommandKind::Commit(
-        CommitArguments{
-            description: None,
-        }
-    );
+    let mut command = CommandKind::Commit(CommitArguments { description: None });
     if arguments.command.is_some() {
         command = arguments.command.unwrap();
     }

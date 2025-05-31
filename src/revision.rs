@@ -78,10 +78,10 @@ mod tests {
 
     use tempdir::TempDir;
 
-    use crate::commons::ToString;
     use crate::Command;
     use crate::CommitCommand;
     use crate::InitCommand;
+    use crate::commons::ToString;
 
     #[test]
     fn is_loadable() {
