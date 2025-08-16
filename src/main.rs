@@ -50,6 +50,7 @@ use crate::repository::Repository;
 use crate::revision::Revision;
 use crate::upgrade_command::UpgradeCommand;
 
+/// Command-line arguments for the Zatsu application.
 #[derive(Parser)]
 struct Arguments {
     /// Command you want to do
@@ -57,6 +58,7 @@ struct Arguments {
     command: Option<CommandKind>,
 }
 
+/// Arguments for the `init` command.
 #[derive(Parser, PartialEq)]
 struct InitArguments {
     /// Repository version to be created.
@@ -64,6 +66,7 @@ struct InitArguments {
     version: Option<i32>,
 }
 
+/// Arguments for the `commit` command.
 #[derive(Parser, PartialEq)]
 struct CommitArguments {
     /// Description for this revision.
@@ -71,6 +74,7 @@ struct CommitArguments {
     description: Option<String>,
 }
 
+/// Arguments for the `get` command.
 #[derive(Parser, PartialEq)]
 struct GetArguments {
     /// Revision to get a file or directory
@@ -79,12 +83,14 @@ struct GetArguments {
     path: String,
 }
 
+/// Arguments for the `forget` command.
 #[derive(Parser, PartialEq)]
 struct ForgetArguments {
     /// Revision count to keep
     count: i32,
 }
 
+/// Enumerates the available commands in the Zatsu CLI.
 #[derive(Subcommand, PartialEq)]
 enum CommandKind {
     /// Initialize a repository into this directory
@@ -101,6 +107,13 @@ enum CommandKind {
     Upgrade,
 }
 
+/// Main entry point of the Zatsu CLI application.
+///
+/// This function parses command-line arguments and executes the corresponding command.
+///
+/// # Returns
+///
+/// A `Result` indicating success or an error if any command execution fails.
 fn main() -> Result<(), ZatsuError> {
     let arguments = Arguments::parse();
     let mut command = CommandKind::Commit(CommitArguments { description: None });

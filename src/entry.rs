@@ -23,6 +23,7 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
+/// Represents an entry in a revision, containing file path, hash, and permissions.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Entry {
     pub path: String,

@@ -36,6 +36,7 @@ const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 2;
 const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 3;
 const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 4;
 
+/// Represents a single revision in the repository.
 #[derive(Serialize, Deserialize)]
 pub struct Revision {
     pub commited: i64,
@@ -44,6 +45,15 @@ pub struct Revision {
 }
 
 impl Revision {
+    /// Loads a `Revision` from a file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path to the revision file.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the loaded `Revision` or an error.
     pub fn load(path: &str) -> Result<Revision, ZatsuError> {
         let serialized = match fs::read_to_string(path) {
             Ok(serialized) => serialized,
@@ -57,6 +67,15 @@ impl Revision {
         Ok(revision)
     }
 
+    /// Saves the `Revision` to a file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path where the revision should be saved.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error.
     pub fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,

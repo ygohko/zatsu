@@ -36,11 +36,21 @@ use crate::repository::factory;
 #[allow(dead_code)]
 pub const ERROR_ID: ErrorId = "log_command";
 
+/// A command to display the revision history of the repository.
 pub struct LogCommand {
     path: String,
 }
 
 impl Command for LogCommand {
+    /// Executes the log command.
+    ///
+    /// This function iterates through the revisions in the repository, displays
+    /// information about each revision (number, commit time, description), and
+    /// lists the changes (added, modified, deleted files) between consecutive revisions.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -121,6 +131,7 @@ impl Command for LogCommand {
 }
 
 impl LogCommand {
+    /// Creates a new `LogCommand` instance.
     pub fn new() -> Self {
         Self {
             path: ".".to_string(),
@@ -138,6 +149,17 @@ fn find_hash(entries: &Vec<Entry>, path: &String) -> Option<String> {
     None
 }
 
+/// Divides entries into a HashMap based on the first character of their paths.
+///
+/// This is an optimization to reduce the number of comparisons needed when checking for changes.
+///
+/// # Arguments
+///
+/// * `entries` - A vector of `Entry` structs.
+///
+/// # Returns
+///
+/// A `HashMap` where keys are the first characters of paths and values are vectors of `Entry`.
 fn divided_entries(entries: &Vec<Entry>) -> HashMap<char, Vec<Entry>> {
     let mut result: HashMap<char, Vec<Entry>> = HashMap::new();
 
@@ -159,6 +181,15 @@ fn divided_entries(entries: &Vec<Entry>) -> HashMap<char, Vec<Entry>> {
     result
 }
 
+/// Updates a list of changes by comparing current entries with previous entries.
+///
+/// This function identifies added, modified, and deleted files between two sets of entries.
+///
+/// # Arguments
+///
+/// * `changes` - A mutable vector of strings to which change descriptions will be added.
+/// * `entries` - The current set of `Entry` structs.
+/// * `previous_entries` - The previous set of `Entry` structs.
 fn update_changes(changes: &mut Vec<String>, entries: &Vec<Entry>, previous_entries: &Vec<Entry>) {
     for entry in entries {
         let mut found = false;

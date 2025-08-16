@@ -45,6 +45,7 @@ const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 5;
 const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 6;
 const ERROR_CODE_WRITING_META_DATA_FAILED: ErrorCode = 7;
 
+/// A command to retrieve files or directories from a specific revision.
 pub struct GetCommand {
     revision_number: i32,
     getting_path: String,
@@ -52,6 +53,16 @@ pub struct GetCommand {
 }
 
 impl Command for GetCommand {
+    /// Executes the get command.
+    ///
+    /// This function retrieves a file or a directory from the specified revision.
+    /// It first checks if the repository exists and if the revision number is valid.
+    /// Then, it determines if the `getting_path` refers to a file or a directory
+    /// and calls the appropriate saving function.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -102,6 +113,12 @@ impl Command for GetCommand {
 }
 
 impl GetCommand {
+    /// Creates a new `GetCommand` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision_number` - The revision number to retrieve from.
+    /// * `path` - The path of the file or directory to retrieve.
     pub fn new(revision_number: i32, path: &str) -> Self {
         Self {
             revision_number,
@@ -110,6 +127,15 @@ impl GetCommand {
         }
     }
 
+    /// Saves a single file retrieved from the repository.
+    ///
+    /// # Arguments
+    ///
+    /// * `hash` - The hash of the file to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if saving fails.
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
         let directory_name = hash[0..2].to_string();
         let mut path = PathBuf::from(&self.path);
@@ -149,6 +175,15 @@ impl GetCommand {
         Ok(())
     }
 
+    /// Saves a directory and its contents retrieved from the repository.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision` - The revision from which to retrieve the directory.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if saving fails.
     fn save_directory(&self, revision: &Revision) -> Result<(), ZatsuError> {
         // Make root directory.
         let root_path: String;
@@ -245,6 +280,16 @@ impl GetCommand {
 }
 
 #[cfg(not(target_os = "windows"))]
+/// Sets file permissions for non-Windows systems.
+///
+/// # Arguments
+///
+/// * `path` - The path to the file.
+/// * `permission` - The permissions to set.
+///
+/// # Returns
+///
+/// A `Result` indicating success or an error if setting permissions fails.
 fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
     let metadata = match fs::metadata(path) {
         Ok(metadata) => metadata,
@@ -271,6 +316,16 @@ fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
 }
 
 #[cfg(target_os = "windows")]
+/// Sets file permissions for Windows systems.
+///
+/// # Arguments
+///
+/// * `path` - The path to the file.
+/// * `permission` - The permissions to set.
+///
+/// # Returns
+///
+/// A `Result` indicating success or an error if setting permissions fails.
 fn set_permission(path: &str, permission: u32) -> Result<(), ZatsuError> {
     let metadata = match fs::metadata(path) {
         Ok(metadata) => metadata,

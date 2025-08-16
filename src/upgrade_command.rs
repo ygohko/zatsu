@@ -44,11 +44,22 @@ const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 4;
 const ERROR_CODE_REMOVING_DIRECTORY_FAILED: ErrorCode = 5;
 
+/// A command to upgrade the repository format.
 pub struct UpgradeCommand {
     path: String,
 }
 
 impl Command for UpgradeCommand {
+    /// Executes the upgrade command.
+    ///
+    /// This function upgrades the repository from version 1 to version 2.
+    /// It involves moving object files, creating new object directories,
+    /// copying objects with new hashes, updating entry hashes in revisions,
+    /// updating the version file, and removing old object directories.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the upgrade fails.
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -128,12 +139,21 @@ impl Command for UpgradeCommand {
 }
 
 impl UpgradeCommand {
+    /// Creates a new `UpgradeCommand` instance.
     pub fn new() -> Self {
         Self {
             path: ".".to_string(),
         }
     }
 
+    /// Copies objects from the old object store (`objects-v1`) to the new one (`objects`).
+    ///
+    /// During the copy, it recalculates the hash of each object using the new hashing algorithm
+    /// (SHA-256) and saves the new hash to a temporary `.new` file.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if copying fails.
     fn copy_objects(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -211,6 +231,19 @@ impl UpgradeCommand {
         Ok(())
     }
 
+    /// Updates the entry hashes in all revisions to reflect the new hashing algorithm.
+    ///
+    /// This function reads each revision, updates the `hash` field of each `Entry`
+    /// with the new SHA-256 hash (read from the temporary `.new` files),
+    /// and then saves the updated revision.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision_numbers` - A vector of revision numbers to update.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if updating entries fails.
     fn update_entries(&self, revision_numbers: &Vec<i32>) -> Result<(), ZatsuError> {
         for revision_number in revision_numbers {
             println!("Updating: Revision {}", revision_number);
