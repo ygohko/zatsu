@@ -22,6 +22,12 @@
 
 use crate::ZatsuError;
 
+/// Defines a common interface for commands that can be executed.
 pub trait Command {
+    /// Executes the command.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the command fails.
     fn execute(&self) -> Result<(), ZatsuError>;
 }

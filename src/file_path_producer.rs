@@ -35,6 +35,7 @@ const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 2;
 pub const ERROR_CODE_PRODUCING_FINISHED: ErrorCode = 3;
 
+/// A utility for producing file paths within a given directory, recursively.
 pub struct FilePathProducer {
     file_paths: Vec<String>,
     directory_paths: Vec<String>,
@@ -42,6 +43,11 @@ pub struct FilePathProducer {
 }
 
 impl FilePathProducer {
+    /// Creates a new `FilePathProducer` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The root path from which to start producing file paths.
     pub fn new(path: String) -> FilePathProducer {
         let prefix_length = path.len() + 1;
         return FilePathProducer {
@@ -51,6 +57,14 @@ impl FilePathProducer {
         };
     }
 
+    /// Returns the next file path in the sequence.
+    ///
+    /// This method traverses the directory structure, skipping `.zatsu`, `.jj`, and `.git` directories.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the next file path as a `String`, or a `ZatsuError` if
+    /// there are no more files to produce or an I/O error occurs.
     pub fn next(&mut self) -> Result<String, ZatsuError> {
         let done = false;
         while !done {

@@ -30,6 +30,7 @@ pub type ErrorCode = i32;
 #[allow(dead_code)]
 pub const ERROR_CODE_GENERAL: ErrorCode = 0;
 
+/// Represents a custom error type for the Zatsu application.
 #[derive(Debug)]
 pub struct ZatsuError {
     pub id: ErrorId,
@@ -51,6 +52,16 @@ impl fmt::Display for ZatsuError {
 impl Error for ZatsuError {}
 
 impl ZatsuError {
+    /// Creates a new `ZatsuError` with the given ID and code.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - The ID of the error.
+    /// * `code` - The error code.
+    ///
+    /// # Returns
+    ///
+    /// A new `ZatsuError` instance.
     pub fn new(id: ErrorId, code: ErrorCode) -> ZatsuError {
         let backtrace = Backtrace::capture();
         let string = format!("{}", backtrace);
@@ -63,6 +74,17 @@ impl ZatsuError {
     }
 
     #[allow(dead_code)]
+    /// Creates a new `ZatsuError` with the given ID, code, and details.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - The ID of the error.
+    /// * `code` - The error code.
+    /// * `details` - Additional details about the error.
+    ///
+    /// # Returns
+    ///
+    /// A new `ZatsuError` instance.
     pub fn with_details(id: ErrorId, code: ErrorCode, details: String) -> ZatsuError {
         let backtrace = Backtrace::capture();
         let string = format!("{}", backtrace);

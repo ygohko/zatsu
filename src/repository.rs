@@ -40,23 +40,72 @@ const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 3;
 const ERROR_CODE_DESERIALIZATION_FAILED: ErrorCode = 4;
 const ERROR_CODE_SERIALIZATION_FAILED: ErrorCode = 5;
 
+/// Defines the interface for a Zatsu repository.
 pub trait Repository {
+    /// Saves the repository metadata.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path where the repository metadata should be saved.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error.
     fn save(&self, path: &str) -> Result<(), ZatsuError>;
+    /// Loads a specific revision from the repository.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision_number` - The number of the revision to load.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the loaded `Revision` or an error.
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError>;
+    /// Saves a revision to the repository.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision` - The `Revision` to save.
+    /// * `revision_number` - The number of the revision.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error.
     fn save_revision(
         &mut self,
         revision: &Revision,
         revision_number: i32,
     ) -> Result<(), ZatsuError>;
+    /// Returns a vector of all revision numbers in the repository.
     fn revision_numbers(&self) -> Vec<i32>;
+    /// Sets the revision numbers for the repository.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision_numbers` - A vector of revision numbers.
     fn set_revision_numbers(&mut self, revision_numbers: &Vec<i32>);
+    /// Returns the version of the repository.
     fn version(&self) -> i32;
+    /// Returns the path to the repository.
     fn path(&self) -> String;
+    /// Returns the latest revision number in the repository.
     fn latest_revision(&self) -> i32;
+    /// Converts the repository to a serializable version 1 representation.
     fn to_serializable_v1(&self) -> SerializableRepositoryV1;
+    /// Calculates the object hash for given values.
+    ///
+    /// # Arguments
+    ///
+    /// * `values` - The values to hash.
+    ///
+    /// # Returns
+    ///
+    /// The calculated hash as a `String`.
     fn object_hash(&self, values: &Vec<u8>) -> String;
 }
 
+/// Base implementation for the `Repository` trait.
 struct RepositoryBase {
     revision_numbers: Vec<i32>,
     version: i32,
@@ -160,6 +209,16 @@ impl Repository for RepositoryBase {
 }
 
 impl RepositoryBase {
+    /// Creates a `RepositoryBase` from a `SerializableRepositoryV1`.
+    ///
+    /// # Arguments
+    ///
+    /// * `repository_v1` - The serializable repository version 1.
+    /// * `path` - The path to the repository.
+    ///
+    /// # Returns
+    ///
+    /// A new `RepositoryBase` instance.
     fn from_serializable_v1(repository_v1: &SerializableRepositoryV1, path: &str) -> Self {
         RepositoryBase {
             revision_numbers: repository_v1.revision_numbers.clone(),
@@ -169,6 +228,7 @@ impl RepositoryBase {
     }
 }
 
+/// Represents a version 1 repository.
 struct RepositoryV1 {
     base: RepositoryBase,
 }
@@ -219,6 +279,7 @@ impl Repository for RepositoryV1 {
     }
 }
 
+/// Represents a version 2 repository.
 struct RepositoryV2 {
     base: RepositoryBase,
 }
@@ -272,6 +333,15 @@ impl Repository for RepositoryV2 {
 pub mod factory {
     use super::*;
 
+    /// Creates a new repository instance based on the specified version.
+    ///
+    /// # Arguments
+    ///
+    /// * `version` - The version of the repository to create.
+    ///
+    /// # Returns
+    ///
+    /// A `Box` containing a new `Repository` trait object.
     pub fn new(version: i32) -> Box<dyn Repository> {
         let base = RepositoryBase {
             revision_numbers: Vec::new(),
@@ -285,6 +355,17 @@ pub mod factory {
         }
     }
 
+    /// Loads a repository from the specified path.
+    ///
+    /// This function reads the repository version and loads the appropriate repository implementation.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path to the repository.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a `Box` with the loaded `Repository` trait object or an error.
     pub fn load(path: &str) -> Result<Box<dyn Repository>, ZatsuError> {
         let mut version_path = PathBuf::from(path);
         version_path.push("version.txt");
@@ -310,7 +391,20 @@ pub mod factory {
     }
 
     #[allow(dead_code)]
+    /// Creates a new repository instance with specified revision numbers and version.
+    ///
+    /// This function is primarily used for testing purposes.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision_numbers` - A vector of revision numbers.
+    /// * `version` - The version of the repository.
+    ///
+    /// # Returns
+    ///
+    /// A `Box` containing a new `Repository` trait object.
     pub fn with_arguments(revision_numbers: &Vec<i32>, version: i32) -> Box<dyn Repository> {
+
         let base = RepositoryBase {
             revision_numbers: revision_numbers.to_vec(),
             version: version,
@@ -325,12 +419,22 @@ pub mod factory {
     }
 }
 
+/// A serializable representation of the repository for version 1.
 #[derive(Serialize, Deserialize)]
 pub struct SerializableRepositoryV1 {
     revision_numbers: Vec<i32>,
 }
 
 impl SerializableRepositoryV1 {
+    /// Saves the serializable repository to a JSON file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The directory path where the `repository.json` file will be saved.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error.
     fn save(&self, path: &str) -> Result<(), ZatsuError> {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
@@ -347,6 +451,15 @@ impl SerializableRepositoryV1 {
         Ok(())
     }
 
+    /// Loads a serializable repository from a JSON file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The directory path where the `repository.json` file is located.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the loaded `SerializableRepositoryV1` or an error.
     fn load(path: &str) -> Result<Self, ZatsuError> {
         let mut json_path = PathBuf::from(path);
         json_path.push("repository.json");

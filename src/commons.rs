@@ -40,28 +40,47 @@ pub const ERROR_ID: ErrorId = "commons";
 
 pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 1;
 
+/// A trait for converting types to `String`.
 pub trait ToString {
+    /// Converts the value to a `String`.
     fn to_string(&self) -> String;
 }
 
 impl ToString for OsStr {
+    /// Converts an `OsStr` to a `String`.
     fn to_string(&self) -> String {
         self.to_string_lossy().to_string()
     }
 }
 
 impl ToString for Path {
+    /// Converts a `Path` to a `String`.
     fn to_string(&self) -> String {
         self.to_string_lossy().to_string()
     }
 }
 
 impl ToString for PathBuf {
+    /// Converts a `PathBuf` to a `String`.
     fn to_string(&self) -> String {
         self.to_string_lossy().to_string()
     }
 }
 
+/// Saves an object (file content) to the repository's object store.
+///
+/// This function compresses the provided `values` using Zlib and stores them
+/// in a directory structure based on the `hash`.
+///
+/// # Arguments
+///
+/// * `values` - The content of the object as a vector of bytes.
+/// * `hash` - The hash of the object, used for naming and directory structure.
+/// * `repository_path` - The path to the repository.
+///
+/// # Returns
+///
+/// A `Result` indicating success or an error if saving fails.
 pub fn save_object(values: &Vec<u8>, hash: &str, repository_path: &str) -> Result<(), ZatsuError> {
     // TODO: Move to repository.rs?
 
@@ -105,6 +124,18 @@ pub fn save_object(values: &Vec<u8>, hash: &str, repository_path: &str) -> Resul
     Ok(())
 }
 
+/// Calculates the hash of the given values based on the specified version.
+///
+/// If `version` is 1 or less, SHA-1 is used. Otherwise, SHA-256 is used.
+///
+/// # Arguments
+///
+/// * `values` - The input data as a vector of bytes.
+/// * `version` - The version of the hashing algorithm to use.
+///
+/// # Returns
+///
+/// The calculated hash as a `String`.
 pub fn object_hash(values: &Vec<u8>, version: i32) -> String {
     let result: String;
     if version <= 1 {

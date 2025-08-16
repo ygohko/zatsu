@@ -37,12 +37,21 @@ pub const ERROR_ID: ErrorId = "forget_command";
 const ERROR_CODE_READING_DIRECTORY_FAILED: ErrorCode = 1;
 const ERROR_CODE_REMOVING_FILE_FAILED: ErrorCode = 2;
 
+/// A command to remove old revisions and perform garbage collection.
 pub struct ForgetCommand {
     revision_count: i32,
     path: String,
 }
 
 impl Command for ForgetCommand {
+    /// Executes the forget command.
+    ///
+    /// This function removes old revisions based on the `revision_count` and then
+    /// performs garbage collection to remove unused revision files and objects.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -70,6 +79,11 @@ impl Command for ForgetCommand {
 }
 
 impl ForgetCommand {
+    /// Creates a new `ForgetCommand` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `revision_count` - The number of latest revisions to keep.
     pub fn new(revision_count: i32) -> Self {
         Self {
             revision_count,
@@ -77,6 +91,14 @@ impl ForgetCommand {
         }
     }
 
+    /// Performs garbage collection by removing unused revision and object files.
+    ///
+    /// This function identifies and removes revision files and object files that are no longer
+    /// referenced by any active revision.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the garbage collection fails.
     fn process_garbage_collection(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -185,6 +207,19 @@ fn remove_unused_revisions(
     Ok(removed_revision_count)
 }
 
+/// Removes unused object files from the repository.
+///
+/// This function marks objects that are still referenced by existing revisions
+/// and then removes any unmarked objects.
+///
+/// # Arguments
+///
+/// * `repository` - A reference to the repository.
+/// * `object_paths` - A vector of paths to object directories.
+///
+/// # Returns
+///
+/// A `Result` containing the number of removed objects or an error.
 fn remove_unused_objects(
     repository: &Box<dyn Repository>,
     object_paths: &Vec<PathBuf>,

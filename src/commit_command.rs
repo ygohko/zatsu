@@ -48,12 +48,25 @@ const ERROR_CODE_READING_META_DATA_FAILED: ErrorCode = 1;
 const ERROR_CODE_LOADING_FILE_FAILED: ErrorCode = 2;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 3;
 
+/// A command to commit changes to the repository.
 pub struct CommitCommand {
     description: String,
     pub path: String,
 }
 
 impl Command for CommitCommand {
+    /// Executes the commit command.
+    ///
+    /// This function performs the following steps:
+    /// 1. Loads the repository.
+    /// 2. Determines the next revision number.
+    /// 3. Processes all files in the working directory to create entries for the new revision.
+    /// 4. Saves the new revision to the repository.
+    /// 5. Prints a success message with the new revision number and total number of revisions.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the commit operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -106,6 +119,7 @@ impl Command for CommitCommand {
 }
 
 impl CommitCommand {
+    /// Creates a new `CommitCommand` instance.
     pub fn new() -> Self {
         Self {
             description: "".to_string(),
@@ -113,10 +127,29 @@ impl CommitCommand {
         }
     }
 
+    /// Sets the description for the commit.
+    ///
+    /// # Arguments
+    ///
+    /// * `description` - The description of the commit.
     pub fn set_description(&mut self, description: &str) {
         self.description = description.to_string();
     }
 
+    /// Processes a single file, calculates its hash, and creates an `Entry` for it.
+    ///
+    /// This function reads the file, calculates its SHA-1 hash, and stores the file content
+    /// in the repository's object store if it doesn't already exist. It also determines
+    /// the file's permissions.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path to the file relative to the repository root.
+    /// * `repository` - A reference to the repository.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the `Entry` for the processed file or an error if processing fails.
     fn process_file(
         &self,
         path: &str,
@@ -194,11 +227,29 @@ impl CommitCommand {
 }
 
 #[cfg(not(target_os = "windows"))]
+/// Extracts file permissions from metadata for non-Windows systems.
+///
+/// # Arguments
+///
+/// * `metadata` - The file metadata.
+///
+/// # Returns
+///
+/// The file permissions as a `u32`.
 fn permission_from_metadata(metadata: Metadata) -> u32 {
     metadata.permissions().mode() & 0o777
 }
 
 #[cfg(target_os = "windows")]
+/// Extracts file permissions from metadata for Windows systems.
+///
+/// # Arguments
+///
+/// * `metadata` - The file metadata.
+///
+/// # Returns
+///
+/// The file permissions as a `u32`.
 fn permission_from_metadata(metadata: Metadata) -> u32 {
     if metadata.permissions().readonly() {
         return 0o444;

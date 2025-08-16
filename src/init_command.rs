@@ -37,12 +37,22 @@ const ERROR_CODE_CREATING_REPOSITORY_FAILED: ErrorCode = 1;
 const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 2;
 const ERROR_CODE_CREATING_DIRECTORY_FAILED: ErrorCode = 3;
 
+/// A command to initialize a new Zatsu repository.
 pub struct InitCommand {
     version: i32,
     pub path: String,
 }
 
 impl Command for InitCommand {
+    /// Executes the initialization command.
+    ///
+    /// This function creates the necessary directory structure for a new Zatsu repository,
+    /// including `.zatsu`, `revisions`, and `objects` directories, and initializes
+    /// the repository version.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or an error if the initialization fails.
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
@@ -109,6 +119,11 @@ impl Command for InitCommand {
 }
 
 impl InitCommand {
+    /// Creates a new `InitCommand` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `version` - The version of the repository to initialize.
     pub fn new(version: i32) -> Self {
         Self {
             version,
