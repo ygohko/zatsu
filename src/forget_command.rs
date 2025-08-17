@@ -141,7 +141,7 @@ impl ForgetCommand {
         for result in read_dir {
             if result.is_ok() {
                 let entry = result.unwrap();
-                let path = Utf8PathBuf::from(entry.path().to_string_easy());
+                let path = Utf8PathBuf::from(&entry.path().to_string_easy());
                 object_paths.push(path);
             }
         }

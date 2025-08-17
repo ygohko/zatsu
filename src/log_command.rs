@@ -20,16 +20,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8PathBuf;
 use chrono::DateTime;
 use chrono::Local;
 use chrono::Utc;
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use crate::Command;
 use crate::Entry;
 use crate::ZatsuError;
-use crate::commons::OperatePath;
 use crate::error::ErrorId;
 use crate::repository::factory;
 
@@ -52,9 +51,9 @@ impl Command for LogCommand {
     ///
     /// A `Result` indicating success or an error if the operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path.to_string_easy()) {
+        let repository = match factory::load(repository_path.as_str()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
