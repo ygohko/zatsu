@@ -20,6 +20,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8Path;
+use camino::Utf8PathBuf;
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
 use hex_string::HexString;
@@ -39,6 +41,166 @@ use crate::error::ZatsuError;
 pub const ERROR_ID: ErrorId = "commons";
 
 pub const ERROR_CODE_SAVING_FILE_FAILED: ErrorCode = 1;
+
+/// A trait for operating on file paths.
+pub trait OperatePath {
+    /// Returns the file name of the path, or an empty string if not present.
+    ///
+    /// # Returns
+    ///
+    /// * `String` - The file name.
+    fn file_name_or_empty(&self) -> String;
+    /// Returns the extension of the path, or an empty string if not present.
+    ///
+    /// # Returns
+    ///
+    /// * `String` - The extension.
+    fn extension_or_empty(&self) -> String;
+    /// Returns the parent directory of the path, or an empty string if not present.
+    ///
+    /// # Returns
+    ///
+    /// * `String` - The parent directory.
+    fn parent_or_empty(&self) -> String;
+    /// Converts the path to a `String`.
+    ///
+    /// # Returns
+    ///
+    /// * `String` - The path as a string.
+    fn to_string_easy(&self) -> String;
+}
+
+impl OperatePath for Utf8PathBuf {
+    fn file_name_or_empty(&self) -> String {
+        let file_name = match self.file_name() {
+            Some(file_name) => file_name,
+            None => return "".to_string(),
+        };
+
+        file_name.to_string()
+    }
+
+    fn extension_or_empty(&self) -> String {
+        let extension = match self.extension() {
+            Some(extension) => extension,
+            None => return "".to_string(),
+        };
+
+        extension.to_string()
+    }
+
+    fn parent_or_empty(&self) -> String {
+        let parent = match self.parent() {
+            Some(parent) => parent,
+            None => return "".to_string(),
+        };
+
+        parent.to_string_easy()
+    }
+
+    fn to_string_easy(&self) -> String {
+        self.as_str().to_string()
+    }
+}
+
+impl OperatePath for Utf8Path {
+    fn file_name_or_empty(&self) -> String {
+        let file_name = match self.file_name() {
+            Some(file_name) => file_name,
+            None => return "".to_string(),
+        };
+
+        file_name.to_string()
+    }
+
+    fn extension_or_empty(&self) -> String {
+        let extension = match self.extension() {
+            Some(extension) => extension,
+            None => return "".to_string(),
+        };
+
+        extension.to_string()
+    }
+
+    fn parent_or_empty(&self) -> String {
+        let parent = match self.parent() {
+            Some(parent) => parent,
+            None => return "".to_string(),
+        };
+
+        parent.to_string_easy()
+    }
+
+    fn to_string_easy(&self) -> String {
+        self.as_str().to_string()
+    }
+}
+
+impl OperatePath for PathBuf {
+    fn file_name_or_empty(&self) -> String {
+        let file_name = match self.file_name() {
+            Some(file_name) => file_name.to_string_lossy().to_string(),
+            None => return "".to_string(),
+        };
+
+        file_name
+    }
+
+    fn extension_or_empty(&self) -> String {
+        let extension = match self.extension() {
+            Some(extension) => extension.to_string_lossy().to_string(),
+            None => return "".to_string(),
+        };
+
+        extension
+    }
+
+    fn parent_or_empty(&self) -> String {
+        let parent = match self.parent() {
+            Some(parent) => parent,
+            None => return "".to_string(),
+        };
+
+        parent.to_string_easy()
+    }
+
+    fn to_string_easy(&self) -> String {
+        self.to_string_lossy().to_string()
+    }
+}
+
+impl OperatePath for Path {
+    fn file_name_or_empty(&self) -> String {
+        let file_name = match self.file_name() {
+            Some(file_name) => file_name.to_string_lossy().to_string(),
+            None => return "".to_string(),
+        };
+
+        file_name
+    }
+
+    fn extension_or_empty(&self) -> String {
+        let extension = match self.extension() {
+            Some(extension) => extension.to_string_lossy().to_string(),
+            None => return "".to_string(),
+        };
+
+        extension
+    }
+
+    fn parent_or_empty(&self) -> String {
+        let parent = match self.parent() {
+            Some(parent) => parent,
+            None => return "".to_string(),
+        };
+
+        parent.to_string_easy()
+    }
+
+    fn to_string_easy(&self) -> String {
+        self.to_string_lossy().to_string()
+    }
+}
 
 /// A trait for converting types to `String`.
 pub trait ToString {
