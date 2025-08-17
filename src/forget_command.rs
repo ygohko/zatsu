@@ -20,9 +20,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8PathBuf;
 use std::fs;
 use std::path::Path;
-use std::path::PathBuf;
 
 use crate::Command;
 use crate::Repository;
@@ -54,9 +54,9 @@ impl Command for ForgetCommand {
     ///
     /// A `Result` indicating success or an error if the operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let mut repository = match factory::load(&repository_path.to_string_easy()) {
+        let mut repository = match factory::load(repository_path.as_str()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -101,9 +101,9 @@ impl ForgetCommand {
     ///
     /// A `Result` indicating success or an error if the garbage collection fails.
     fn process_garbage_collection(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = factory::load(&repository_path.to_string_easy())?;
+        let repository = factory::load(repository_path.as_str())?;
 
         let mut revisions_path = repository_path.clone();
         revisions_path.push("revisions");
@@ -116,11 +116,12 @@ impl ForgetCommand {
                 ));
             }
         };
-        let mut revision_paths: Vec<PathBuf> = Vec::new();
+        let mut revision_paths: Vec<Utf8PathBuf> = Vec::new();
         for result in read_dir {
             if result.is_ok() {
                 let entry = result.unwrap();
-                revision_paths.push(entry.path());
+                let path = Utf8PathBuf::from(&entry.path().to_string_easy());
+                revision_paths.push(path);
             }
         }
         let removed_revision_count = remove_unused_revisions(&repository, &revision_paths)?;
@@ -136,11 +137,12 @@ impl ForgetCommand {
                 ));
             }
         };
-        let mut object_paths: Vec<PathBuf> = Vec::new();
+        let mut object_paths: Vec<Utf8PathBuf> = Vec::new();
         for result in read_dir {
             if result.is_ok() {
                 let entry = result.unwrap();
-                object_paths.push(entry.path());
+                let path = Utf8PathBuf::from(&entry.path().to_string_easy());
+                object_paths.push(path);
             }
         }
         let removed_object_count = remove_unused_objects(&repository, &object_paths)?;
@@ -157,7 +159,7 @@ impl ForgetCommand {
 
 fn remove_unused_revisions(
     repository: &Box<dyn Repository>,
-    revision_paths: &Vec<PathBuf>,
+    revision_paths: &Vec<Utf8PathBuf>,
 ) -> Result<i32, ZatsuError> {
     let mut removed_revision_count = 0;
     for path in revision_paths {
@@ -223,7 +225,7 @@ fn remove_unused_revisions(
 /// A `Result` containing the number of removed objects or an error.
 fn remove_unused_objects(
     repository: &Box<dyn Repository>,
-    object_paths: &Vec<PathBuf>,
+    object_paths: &Vec<Utf8PathBuf>,
 ) -> Result<i32, ZatsuError> {
     let mut removed_object_count = 0;
 

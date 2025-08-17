@@ -20,10 +20,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8PathBuf;
 use flate2::write::ZlibDecoder;
 use std::fs;
 use std::io::Write;
-use std::path::PathBuf;
 
 use crate::Command;
 use crate::Entry;
@@ -61,9 +61,9 @@ impl Command for UpgradeCommand {
     ///
     /// A `Result` indicating success or an error if the upgrade fails.
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path.to_string_easy()) {
+        let repository = match factory::load(repository_path.as_str()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
@@ -155,7 +155,7 @@ impl UpgradeCommand {
     ///
     /// A `Result` indicating success or an error if copying fails.
     fn copy_objects(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
         let mut path = repository_path.clone();
         path.push("objects-v1");
@@ -168,11 +168,12 @@ impl UpgradeCommand {
                 ));
             }
         };
-        let mut object_paths: Vec<PathBuf> = Vec::new();
+        let mut object_paths: Vec<Utf8PathBuf> = Vec::new();
         for result in read_dir {
             if result.is_ok() {
                 let entry = result.unwrap();
-                object_paths.push(entry.path());
+                let path = Utf8PathBuf::from(&entry.path().to_string_easy());
+                object_paths.push(path);
             }
         }
 

@@ -20,9 +20,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8Path;
+use camino::Utf8PathBuf;
 use std::fs;
-use std::path::Path;
-use std::path::PathBuf;
 
 use crate::Command;
 use crate::ZatsuError;
@@ -54,9 +54,9 @@ impl Command for InitCommand {
     ///
     /// A `Result` indicating success or an error if the initialization fails.
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        if Path::new(&repository_path).exists() {
+        if Utf8Path::new(&repository_path).exists() {
             println!("Error: This directory already has a repository.");
             return Err(ZatsuError::new(
                 ERROR_ID,
@@ -154,9 +154,9 @@ mod tests {
         command.path = temp_path.to_string_easy();
         let result = command.execute();
         assert!(result.is_ok());
-        let mut repository_path = temp_path.clone();
+        let mut repository_path = Utf8PathBuf::from(&temp_path.to_string_easy());
         repository_path.push(".zatsu");
-        let exists = Path::new(&repository_path).exists();
+        let exists = repository_path.exists();
         assert_eq!(true, exists);
 
         let temp_dir = TempDir::new("test").unwrap();
@@ -165,9 +165,9 @@ mod tests {
         command.path = temp_path.to_string_easy();
         let result = command.execute();
         assert!(result.is_ok());
-        let mut repository_path = temp_path.clone();
+        let mut repository_path = Utf8PathBuf::from(&temp_path.to_string_easy());
         repository_path.push(".zatsu");
-        let exists = Path::new(&repository_path).exists();
+        let exists = repository_path.exists();
         assert_eq!(true, exists);
     }
 }

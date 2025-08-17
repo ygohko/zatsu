@@ -20,10 +20,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8PathBuf;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs;
-use std::path::PathBuf;
 
 use crate::Revision;
 use crate::commons;
@@ -121,11 +121,11 @@ impl Repository for RepositoryBase {
     }
 
     fn load_revision(&self, revision_number: i32) -> Result<Revision, ZatsuError> {
-        let mut path = PathBuf::from(&self.path);
+        let mut path = Utf8PathBuf::from(&self.path);
         path.push("revisions");
         path.push(format!("{:02x}", revision_number & 0xFF));
         path.push(format!("{}.json", revision_number));
-        let revision = match Revision::load(&path.to_string_easy()) {
+        let revision = match Revision::load(path.as_str()) {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -143,7 +143,7 @@ impl Repository for RepositoryBase {
         revision: &Revision,
         revision_number: i32,
     ) -> Result<(), ZatsuError> {
-        let mut revision_path = PathBuf::from(&self.path);
+        let mut revision_path = Utf8PathBuf::from(&self.path);
         revision_path.push("revisions");
         revision_path.push(format!("{:02x}", revision_number & 0xFF));
         let exists = match revision_path.try_exists() {
@@ -367,9 +367,9 @@ pub mod factory {
     ///
     /// A `Result` containing a `Box` with the loaded `Repository` trait object or an error.
     pub fn load(path: &str) -> Result<Box<dyn Repository>, ZatsuError> {
-        let mut version_path = PathBuf::from(path);
+        let mut version_path = Utf8PathBuf::from(path);
         version_path.push("version.txt");
-        let mut string = match fs::read_to_string(version_path) {
+        let mut string = match fs::read_to_string(&version_path) {
             Ok(string) => string,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
@@ -441,9 +441,9 @@ impl SerializableRepositoryV1 {
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SERIALIZATION_FAILED)),
         };
 
-        let mut json_path = PathBuf::from(path);
+        let mut json_path = Utf8PathBuf::from(path);
         json_path.push("repository.json");
-        let _ = match fs::write(json_path, serialized) {
+        let _ = match fs::write(&json_path, serialized) {
             Ok(result) => result,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -461,9 +461,9 @@ impl SerializableRepositoryV1 {
     ///
     /// A `Result` containing the loaded `SerializableRepositoryV1` or an error.
     fn load(path: &str) -> Result<Self, ZatsuError> {
-        let mut json_path = PathBuf::from(path);
+        let mut json_path = Utf8PathBuf::from(path);
         json_path.push("repository.json");
-        let serialized = match fs::read_to_string(json_path) {
+        let serialized = match fs::read_to_string(&json_path) {
             Ok(serialized) => serialized,
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_LOADING_FILE_FAILED)),
         };
