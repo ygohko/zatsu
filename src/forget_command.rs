@@ -27,7 +27,8 @@ use std::path::PathBuf;
 use crate::Command;
 use crate::Repository;
 use crate::ZatsuError;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
+use crate::commons::ToStringEasy;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -55,7 +56,7 @@ impl Command for ForgetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let mut repository = match factory::load(&repository_path.to_string()) {
+        let mut repository = match factory::load(&repository_path.to_string_easy()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -71,7 +72,7 @@ impl Command for ForgetCommand {
         let index: usize = removed_count as usize;
         revision_numbers = revision_numbers.drain(index..).collect();
         repository.set_revision_numbers(&revision_numbers);
-        repository.save(&&repository_path.to_string())?;
+        repository.save(&&repository_path.to_string_easy())?;
         self.process_garbage_collection()?;
 
         Ok(())
@@ -102,7 +103,7 @@ impl ForgetCommand {
     fn process_garbage_collection(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = factory::load(&repository_path.to_string())?;
+        let repository = factory::load(&repository_path.to_string_easy())?;
 
         let mut revisions_path = repository_path.clone();
         revisions_path.push("revisions");
@@ -177,7 +178,7 @@ fn remove_unused_revisions(
 
                 let option = path.file_stem();
                 if option.is_some() {
-                    let file_stem = option.unwrap().to_string();
+                    let file_stem = option.unwrap().to_string_easy();
                     println!("Checking: revision {}", file_stem);
 
                     let result = file_stem.parse();
@@ -265,7 +266,7 @@ fn remove_unused_objects(
                 let path = entry.path();
                 let option = path.file_name();
                 if option.is_some() {
-                    let file_name = option.unwrap().to_string();
+                    let file_name = option.unwrap().to_string_easy();
                     if !file_name.ends_with(".mark") {
                         let hash = file_name.clone();
                         println!("Checking: object {}", hash);
@@ -321,7 +322,7 @@ fn remove_unused_objects(
                 let path = entry.path();
                 let option = path.file_name();
                 if option.is_some() {
-                    let file_name = option.unwrap().to_string();
+                    let file_name = option.unwrap().to_string_easy();
                     if file_name.ends_with(".mark") {
                         let directory_name = file_name[0..2].to_string();
                         let path = format!(
@@ -357,7 +358,7 @@ mod tests {
 
     use crate::CommitCommand;
     use crate::InitCommand;
-    use crate::commons::ToString;
+    use crate::commons::OperatePath;
 
     #[test]
     fn is_creatable() {
@@ -369,37 +370,37 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push("a.txt");
         fs::write(&path, "Hello, World!").unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = ForgetCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push("a.txt");
         fs::write(&path, "Hello, World!").unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = ForgetCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap()
     }
 }

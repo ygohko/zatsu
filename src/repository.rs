@@ -27,7 +27,7 @@ use std::path::PathBuf;
 
 use crate::Revision;
 use crate::commons;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -125,7 +125,7 @@ impl Repository for RepositoryBase {
         path.push("revisions");
         path.push(format!("{:02x}", revision_number & 0xFF));
         path.push(format!("{}.json", revision_number));
-        let revision = match Revision::load(&path.to_string()) {
+        let revision = match Revision::load(&path.to_string_easy()) {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -157,7 +157,7 @@ impl Repository for RepositoryBase {
             };
         }
         revision_path.push(format!("{}.json", revision_number));
-        match revision.save(&revision_path.to_string()) {
+        match revision.save(&revision_path.to_string_easy()) {
             Ok(_) => (),
             Err(error) => return Err(error),
         };
@@ -485,20 +485,20 @@ mod tests {
     use crate::Command;
     use crate::InitCommand;
     use crate::commons;
-    use crate::commons::ToString;
+    use crate::commons::OperatePath;
 
     #[test]
     fn repository_is_savable() {
         let repository = factory::with_arguments(&vec![1, 2, 3], 1);
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let result = repository.save(&temp_path.to_string());
+        let result = repository.save(&temp_path.to_string_easy());
         assert!(result.is_ok());
 
         let repository = factory::with_arguments(&vec![1, 2, 3], 2);
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let result = repository.save(&temp_path.to_string());
+        let result = repository.save(&temp_path.to_string_easy());
         assert!(result.is_ok());
     }
 
@@ -526,21 +526,21 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut repository_path = temp_path.clone();
         repository_path.push(".zatsu");
-        let result = factory::load(&repository_path.to_string());
+        let result = factory::load(&repository_path.to_string_easy());
         assert!(result.is_ok());
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut repository_path = temp_path.clone();
         repository_path.push(".zatsu");
-        let result = factory::load(&repository_path.to_string());
+        let result = factory::load(&repository_path.to_string_easy());
         assert!(result.is_ok());
     }
 
@@ -558,7 +558,7 @@ mod tests {
         let repository_v1 = repository.to_serializable_v1();
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
-        let result = repository_v1.save(&temp_path.to_string());
+        let result = repository_v1.save(&temp_path.to_string_easy());
         assert!(result.is_ok());
     }
 
@@ -567,11 +567,11 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut repository_path = temp_path.clone();
         repository_path.push(".zatsu");
-        let result = SerializableRepositoryV1::load(&repository_path.to_string());
+        let result = SerializableRepositoryV1::load(&repository_path.to_string_easy());
         assert!(result.is_ok());
     }
 

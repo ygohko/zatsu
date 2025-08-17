@@ -30,7 +30,7 @@ use std::path::PathBuf;
 use crate::Command;
 use crate::Revision;
 use crate::ZatsuError;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -66,7 +66,7 @@ impl Command for GetCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path.to_string()) {
+        let repository = match factory::load(&repository_path.to_string_easy()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -360,7 +360,7 @@ mod tests {
 
     use crate::CommitCommand;
     use crate::InitCommand;
-    use crate::commons::ToString;
+    use crate::commons::OperatePath;
 
     #[test]
     fn is_creatable() {
@@ -372,16 +372,16 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push("a.txt");
         fs::write(&path, "Hello, World!").unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push("a-r1.txt");
@@ -391,16 +391,16 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push("a.txt");
         fs::write(&path, "Hello, World!").unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = GetCommand::new(1, "a.txt");
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push("a-r1.txt");

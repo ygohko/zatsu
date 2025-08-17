@@ -100,39 +100,39 @@ mod tests {
     use crate::Command;
     use crate::CommitCommand;
     use crate::InitCommand;
-    use crate::commons::ToString;
+    use crate::commons::OperatePath;
 
     #[test]
     fn is_loadable() {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push(".zatsu");
         path.push("revisions");
         path.push("01");
         path.push("1.json");
-        Revision::load(&path.to_string()).unwrap();
+        Revision::load(&path.to_string_easy()).unwrap();
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut command = CommitCommand::new();
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push(".zatsu");
         path.push("revisions");
         path.push("01");
         path.push("1.json");
-        Revision::load(&path.to_string()).unwrap();
+        Revision::load(&path.to_string_easy()).unwrap();
     }
 
     #[test]
@@ -140,7 +140,7 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let mut path = temp_path.clone();
         path.push(".zatsu");
@@ -153,6 +153,6 @@ mod tests {
             description: "".to_string(),
         };
         path.push("1.json");
-        revision.save(&path.to_string()).unwrap();
+        revision.save(&path.to_string_easy()).unwrap();
     }
 }

@@ -26,7 +26,7 @@ use std::path::PathBuf;
 
 use crate::Command;
 use crate::ZatsuError;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -107,7 +107,7 @@ impl Command for InitCommand {
             }
         };
         let repository = factory::new(self.version);
-        match repository.save(&repository_path.to_string()) {
+        match repository.save(&repository_path.to_string_easy()) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -138,7 +138,7 @@ mod tests {
 
     use tempdir::TempDir;
 
-    use crate::commons::ToString;
+    use crate::commons::OperatePath;
 
     #[test]
     fn is_creatable() {
@@ -151,7 +151,7 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         let result = command.execute();
         assert!(result.is_ok());
         let mut repository_path = temp_path.clone();
@@ -162,7 +162,7 @@ mod tests {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         let result = command.execute();
         assert!(result.is_ok());
         let mut repository_path = temp_path.clone();
