@@ -331,31 +331,31 @@ mod tests {
 
     use crate::Command;
     use crate::InitCommand;
-    use crate::commons::ToString;
+    use crate::commons::OperatePath;
 
     #[test]
     fn object_is_savable() {
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(1);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let string = "Hello, World!".to_string();
         let values = string.into_bytes();
         let mut path = temp_path.clone();
         path.push(".zatsu");
-        save_object(&values, "12345678", &path.to_string()).unwrap();
+        save_object(&values, "12345678", &path.to_string_easy()).unwrap();
 
         let temp_dir = TempDir::new("test").unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         let mut command = InitCommand::new(2);
-        command.path = temp_path.to_string();
+        command.path = temp_path.to_string_easy();
         command.execute().unwrap();
         let string = "Hello, World!".to_string();
         let values = string.into_bytes();
         let mut path = temp_path.clone();
         path.push(".zatsu");
-        save_object(&values, "12345678", &path.to_string()).unwrap();
+        save_object(&values, "12345678", &path.to_string_easy()).unwrap();
     }
 
     #[test]
