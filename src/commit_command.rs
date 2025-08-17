@@ -36,7 +36,7 @@ use crate::FilePathProducer;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::file_path_producer;
@@ -70,7 +70,7 @@ impl Command for CommitCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let mut repository = match factory::load(&repository_path.to_string()) {
+        let mut repository = match factory::load(&repository_path.to_string_easy()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");

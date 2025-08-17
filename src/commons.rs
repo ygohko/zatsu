@@ -203,31 +203,35 @@ impl OperatePath for Path {
 }
 
 /// A trait for converting types to `String`.
-pub trait ToString {
+pub trait ToStringEasy {
     /// Converts the value to a `String`.
-    fn to_string(&self) -> String;
+    fn to_string_easy(&self) -> String;
 }
 
-impl ToString for OsStr {
+impl ToStringEasy for OsStr {
     /// Converts an `OsStr` to a `String`.
-    fn to_string(&self) -> String {
+    fn to_string_easy(&self) -> String {
         self.to_string_lossy().to_string()
     }
 }
 
+/*
 impl ToString for Path {
     /// Converts a `Path` to a `String`.
     fn to_string(&self) -> String {
         self.to_string_lossy().to_string()
     }
 }
+*/
 
+/*
 impl ToString for PathBuf {
     /// Converts a `PathBuf` to a `String`.
     fn to_string(&self) -> String {
         self.to_string_lossy().to_string()
     }
 }
+*/
 
 /// Saves an object (file content) to the repository's object store.
 ///

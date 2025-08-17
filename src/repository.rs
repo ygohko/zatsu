@@ -27,7 +27,7 @@ use std::path::PathBuf;
 
 use crate::Revision;
 use crate::commons;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -125,7 +125,7 @@ impl Repository for RepositoryBase {
         path.push("revisions");
         path.push(format!("{:02x}", revision_number & 0xFF));
         path.push(format!("{}.json", revision_number));
-        let revision = match Revision::load(&path.to_string()) {
+        let revision = match Revision::load(&path.to_string_easy()) {
             Ok(revision) => revision,
             Err(_) => {
                 return Err(ZatsuError::new(
@@ -157,7 +157,7 @@ impl Repository for RepositoryBase {
             };
         }
         revision_path.push(format!("{}.json", revision_number));
-        match revision.save(&revision_path.to_string()) {
+        match revision.save(&revision_path.to_string_easy()) {
             Ok(_) => (),
             Err(error) => return Err(error),
         };

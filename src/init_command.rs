@@ -26,7 +26,7 @@ use std::path::PathBuf;
 
 use crate::Command;
 use crate::ZatsuError;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -107,7 +107,7 @@ impl Command for InitCommand {
             }
         };
         let repository = factory::new(self.version);
-        match repository.save(&repository_path.to_string()) {
+        match repository.save(&repository_path.to_string_easy()) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };

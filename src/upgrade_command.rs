@@ -30,7 +30,7 @@ use crate::Entry;
 use crate::Revision;
 use crate::ZatsuError;
 use crate::commons;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
@@ -63,7 +63,7 @@ impl Command for UpgradeCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path.to_string()) {
+        let repository = match factory::load(&repository_path.to_string_easy()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: Repository not found. To create repository, execute zatsu init.");
@@ -191,7 +191,7 @@ impl UpgradeCommand {
                 if result.is_ok() {
                     let entry = result.unwrap();
                     let file_path = entry.path();
-                    println!("Copying: {}", file_path.to_string());
+                    println!("Copying: {}", file_path.to_string_easy());
                     let values = match fs::read(file_path.clone()) {
                         Ok(values) => values,
                         Err(_) => {
@@ -213,10 +213,10 @@ impl UpgradeCommand {
                     };
 
                     let hash = commons::object_hash(&decoded, 2);
-                    commons::save_object(&decoded, &hash, &repository_path.to_string())?;
+                    commons::save_object(&decoded, &hash, &repository_path.to_string_easy())?;
 
                     // Write new object hash.
-                    let mut new_file_path = file_path.to_string();
+                    let mut new_file_path = file_path.to_string_easy();
                     new_file_path.push_str(".new");
                     match fs::write(&new_file_path, hash) {
                         Ok(()) => (),

@@ -29,7 +29,7 @@ use std::path::PathBuf;
 use crate::Command;
 use crate::Entry;
 use crate::ZatsuError;
-use crate::commons::ToString;
+use crate::commons::OperatePath;
 use crate::error::ErrorId;
 use crate::repository::factory;
 
@@ -54,7 +54,7 @@ impl Command for LogCommand {
     fn execute(&self) -> Result<(), ZatsuError> {
         let mut repository_path = PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path.to_string()) {
+        let repository = match factory::load(&repository_path.to_string_easy()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");

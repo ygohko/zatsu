@@ -24,7 +24,8 @@ use std::env::consts;
 use std::fs;
 use std::path::Path;
 
-use crate::commons::ToString;
+use crate::commons::OperatePath;
+use crate::commons::ToStringEasy;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::error::ZatsuError;
@@ -85,7 +86,7 @@ impl FilePathProducer {
             let mut scan = true;
             let option = Path::new(&directory_path).file_name();
             if option.is_some() {
-                let file_name = option.unwrap().to_string();
+                let file_name = option.unwrap().to_string_easy();
                 if file_name == ".zatsu".to_string()
                     || file_name == ".jj".to_string()
                     || file_name == ".git".to_string()
@@ -117,7 +118,7 @@ impl FilePathProducer {
                                 ));
                             }
                         };
-                        let path = entry.path().to_string();
+                        let path = entry.path().to_string_easy();
                         if metadata.is_file() {
                             let path = path[self.prefix_length..].to_string();
                             self.file_paths.push(path);
