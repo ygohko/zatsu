@@ -154,9 +154,9 @@ mod tests {
         command.path = temp_path.to_string_easy();
         let result = command.execute();
         assert!(result.is_ok());
-        let mut repository_path = temp_path.clone();
+        let mut repository_path = Utf8PathBuf::from(&temp_path.to_string_easy());
         repository_path.push(".zatsu");
-        let exists = Utf8Path::new(&repository_path).exists();
+        let exists = repository_path.exists();
         assert_eq!(true, exists);
 
         let temp_dir = TempDir::new("test").unwrap();
@@ -165,9 +165,9 @@ mod tests {
         command.path = temp_path.to_string_easy();
         let result = command.execute();
         assert!(result.is_ok());
-        let mut repository_path = temp_path.clone();
+        let mut repository_path = Utf8PathBuf::from(&temp_path.to_string_easy());
         repository_path.push(".zatsu");
-        let exists = Utf8Path::new(&repository_path).exists();
+        let exists = repository_path.exists();
         assert_eq!(true, exists);
     }
 }
