@@ -20,6 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8PathBuf;
 use chrono::Utc;
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
@@ -28,7 +29,6 @@ use std::fs::Metadata;
 use std::io::Write;
 #[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
 
 use crate::Command;
 use crate::Entry;
@@ -36,7 +36,6 @@ use crate::FilePathProducer;
 use crate::Repository;
 use crate::Revision;
 use crate::ZatsuError;
-use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::file_path_producer;
@@ -68,9 +67,9 @@ impl Command for CommitCommand {
     ///
     /// A `Result` indicating success or an error if the commit operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let mut repository = match factory::load(&repository_path.to_string_easy()) {
+        let mut repository = match factory::load(repository_path.as_str()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -155,7 +154,7 @@ impl CommitCommand {
         path: &str,
         repository: &Box<dyn Repository>,
     ) -> Result<Entry, ZatsuError> {
-        let mut file_path = PathBuf::from(&self.path);
+        let mut file_path = Utf8PathBuf::from(&self.path);
         file_path.push(&path);
         let metadata = match fs::metadata(&file_path) {
             Ok(metadata) => metadata,
@@ -177,7 +176,7 @@ impl CommitCommand {
             permission = permission_from_metadata(metadata);
 
             let directory_name = hex_string[0..2].to_string();
-            let mut path = PathBuf::from(&self.path);
+            let mut path = Utf8PathBuf::from(&self.path);
             path.push(".zatsu");
             path.push("objects");
             path.push(&directory_name);

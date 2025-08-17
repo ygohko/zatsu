@@ -20,17 +20,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use camino::Utf8PathBuf;
 use flate2::write::ZlibDecoder;
 use std::fs;
 use std::io::Write;
 #[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
 
 use crate::Command;
 use crate::Revision;
 use crate::ZatsuError;
-use crate::commons::OperatePath;
 use crate::error::ErrorCode;
 use crate::error::ErrorId;
 use crate::repository::factory;
@@ -64,9 +63,9 @@ impl Command for GetCommand {
     ///
     /// A `Result` indicating success or an error if the operation fails.
     fn execute(&self) -> Result<(), ZatsuError> {
-        let mut repository_path = PathBuf::from(&self.path);
+        let mut repository_path = Utf8PathBuf::from(&self.path);
         repository_path.push(".zatsu");
-        let repository = match factory::load(&repository_path.to_string_easy()) {
+        let repository = match factory::load(repository_path.as_str()) {
             Ok(repository) => repository,
             Err(error) => {
                 println!("Error: repository not found. To create repository, execute zatsu init.");
@@ -138,7 +137,7 @@ impl GetCommand {
     /// A `Result` indicating success or an error if saving fails.
     fn save_file(&self, hash: &str) -> Result<(), ZatsuError> {
         let directory_name = hash[0..2].to_string();
-        let mut path = PathBuf::from(&self.path);
+        let mut path = Utf8PathBuf::from(&self.path);
         path.push(".zatsu");
         path.push("objects");
         path.push(&directory_name);
@@ -165,9 +164,9 @@ impl GetCommand {
                 file_name = format!("{}-r{}.{}", split[0], self.revision_number, split[1]);
             }
         }
-        let mut path = PathBuf::from(&self.path);
+        let mut path = Utf8PathBuf::from(&self.path);
         path.push(&file_name);
-        match fs::write(&PathBuf::from(&path), decoded) {
+        match fs::write(&path, decoded) {
             Ok(()) => (),
             Err(_) => return Err(ZatsuError::new(ERROR_ID, ERROR_CODE_SAVING_FILE_FAILED)),
         };
@@ -219,7 +218,7 @@ impl GetCommand {
 
                 hash = entry.hash.clone();
                 let directory_name = hash[0..2].to_string();
-                let values = match fs::read(&PathBuf::from(format!(
+                let values = match fs::read(&Utf8PathBuf::from(format!(
                     ".zatsu/objects/{}/{}",
                     directory_name, hash
                 ))) {
