@@ -49,18 +49,21 @@ pub trait OperatePath {
     /// # Returns
     ///
     /// * `String` - The file name.
+    #[allow(dead_code)]
     fn file_name_or_empty(&self) -> String;
     /// Returns the extension of the path, or an empty string if not present.
     ///
     /// # Returns
     ///
     /// * `String` - The extension.
+    #[allow(dead_code)]
     fn extension_or_empty(&self) -> String;
     /// Returns the parent directory of the path, or an empty string if not present.
     ///
     /// # Returns
     ///
     /// * `String` - The parent directory.
+    #[allow(dead_code)]
     fn parent_or_empty(&self) -> String;
     /// Converts the path to a `String`.
     ///
@@ -214,24 +217,6 @@ impl ToStringEasy for OsStr {
         self.to_string_lossy().to_string()
     }
 }
-
-/*
-impl ToString for Path {
-    /// Converts a `Path` to a `String`.
-    fn to_string(&self) -> String {
-        self.to_string_lossy().to_string()
-    }
-}
-*/
-
-/*
-impl ToString for PathBuf {
-    /// Converts a `PathBuf` to a `String`.
-    fn to_string(&self) -> String {
-        self.to_string_lossy().to_string()
-    }
-}
-*/
 
 /// Saves an object (file content) to the repository's object store.
 ///
